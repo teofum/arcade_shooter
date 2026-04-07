@@ -2,9 +2,8 @@
 
 #include "entity.h"
 
-Entity *ent_create(EntityType type, const char *name) {
-  Entity *entity = malloc(sizeof(Entity));
+Entity *ent_create(EntityType type) {
+  Entity *entity = calloc(1, sizeof(Entity));
   entity->type = type;
-  entity->name = name;
   return entity;
 }

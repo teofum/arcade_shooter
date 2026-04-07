@@ -1,15 +1,28 @@
 #ifndef ENTITY_H
 #define ENTITY_H
 
+#include "raylib.h"
+
 typedef enum {
   ENT_PLAYER,
 } EntityType;
 
+struct Entity;
+struct Game;
+
+typedef void (*EntityUpdateFunction)(struct Entity *entity, struct Game *game);
+typedef void (*EntityDrawFunction)(struct Entity *entity, struct Game *game);
+
 typedef struct Entity {
   EntityType type;
-  const char *name;
+
+  Vector2 position;
+  void *custom_data;
+
+  EntityUpdateFunction update;
+  EntityDrawFunction draw;
 } Entity;
 
-Entity *ent_create(EntityType type, const char *name);
+Entity *ent_create(EntityType type);
 
 #endif

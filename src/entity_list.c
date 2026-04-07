@@ -28,7 +28,8 @@ EntityList el_create() {
   return el;
 }
 
-void el_add(EntityList el, Entity *entity) {
+Entity *el_add(EntityList el, EntityType type) {
+  Entity *entity = ent_create(type);
   EntityListEntry entry = el_new_entry(entity);
 
   if (el->last == NULL) {
@@ -37,6 +38,8 @@ void el_add(EntityList el, Entity *entity) {
     el->last->next = entry;
     el->last = entry;
   }
+
+  return entity;
 }
 
 EntityListEntry el_destroy_impl(EntityList el, EntityListEntry entry,

@@ -9,7 +9,7 @@ typedef struct EntityListEntry *EntityListIterator;
 
 EntityList el_create();
 
-void el_add(EntityList el, Entity *entity);
+Entity *el_add(EntityList el, EntityType type);
 
 void el_destroy(EntityList el, Entity *entity);
 
