@@ -1,7 +1,7 @@
 all: build
 	cmake --build build
 
-build:
+build: CMakeLists.txt
 	cmake -B build
 
 clean:

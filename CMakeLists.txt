@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.11) # FetchContent is available in 3.11+
 project(arcade_shooter)
 
+set(CMAKE_C_STANDARD 23)
+
 # Generate compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -25,7 +27,13 @@ if (NOT raylib_FOUND) # If there's none, fetch and build raylib
 endif()
 
 # Project
-add_executable(${PROJECT_NAME} src/main.c src/config.h)
+add_executable(${PROJECT_NAME}
+  src/main.c
+  src/types.h
+  src/config.h
+  src/entity.h src/entity.c
+  src/entity_list.h src/entity_list.c
+)
 target_link_libraries(${PROJECT_NAME} raylib)
 
 # Checks if OSX and links appropriate frameworks (Only required on MacOS)
