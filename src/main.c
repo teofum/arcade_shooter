@@ -27,6 +27,8 @@ int main() {
 void init() {
   InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "ArcadeShooter");
   SetTargetFPS(TARGET_FPS);
+
+  HideCursor();
 }
 
 void cleanup() { CloseWindow(); }

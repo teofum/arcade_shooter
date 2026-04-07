@@ -6,4 +6,7 @@
 
 #define TARGET_FPS 120
 
+#define PLAYER_SPEED 2.5f
+#define PLAYER_ACCEL 0.1f
+
 #endif

@@ -48,8 +48,11 @@ EntityListEntry el_destroy_impl(EntityList el, EntityListEntry entry,
     return entry;
   } else if (entry->entity == entity) {
     EntityListEntry next = entry->next;
+
+    free(entity->custom_data);
     free(entity);
     free(entry);
+
     return next;
   } else {
     entry->next = el_destroy_impl(el, entry->next, entity);
