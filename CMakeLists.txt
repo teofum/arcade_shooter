@@ -25,7 +25,7 @@ if (NOT raylib_FOUND) # If there's none, fetch and build raylib
 endif()
 
 # Project
-add_executable(${PROJECT_NAME} src/main.c)
+add_executable(${PROJECT_NAME} src/main.c src/config.h)
 target_link_libraries(${PROJECT_NAME} raylib)
 
 # Checks if OSX and links appropriate frameworks (Only required on MacOS)
