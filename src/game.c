@@ -1,8 +1,10 @@
+#include <limits.h>
 #include <raylib.h>
 #include <raymath.h>
 #include <stdlib.h>
 
 #include "config.h"
+#include "enemy.h"
 #include "entity.h"
 #include "entity_list.h"
 #include "game.h"
@@ -72,6 +74,12 @@ void game_update(Game game) {
     if (e->update != NULL) {
       e->update(e, game);
     }
+  }
+
+  if ((float)rand() / INT_MAX < 0.001f) {
+    // Spawn enemy
+    Entity *enemy = enemy_create(rand() % FIELD_COLS, rand() % 3, 1, 1);
+    el_add(game->world, enemy);
   }
 }
 

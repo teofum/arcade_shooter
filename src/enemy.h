@@ -5,12 +5,13 @@
 
 #include "entity.h"
 #include "game.h"
+#include "types.h"
 
 typedef struct EnemyData {
-  Rectangle bounds;
+  Vector2 size;
 } EnemyData;
 
-Entity *enemy_create(Vector2 position);
+Entity *enemy_create(u32 x, u32 y, u32 w, u32 h);
 
 void enemy_update(Entity *enemy, Game game);
 

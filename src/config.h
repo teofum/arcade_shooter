@@ -6,6 +6,7 @@
 
 #define FIELD_HEIGHT 200
 #define FIELD_WIDTH 120
+#define FIELD_COLS 6
 
 #define TARGET_FPS 120
 
