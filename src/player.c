@@ -25,7 +25,9 @@ static PlayerData *player_init_data() {
   data->direction = (Vector2){0, 0};
   data->crosshair = (Vector2){0, 0};
 
-  data->ammo = data->max_ammo = 50;
+  data->health = data->max_health = 100;
+
+  data->ammo = data->max_ammo = 10;
   data->fire_cooldown = 0.1f;
   data->fire_timer = 0.0f;
   data->firing = false;
@@ -46,6 +48,12 @@ Entity *player_create() {
 
 void player_update(Entity *player, Game game) {
   PlayerData *data = (PlayerData *)player->custom_data;
+
+  // Die
+  if (data->health <= 0) {
+    game->game_over = true;
+    return;
+  }
 
   // Update velocity
   Vector2 target_velocity = Vector2Scale(data->direction, PLAYER_SPEED);

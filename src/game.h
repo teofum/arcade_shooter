@@ -11,6 +11,8 @@ typedef struct Game {
 
   f32 total_time;
   f32 delta_time;
+
+  bool game_over;
 } *Game;
 
 Game game_init();

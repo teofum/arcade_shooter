@@ -11,6 +11,9 @@ typedef struct PlayerData {
   Vector2 velocity;
   Vector2 crosshair;
 
+  i32 max_health;
+  i32 health;
+
   u32 max_ammo;
   u32 ammo;
 

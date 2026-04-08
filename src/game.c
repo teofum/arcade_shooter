@@ -36,10 +36,15 @@ Game game_init() {
   game->total_time = GetTime();
   game->delta_time = 0.0f;
 
+  game->game_over = false;
+
   return game;
 }
 
 void game_process_input(Game game) {
+  if (game->game_over)
+    return;
+
   // Player movement
   Vector2 v_target = {0, 0};
 
@@ -76,7 +81,7 @@ void game_update(Game game) {
     }
   }
 
-  if ((float)rand() / INT_MAX < 0.001f) {
+  if ((float)rand() / INT_MAX < 0.005f) {
     // Spawn enemy
     Entity *enemy = enemy_create(rand() % FIELD_COLS, rand() % 3, 1, 1);
     el_add(game->world, enemy);
@@ -93,6 +98,16 @@ void game_draw(Game game) {
     if (e->draw != NULL) {
       e->draw(e, game);
     }
+  }
+
+  // Health bar (TODO: actual ui)
+  PlayerData *pdata = (PlayerData *)game->player->custom_data;
+  DrawRectangle(10, 10, pdata->max_health, 20, BLACK);
+  DrawRectangle(10, 10, pdata->health, 20, BLUE);
+  DrawRectangleLines(10, 10, pdata->max_health, 20, BLACK);
+
+  if (game->game_over) {
+    DrawText("you died", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 60, BLACK);
   }
 
   EndDrawing();
