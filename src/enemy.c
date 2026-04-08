@@ -47,7 +47,7 @@ void enemy_update(Entity *enemy, Game game) {
   }
 
   // Move, pushing the player if it collides
-  f32 delta_y = game->delta_time * 5;
+  f32 delta_y = game->delta_time * 50;
 
   PlayerData *pdata = (PlayerData *)game->player->custom_data;
   Vector2 ppos_1 = game->player->position;
@@ -65,7 +65,7 @@ void enemy_update(Entity *enemy, Game game) {
   enemy->position.y += delta_y;
 
   // Destroy self on reaching the bottom of the screen
-  if (enemy->position.y > FIELD_HEIGHT / 2.0f - data->size.y / 2.0f) {
+  if (enemy->position.y > FIELD_HEIGHT / 2.0f - data->size.y * 2.0f) {
     // TODO damage player
     el_destroy(game->world, enemy);
   }
