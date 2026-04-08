@@ -13,6 +13,8 @@ static EnemyData *enemy_init_data(Vector2 size) {
   EnemyData *data = malloc(sizeof(EnemyData));
   data->size = size;
 
+  data->health = 50;
+
   return data;
 }
 
@@ -36,6 +38,12 @@ Entity *enemy_create(u32 x, u32 y, u32 w, u32 h) {
 void enemy_update(Entity *enemy, Game game) {
   EnemyData *data = (EnemyData *)enemy->custom_data;
 
+  // Die
+  if (data->health <= 0) {
+    el_destroy(game->world, enemy);
+    return;
+  }
+
   enemy->position.y += game->delta_time * 5;
 
   // Destroy self on reaching the bottom of the screen
@@ -52,6 +60,10 @@ void enemy_draw(Entity *enemy, Game game) {
                     data->size.y};
   rect = game_to_screen_rect(rect);
 
-  DrawRectangleRec(rect, ORANGE);
+  Rectangle rect2 = rect;
+  rect2.height *= data->health / 50.0f;
+
+  DrawRectangleRec(rect, RED);
+  DrawRectangleRec(rect2, ORANGE);
   DrawRectangleLinesEx(rect, 1.0f, BLACK);
 }

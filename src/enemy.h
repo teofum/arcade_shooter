@@ -9,6 +9,8 @@
 
 typedef struct EnemyData {
   Vector2 size;
+
+  i32 health;
 } EnemyData;
 
 Entity *enemy_create(u32 x, u32 y, u32 w, u32 h);

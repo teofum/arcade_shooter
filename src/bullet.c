@@ -5,6 +5,7 @@
 
 #include "bullet.h"
 #include "config.h"
+#include "enemy.h"
 #include "entity.h"
 #include "entity_list.h"
 #include "physics.h"
@@ -17,6 +18,8 @@ static BulletData *bullet_init_data(Vector2 initial_velocity) {
   BulletData *data = malloc(sizeof(BulletData));
   data->velocity = initial_velocity;
   data->size = 1.5f;
+
+  data->damage = 10;
 
   return data;
 }
@@ -57,6 +60,19 @@ void bullet_update(Entity *bullet, Game game) {
                                           data->size, wdata->bounds);
       collision.direction |= c.direction;
       collision.t = fminf(collision.t, c.t);
+    } else if (e->type == ENT_ENEMY) {
+      EnemyData *edata = (EnemyData *)e->custom_data;
+
+      Rectangle bounds = {e->position.x, e->position.y, edata->size.x,
+                          edata->size.y};
+      Collision c =
+          collide_particle_rect(bullet->position, next_pos, data->size, bounds);
+      collision.direction |= c.direction;
+      collision.t = fminf(collision.t, c.t);
+
+      if (c.direction != COL_NONE) {
+        edata->health -= data->damage;
+      }
     }
   }
 
