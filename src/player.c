@@ -11,6 +11,8 @@
 #include "player.h"
 #include "wall.h"
 
+static Rectangle bottom_wall = {0, WINDOW_HEIGHT, WINDOW_WIDTH, 100};
+
 static PlayerData *player_init_data() {
   PlayerData *data = malloc(sizeof(PlayerData));
 
@@ -66,7 +68,14 @@ void player_update(Entity *player, Game game) {
       collision.t = fminf(collision.t, c.t);
     }
   }
-  //
+
+  // Also collide with an "imaginary" wall at the bottom so player can't leave
+  // the screen
+  Collision c = collide_particle_rect(player->position, next_pos, data->size,
+                                      bottom_wall);
+  collision.direction |= c.direction;
+  collision.t = fminf(collision.t, c.t);
+
   // If there was a collision change the trajectory
   if (collision.direction != COL_NONE) {
     // 1. Move in the original direction up to the point of collision
