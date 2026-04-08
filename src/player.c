@@ -3,36 +3,50 @@
 #include <stdlib.h>
 
 #include "bullet.h"
+#include "config.h"
 #include "entity.h"
 #include "entity_list.h"
 #include "player.h"
 
-PlayerData *player_init_data() {
+static PlayerData *player_init_data() {
   PlayerData *data = malloc(sizeof(PlayerData));
 
   data->velocity = (Vector2){0, 0};
+  data->direction = (Vector2){0, 0};
   data->crosshair = (Vector2){0, 0};
-  data->fire = false;
+
+  data->ammo = data->max_ammo = 5;
+  data->fire_cooldown = 0.1f;
+  data->fire_timer = 0.0f;
+  data->firing = false;
 
   return data;
+}
+
+Entity *player_create() {
+  Entity *player = ent_create(ENT_PLAYER);
+
+  player->position = (Vector2){200, 200};
+  player->custom_data = player_init_data();
+  player->update = player_update;
+  player->draw = player_draw;
+
+  return player;
 }
 
 void player_update(Entity *player, Game game) {
   PlayerData *data = (PlayerData *)player->custom_data;
 
+  // Update position and velocity
+  Vector2 target_velocity = Vector2Scale(data->direction, PLAYER_SPEED);
+  data->velocity = Vector2Lerp(data->velocity, target_velocity, PLAYER_ACCEL);
+
   player->position = Vector2Add(player->position, data->velocity);
 
   // Spawn a bullet
-  if (data->fire) {
-    Entity *bullet = el_add(game->world, ENT_BULLET);
-    bullet->position = player->position;
-
-    Vector2 aim = Vector2Subtract(data->crosshair, player->position);
-    Vector2 velocity = Vector2Scale(Vector2Normalize(aim), 5);
-    bullet->custom_data = bullet_init_data(velocity);
-
-    bullet->update = bullet_update;
-    bullet->draw = bullet_draw;
+  if (data->firing) {
+    Entity *bullet = bullet_create(player->position, data->crosshair);
+    el_add(game->world, bullet);
   }
 }
 

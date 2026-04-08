@@ -9,4 +9,6 @@
 #define PLAYER_SPEED 2.5f
 #define PLAYER_ACCEL 0.1f
 
+#define BULLET_SPEED 5.0f
+
 #endif

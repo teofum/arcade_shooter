@@ -1,6 +1,8 @@
 #ifndef BULLET_H
 #define BULLET_H
 
+#include <raylib.h>
+
 #include "entity.h"
 #include "game.h"
 
@@ -8,7 +10,7 @@ typedef struct BulletData {
   Vector2 velocity;
 } BulletData;
 
-BulletData *bullet_init_data(Vector2 initial_velocity);
+Entity *bullet_create(Vector2 position, Vector2 target);
 
 void bullet_update(Entity *bullet, Game game);
 

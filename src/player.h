@@ -3,14 +3,24 @@
 
 #include "entity.h"
 #include "game.h"
+#include "types.h"
 
 typedef struct PlayerData {
   Vector2 velocity;
   Vector2 crosshair;
-  bool fire;
+
+  u32 max_ammo;
+  u32 ammo;
+
+  f32 fire_cooldown;
+  f32 fire_timer;
+
+  // Input
+  Vector2 direction;
+  bool firing;
 } PlayerData;
 
-PlayerData *player_init_data();
+Entity *player_create();
 
 void player_update(Entity *player, Game game);
 
