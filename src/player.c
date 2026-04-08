@@ -27,7 +27,7 @@ static PlayerData *player_init_data() {
 Entity *player_create() {
   Entity *player = ent_create(ENT_PLAYER);
 
-  player->position = (Vector2){200, 200};
+  player->position = (Vector2){WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f};
   player->custom_data = player_init_data();
   player->update = player_update;
   player->draw = player_draw;

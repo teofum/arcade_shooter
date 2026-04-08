@@ -2,18 +2,29 @@
 #include <raymath.h>
 #include <stdlib.h>
 
+#include "config.h"
 #include "entity.h"
 #include "entity_list.h"
 #include "game.h"
 #include "player.h"
+#include "wall.h"
 
 Game game_init() {
   Game game = malloc(sizeof(struct Game));
 
   // Create world
   game->world = el_create();
+
   game->player = player_create();
   el_add(game->world, game->player);
+
+  f32 wall_width = (WINDOW_WIDTH - PLAYFIELD_WIDTH) / 2.0f;
+  Entity *left_wall = wall_create((Rectangle){0, 0, wall_width, WINDOW_HEIGHT});
+  Entity *right_wall = wall_create(
+      (Rectangle){WINDOW_WIDTH - wall_width, 0, wall_width, WINDOW_HEIGHT});
+
+  el_add(game->world, left_wall);
+  el_add(game->world, right_wall);
 
   // Init timers
   game->total_time = GetTime();

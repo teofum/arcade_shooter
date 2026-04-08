@@ -12,6 +12,7 @@
 static BulletData *bullet_init_data(Vector2 initial_velocity) {
   BulletData *data = malloc(sizeof(BulletData));
   data->velocity = initial_velocity;
+  data->size = 5.0f;
 
   return data;
 }
@@ -49,5 +50,5 @@ void bullet_draw(Entity *bullet, Game game) {
   BulletData *data = (BulletData *)bullet->custom_data;
 
   // Draw player
-  DrawCircle(bullet->position.x, bullet->position.y, 5, BLUE);
+  DrawCircle(bullet->position.x, bullet->position.y, data->size, BLUE);
 }
