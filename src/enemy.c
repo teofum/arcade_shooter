@@ -5,6 +5,8 @@
 #include "enemy.h"
 #include "entity.h"
 #include "entity_list.h"
+#include "physics.h"
+#include "player.h"
 #include "utils.h"
 
 #define GRID_SIZE ((float)FIELD_WIDTH / FIELD_COLS)
@@ -44,7 +46,23 @@ void enemy_update(Entity *enemy, Game game) {
     return;
   }
 
-  enemy->position.y += game->delta_time * 5;
+  // Move, pushing the player if it collides
+  f32 delta_y = game->delta_time * 5;
+
+  PlayerData *pdata = (PlayerData *)game->player->custom_data;
+  Vector2 ppos_1 = game->player->position;
+  Vector2 ppos_2 = game->player->position;
+  ppos_1.y += (delta_y + game->delta_time * PLAYER_SPEED);
+
+  Rectangle rect = {enemy->position.x, enemy->position.y, data->size.x,
+                    data->size.y};
+  Collision c = collide_particle_rect(ppos_1, ppos_2, pdata->size, rect);
+
+  if (c.direction != COL_NONE) {
+    game->player->position.y += (delta_y + game->delta_time * PLAYER_SPEED);
+  }
+
+  enemy->position.y += delta_y;
 
   // Destroy self on reaching the bottom of the screen
   if (enemy->position.y > FIELD_HEIGHT / 2.0f - data->size.y / 2.0f) {

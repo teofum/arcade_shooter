@@ -5,6 +5,7 @@
 
 #include "bullet.h"
 #include "config.h"
+#include "enemy.h"
 #include "entity.h"
 #include "entity_list.h"
 #include "physics.h"
@@ -61,11 +62,19 @@ void player_update(Entity *player, Game game) {
   EntityListIterator it = el_iter(game->world);
   Entity *e;
   while ((e = eli_next(&it))) {
-    if (e->type == ENT_WALL) {
-      WallData *wdata = (WallData *)e->custom_data;
+    if (e->type == ENT_WALL || e->type == ENT_ENEMY) {
+      Rectangle rect;
+      if (e->type == ENT_WALL) {
+        WallData *wdata = (WallData *)e->custom_data;
+        rect = wdata->bounds;
+      } else {
+        EnemyData *edata = (EnemyData *)e->custom_data;
+        rect = (Rectangle){e->position.x, e->position.y, edata->size.x,
+                           edata->size.y};
+      }
 
-      Collision c = collide_particle_rect(player->position, next_pos,
-                                          data->size, wdata->bounds);
+      Collision c =
+          collide_particle_rect(player->position, next_pos, data->size, rect);
       collision.direction |= c.direction;
       collision.t = fminf(collision.t, c.t);
     }
