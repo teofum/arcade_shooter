@@ -6,6 +6,8 @@
 #include "types.h"
 
 typedef struct PlayerData {
+  f32 size;
+
   Vector2 velocity;
   Vector2 crosshair;
 

@@ -7,10 +7,14 @@
 #include "config.h"
 #include "entity.h"
 #include "entity_list.h"
+#include "physics.h"
 #include "player.h"
+#include "wall.h"
 
 static PlayerData *player_init_data() {
   PlayerData *data = malloc(sizeof(PlayerData));
+
+  data->size = 20.0f;
 
   data->velocity = (Vector2){0, 0};
   data->direction = (Vector2){0, 0};
@@ -38,11 +42,51 @@ Entity *player_create() {
 void player_update(Entity *player, Game game) {
   PlayerData *data = (PlayerData *)player->custom_data;
 
-  // Update position and velocity
+  // Update velocity
   Vector2 target_velocity = Vector2Scale(data->direction, PLAYER_SPEED);
   data->velocity = Vector2Lerp(data->velocity, target_velocity, PLAYER_ACCEL);
 
-  player->position = Vector2Add(player->position, data->velocity);
+  Vector2 delta_pos = Vector2Scale(data->velocity, game->delta_time);
+  Vector2 next_pos = Vector2Add(player->position, delta_pos);
+
+  // Check for collisions with walls
+  Collision collision = {
+      .direction = COL_NONE,
+      .t = INFINITY,
+  };
+  EntityListIterator it = el_iter(game->world);
+  Entity *e;
+  while ((e = eli_next(&it))) {
+    if (e->type == ENT_WALL) {
+      WallData *wdata = (WallData *)e->custom_data;
+
+      Collision c = collide_particle_rect(player->position, next_pos,
+                                          data->size, wdata->bounds);
+      collision.direction |= c.direction;
+      collision.t = fminf(collision.t, c.t);
+    }
+  }
+  //
+  // If there was a collision change the trajectory
+  if (collision.direction != COL_NONE) {
+    // 1. Move in the original direction up to the point of collision
+    delta_pos = Vector2Scale(delta_pos, collision.t);
+    next_pos = Vector2Add(player->position, delta_pos);
+
+    // 2. Modify velocity (fully plastic collision, ie wallslide)
+    if (collision.direction & COL_X)
+      data->velocity.x = 0;
+    if (collision.direction & COL_Y)
+      data->velocity.y = 0;
+
+    // 3. Move the rest of the way
+    delta_pos =
+        Vector2Scale(data->velocity, game->delta_time * (1 - collision.t));
+    next_pos = Vector2Add(next_pos, delta_pos);
+  }
+
+  // Update position
+  player->position = next_pos;
 
   // Spawn a bullet
   if (data->firing) {
@@ -63,7 +107,7 @@ void player_draw(Entity *player, Game game) {
   PlayerData *data = (PlayerData *)player->custom_data;
 
   // Draw player
-  DrawCircle(player->position.x, player->position.y, 15, RED);
+  DrawCircle(player->position.x, player->position.y, data->size, RED);
 
   // Draw targeting crosshairs
   DrawRectangle(data->crosshair.x - 5, data->crosshair.y - 1, 11, 3, BLACK);
