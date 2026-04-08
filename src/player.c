@@ -2,6 +2,9 @@
 #include <raymath.h>
 #include <stdlib.h>
 
+#include "bullet.h"
+#include "entity.h"
+#include "entity_list.h"
 #include "player.h"
 
 PlayerData *player_init_data() {
@@ -9,6 +12,7 @@ PlayerData *player_init_data() {
 
   data->velocity = (Vector2){0, 0};
   data->crosshair = (Vector2){0, 0};
+  data->fire = false;
 
   return data;
 }
@@ -17,6 +21,19 @@ void player_update(Entity *player, Game game) {
   PlayerData *data = (PlayerData *)player->custom_data;
 
   player->position = Vector2Add(player->position, data->velocity);
+
+  // Spawn a bullet
+  if (data->fire) {
+    Entity *bullet = el_add(game->world, ENT_BULLET);
+    bullet->position = player->position;
+
+    Vector2 aim = Vector2Subtract(data->crosshair, player->position);
+    Vector2 velocity = Vector2Scale(Vector2Normalize(aim), 5);
+    bullet->custom_data = bullet_init_data(velocity);
+
+    bullet->update = bullet_update;
+    bullet->draw = bullet_draw;
+  }
 }
 
 void player_draw(Entity *player, Game game) {

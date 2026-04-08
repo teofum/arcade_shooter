@@ -41,6 +41,9 @@ void game_process_input(Game game) {
 
   // Aiming
   pdata->crosshair = GetMousePosition();
+
+  // Fire!
+  pdata->fire = IsKeyPressed(KEY_SPACE);
 }
 
 void game_update(Game game) {

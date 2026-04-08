@@ -7,6 +7,7 @@
 typedef struct PlayerData {
   Vector2 velocity;
   Vector2 crosshair;
+  bool fire;
 } PlayerData;
 
 PlayerData *player_init_data();
