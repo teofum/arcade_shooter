@@ -10,9 +10,14 @@
 Game game_init() {
   Game game = malloc(sizeof(struct Game));
 
+  // Create world
   game->world = el_create();
   game->player = player_create();
   el_add(game->world, game->player);
+
+  // Init timers
+  game->total_time = GetTime();
+  game->delta_time = 0.0f;
 
   return game;
 }
@@ -37,10 +42,15 @@ void game_process_input(Game game) {
   pdata->crosshair = GetMousePosition();
 
   // Fire!
-  pdata->firing = IsKeyPressed(KEY_SPACE);
+  pdata->firing = IsKeyDown(KEY_SPACE);
 }
 
 void game_update(Game game) {
+  // Update timers
+  f32 now = GetTime();
+  game->delta_time = now - game->total_time;
+  game->total_time = now;
+
   EntityListIterator it = el_iter(game->world);
   Entity *e;
   while ((e = eli_next(&it))) {

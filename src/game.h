@@ -3,10 +3,14 @@
 
 #include "entity.h"
 #include "entity_list.h"
+#include "types.h"
 
 typedef struct Game {
   EntityList world;
   Entity *player;
+
+  f32 total_time;
+  f32 delta_time;
 } *Game;
 
 Game game_init();

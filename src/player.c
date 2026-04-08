@@ -1,3 +1,4 @@
+#include <math.h>
 #include <raylib.h>
 #include <raymath.h>
 #include <stdlib.h>
@@ -45,9 +46,17 @@ void player_update(Entity *player, Game game) {
 
   // Spawn a bullet
   if (data->firing) {
-    Entity *bullet = bullet_create(player->position, data->crosshair);
-    el_add(game->world, bullet);
+    if (data->fire_timer == 0.0f && data->ammo > 0) {
+      Entity *bullet = bullet_create(player->position, data->crosshair);
+      el_add(game->world, bullet);
+
+      data->fire_timer = data->fire_cooldown;
+      data->ammo--;
+    }
   }
+
+  // Update firing timer
+  data->fire_timer = fmaxf(data->fire_timer - game->delta_time, 0.0f);
 }
 
 void player_draw(Entity *player, Game game) {

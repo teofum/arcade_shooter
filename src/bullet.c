@@ -6,6 +6,7 @@
 #include "config.h"
 #include "entity.h"
 #include "entity_list.h"
+#include "player.h"
 #include "types.h"
 
 static BulletData *bullet_init_data(Vector2 initial_velocity) {
@@ -38,6 +39,8 @@ void bullet_update(Entity *bullet, Game game) {
   // Destory the bullet once it gets too far from the player. For testing!
   f32 distance = Vector2Distance(bullet->position, game->player->position);
   if (distance >= 500) {
+    PlayerData *pdata = (PlayerData *)game->player->custom_data;
+    pdata->ammo++;
     el_destroy(game->world, bullet);
   }
 }
