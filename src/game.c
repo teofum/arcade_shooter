@@ -28,6 +28,9 @@ Game game_init() {
   el_add(game->world, right_wall);
   el_add(game->world, top_wall);
 
+  Entity *test_wall = wall_create((Rectangle){500, 200, 200, 200});
+  el_add(game->world, test_wall);
+
   // Init timers
   game->total_time = GetTime();
   game->delta_time = 0.0f;
