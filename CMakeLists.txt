@@ -36,6 +36,7 @@ add_executable(${PROJECT_NAME}
   src/player.h src/player.c
   src/bullet.h src/bullet.c
   src/wall.h src/wall.c
+  src/physics.h src/physics.c
   src/game.h src/game.c
 )
 target_link_libraries(${PROJECT_NAME} raylib)

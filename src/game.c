@@ -22,9 +22,11 @@ Game game_init() {
   Entity *left_wall = wall_create((Rectangle){0, 0, wall_width, WINDOW_HEIGHT});
   Entity *right_wall = wall_create(
       (Rectangle){WINDOW_WIDTH - wall_width, 0, wall_width, WINDOW_HEIGHT});
+  Entity *top_wall = wall_create((Rectangle){0, -100, WINDOW_WIDTH, 100});
 
   el_add(game->world, left_wall);
   el_add(game->world, right_wall);
+  el_add(game->world, top_wall);
 
   // Init timers
   game->total_time = GetTime();

@@ -16,7 +16,7 @@ static PlayerData *player_init_data() {
   data->direction = (Vector2){0, 0};
   data->crosshair = (Vector2){0, 0};
 
-  data->ammo = data->max_ammo = 5;
+  data->ammo = data->max_ammo = 50;
   data->fire_cooldown = 0.1f;
   data->fire_timer = 0.0f;
   data->firing = false;

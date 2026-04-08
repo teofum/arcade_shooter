@@ -1,3 +1,4 @@
+#include <math.h>
 #include <raylib.h>
 #include <raymath.h>
 #include <stdlib.h>
@@ -6,8 +7,9 @@
 #include "config.h"
 #include "entity.h"
 #include "entity_list.h"
+#include "physics.h"
 #include "player.h"
-#include "types.h"
+#include "wall.h"
 
 static BulletData *bullet_init_data(Vector2 initial_velocity) {
   BulletData *data = malloc(sizeof(BulletData));
@@ -35,11 +37,50 @@ Entity *bullet_create(Vector2 position, Vector2 target) {
 void bullet_update(Entity *bullet, Game game) {
   BulletData *data = (BulletData *)bullet->custom_data;
 
-  bullet->position = Vector2Add(bullet->position, data->velocity);
+  Vector2 delta_pos = Vector2Scale(data->velocity, game->delta_time);
+  Vector2 next_pos = Vector2Add(bullet->position, delta_pos);
 
-  // Destory the bullet once it gets too far from the player. For testing!
-  f32 distance = Vector2Distance(bullet->position, game->player->position);
-  if (distance >= 500) {
+  // Check collisions
+  Collision collision = {
+      .direction = COL_NONE,
+      .t = INFINITY,
+  };
+  EntityListIterator it = el_iter(game->world);
+  Entity *e;
+  while ((e = eli_next(&it))) {
+    if (e->type == ENT_WALL) {
+      WallData *wdata = (WallData *)e->custom_data;
+
+      Collision c = collide_particle_rect(bullet->position, next_pos,
+                                          data->size, wdata->bounds);
+      collision.direction |= c.direction;
+      collision.t = fminf(collision.t, c.t);
+    }
+  }
+
+  // If there was a collision change the trajectory
+  if (collision.direction != COL_NONE) {
+    // 1. Move in the original direction up to the point of collision
+    delta_pos = Vector2Scale(delta_pos, collision.t);
+    next_pos = Vector2Add(bullet->position, delta_pos);
+
+    // 2. Modify velocity
+    if (collision.direction & COL_X)
+      data->velocity.x *= -1;
+    if (collision.direction & COL_Y)
+      data->velocity.y *= -1;
+
+    // 3. Move the rest of the way
+    delta_pos =
+        Vector2Scale(data->velocity, game->delta_time * (1 - collision.t));
+    next_pos = Vector2Add(next_pos, delta_pos);
+  }
+
+  // Update position
+  bullet->position = next_pos;
+
+  // Destroy the bullet when it reaches the bottom of the screen
+  if (bullet->position.y >= WINDOW_HEIGHT) {
     PlayerData *pdata = (PlayerData *)game->player->custom_data;
     pdata->ammo++;
     el_destroy(game->world, bullet);
