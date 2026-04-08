@@ -9,12 +9,14 @@
 #include "entity_list.h"
 #include "physics.h"
 #include "player.h"
+#include "types.h"
+#include "utils.h"
 #include "wall.h"
 
 static BulletData *bullet_init_data(Vector2 initial_velocity) {
   BulletData *data = malloc(sizeof(BulletData));
   data->velocity = initial_velocity;
-  data->size = 5.0f;
+  data->size = 1.5f;
 
   return data;
 }
@@ -80,7 +82,7 @@ void bullet_update(Entity *bullet, Game game) {
   bullet->position = next_pos;
 
   // Destroy the bullet when it reaches the bottom of the screen
-  if (bullet->position.y >= WINDOW_HEIGHT) {
+  if (bullet->position.y >= 100) {
     PlayerData *pdata = (PlayerData *)game->player->custom_data;
     pdata->ammo++;
     el_destroy(game->world, bullet);
@@ -90,6 +92,9 @@ void bullet_update(Entity *bullet, Game game) {
 void bullet_draw(Entity *bullet, Game game) {
   BulletData *data = (BulletData *)bullet->custom_data;
 
-  // Draw player
-  DrawCircle(bullet->position.x, bullet->position.y, data->size, BLUE);
+  // Draw bullet
+  Vector2 screen_pos = game_to_screen(bullet->position);
+  f32 screen_size = game_to_screen_scale(data->size);
+
+  DrawCircle(screen_pos.x, screen_pos.y, screen_size, BLUE);
 }

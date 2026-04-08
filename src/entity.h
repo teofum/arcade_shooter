@@ -7,6 +7,7 @@ typedef enum {
   ENT_PLAYER,
   ENT_BULLET,
   ENT_WALL,
+  ENT_ENEMY,
 } EntityType;
 
 struct Entity;

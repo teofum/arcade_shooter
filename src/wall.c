@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "entity.h"
+#include "utils.h"
 #include "wall.h"
 
 static WallData *wall_init_data(Rectangle bounds) {
@@ -30,5 +31,5 @@ void wall_draw(Entity *wall, Game game) {
   WallData *data = (WallData *)wall->custom_data;
 
   // Draw player
-  DrawRectangleRec(data->bounds, GREEN);
+  DrawRectangleRec(game_to_screen_rect(data->bounds), GREEN);
 }

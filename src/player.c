@@ -9,14 +9,16 @@
 #include "entity_list.h"
 #include "physics.h"
 #include "player.h"
+#include "types.h"
+#include "utils.h"
 #include "wall.h"
 
-static Rectangle bottom_wall = {0, WINDOW_HEIGHT, WINDOW_WIDTH, 100};
+static Rectangle bottom_wall = {-FIELD_WIDTH / 2.0f, 100, FIELD_WIDTH, 100};
 
 static PlayerData *player_init_data() {
   PlayerData *data = malloc(sizeof(PlayerData));
 
-  data->size = 20.0f;
+  data->size = 5.0f;
 
   data->velocity = (Vector2){0, 0};
   data->direction = (Vector2){0, 0};
@@ -33,7 +35,7 @@ static PlayerData *player_init_data() {
 Entity *player_create() {
   Entity *player = ent_create(ENT_PLAYER);
 
-  player->position = (Vector2){WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f};
+  player->position = (Vector2){0, 0};
   player->custom_data = player_init_data();
   player->update = player_update;
   player->draw = player_draw;
@@ -115,17 +117,21 @@ void player_update(Entity *player, Game game) {
 void player_draw(Entity *player, Game game) {
   PlayerData *data = (PlayerData *)player->custom_data;
 
+  Vector2 screen_pos = game_to_screen(player->position);
+  Vector2 screen_crosshair = game_to_screen(data->crosshair);
+  f32 screen_size = game_to_screen_scale(data->size);
+
   // Draw player
-  DrawCircle(player->position.x, player->position.y, data->size, RED);
+  DrawCircle(screen_pos.x, screen_pos.y, screen_size, RED);
 
   // Draw targeting crosshairs
-  DrawRectangle(data->crosshair.x - 5, data->crosshair.y - 1, 11, 3, BLACK);
-  DrawRectangle(data->crosshair.x - 1, data->crosshair.y - 5, 3, 11, BLACK);
+  DrawRectangle(screen_crosshair.x - 5, screen_crosshair.y - 1, 11, 3, BLACK);
+  DrawRectangle(screen_crosshair.x - 1, screen_crosshair.y - 5, 3, 11, BLACK);
 
   // Draw debug aim line
-  Vector2 aim = Vector2Subtract(data->crosshair, player->position);
+  Vector2 aim = Vector2Subtract(screen_crosshair, screen_pos);
   aim = Vector2Scale(Vector2Normalize(aim), 40);
-  aim = Vector2Add(aim, player->position);
+  aim = Vector2Add(aim, screen_pos);
 
-  DrawLine(player->position.x, player->position.y, aim.x, aim.y, BLUE);
+  DrawLine(screen_pos.x, screen_pos.y, aim.x, aim.y, BLUE);
 }

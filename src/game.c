@@ -7,6 +7,7 @@
 #include "entity_list.h"
 #include "game.h"
 #include "player.h"
+#include "utils.h"
 #include "wall.h"
 
 Game game_init() {
@@ -18,11 +19,12 @@ Game game_init() {
   game->player = player_create();
   el_add(game->world, game->player);
 
-  f32 wall_width = (WINDOW_WIDTH - PLAYFIELD_WIDTH) / 2.0f;
-  Entity *left_wall = wall_create((Rectangle){0, 0, wall_width, WINDOW_HEIGHT});
-  Entity *right_wall = wall_create(
-      (Rectangle){WINDOW_WIDTH - wall_width, 0, wall_width, WINDOW_HEIGHT});
-  Entity *top_wall = wall_create((Rectangle){0, -100, WINDOW_WIDTH, 100});
+  Entity *left_wall =
+      wall_create((Rectangle){-1000 - FIELD_WIDTH / 2.0f, -100, 1000, 200});
+  Entity *right_wall =
+      wall_create((Rectangle){FIELD_WIDTH / 2.0f, -100, 1000, 200});
+  Entity *top_wall =
+      wall_create((Rectangle){-FIELD_WIDTH / 2.0f, -200, FIELD_WIDTH, 100});
 
   el_add(game->world, left_wall);
   el_add(game->world, right_wall);
@@ -52,7 +54,7 @@ void game_process_input(Game game) {
   pdata->direction = Vector2Normalize(v_target);
 
   // Aiming
-  pdata->crosshair = GetMousePosition();
+  pdata->crosshair = screen_to_game(GetMousePosition());
 
   // Fire!
   pdata->firing = IsKeyDown(KEY_SPACE);
