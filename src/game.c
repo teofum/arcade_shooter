@@ -81,7 +81,7 @@ void game_update(Game game) {
     }
   }
 
-  if ((float)rand() / INT_MAX < 0.005f) {
+  if ((float)rand() / INT_MAX < 0.002f) {
     // Spawn enemy
     Entity *enemy = enemy_create(rand() % FIELD_COLS, rand() % 3, 1, 1);
     el_add(game->world, enemy);

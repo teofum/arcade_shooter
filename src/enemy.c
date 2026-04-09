@@ -1,6 +1,8 @@
+#include <math.h>
 #include <raylib.h>
 #include <stdlib.h>
 
+#include "bullet.h"
 #include "config.h"
 #include "enemy.h"
 #include "entity.h"
@@ -47,23 +49,41 @@ void enemy_update(Entity *enemy, Game game) {
     return;
   }
 
-  // Move, pushing the player if it collides
-  f32 delta_y = game->delta_time * 50;
+  // Move, pushing the player and bullets if it collides
+  f32 delta_y = game->delta_time * 5;
+  enemy->position.y += delta_y;
 
   PlayerData *pdata = (PlayerData *)game->player->custom_data;
-  Vector2 ppos_1 = game->player->position;
-  Vector2 ppos_2 = game->player->position;
-  ppos_1.y += (delta_y + game->delta_time * PLAYER_SPEED);
+  Vector2 ppos = game->player->position;
 
-  Rectangle rect = {enemy->position.x, enemy->position.y, data->size.x,
-                    data->size.y};
-  Collision c = collide_particle_rect(ppos_1, ppos_2, pdata->size, rect);
+  f32 top = enemy->position.y - pdata->size;
+  f32 bottom = enemy->position.y + data->size.y + pdata->size;
+  f32 left = enemy->position.x - pdata->size;
+  f32 right = enemy->position.x + data->size.x + pdata->size;
 
-  if (c.direction != COL_NONE) {
-    game->player->position.y += (delta_y + game->delta_time * PLAYER_SPEED);
+  if (left < ppos.x && ppos.x < right && top < ppos.y && ppos.y < bottom) {
+    game->player->position.y = bottom;
   }
 
-  enemy->position.y += delta_y;
+  EntityListIterator it = el_iter(game->world);
+  Entity *e;
+  while ((e = eli_next(&it))) {
+    if (e->type == ENT_BULLET) {
+      BulletData *bdata = (BulletData *)e->custom_data;
+      Vector2 bpos = e->position;
+
+      f32 top = enemy->position.y - bdata->size;
+      f32 bottom = enemy->position.y + data->size.y + bdata->size;
+      f32 left = enemy->position.x - bdata->size;
+      f32 right = enemy->position.x + data->size.x + bdata->size;
+
+      if (left < bpos.x && bpos.x < right && top < bpos.y && bpos.y < bottom) {
+        data->health -= bdata->damage;
+        e->position.y = bottom;
+        bdata->velocity.y = fabsf(bdata->velocity.y);
+      }
+    }
+  }
 
   // Destroy self on reaching the bottom of the screen
   if (enemy->position.y > FIELD_HEIGHT / 2.0f - data->size.y * 2.0f) {
