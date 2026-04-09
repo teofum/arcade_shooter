@@ -36,6 +36,10 @@ Game game_init() {
   game->total_time = GetTime();
   game->delta_time = 0.0f;
 
+  game->enemy_spawn_timer = 0.0f;
+  game->enemy_spawn_p = 0.2f;
+  game->next_wave_size = 2;
+
   game->game_over = false;
 
   return game;
@@ -73,6 +77,7 @@ void game_update(Game game) {
   game->delta_time = now - game->total_time;
   game->total_time = now;
 
+  // Update entities
   EntityListIterator it = el_iter(game->world);
   Entity *e;
   while ((e = eli_next(&it))) {
@@ -81,10 +86,25 @@ void game_update(Game game) {
     }
   }
 
-  if ((float)rand() / INT_MAX < 0.002f) {
-    // Spawn enemy
-    Entity *enemy = enemy_create(rand() % FIELD_COLS, rand() % 3, 1, 1);
-    el_add(game->world, enemy);
+  // Spawn enemies
+  if (game->enemy_spawn_timer <= 0.0f) {
+    for (int i = 0; i < game->next_wave_size; i++) {
+      for (int j = 0; j < FIELD_COLS; j++) {
+        if ((float)rand() / INT_MAX < game->enemy_spawn_p) {
+          Entity *enemy = enemy_create(j, i, 1, 1);
+          el_add(game->world, enemy);
+        }
+      }
+    }
+
+    if (game->enemy_spawn_p < 0.9) {
+      game->enemy_spawn_p += 0.01;
+    }
+
+    game->next_wave_size = rand() % 3 + 1;
+    game->enemy_spawn_timer = ROW_TIME * game->next_wave_size;
+  } else {
+    game->enemy_spawn_timer -= game->delta_time;
   }
 }
 

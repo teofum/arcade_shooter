@@ -12,6 +12,10 @@ typedef struct Game {
   f32 total_time;
   f32 delta_time;
 
+  u32 next_wave_size;
+  f32 enemy_spawn_timer;
+  f32 enemy_spawn_p;
+
   bool game_over;
 } *Game;
 

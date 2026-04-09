@@ -7,11 +7,8 @@
 #include "enemy.h"
 #include "entity.h"
 #include "entity_list.h"
-#include "physics.h"
 #include "player.h"
 #include "utils.h"
-
-#define GRID_SIZE ((float)FIELD_WIDTH / FIELD_COLS)
 
 static EnemyData *enemy_init_data(Vector2 size) {
   EnemyData *data = malloc(sizeof(EnemyData));
@@ -50,7 +47,7 @@ void enemy_update(Entity *enemy, Game game) {
   }
 
   // Move, pushing the player and bullets if it collides
-  f32 delta_y = game->delta_time * 5;
+  f32 delta_y = game->delta_time * ENEMY_SPEED;
   enemy->position.y += delta_y;
 
   PlayerData *pdata = (PlayerData *)game->player->custom_data;
