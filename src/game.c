@@ -164,7 +164,32 @@ void game_draw(Game game) {
 
     ui_draw_game_ui(game);
 
-    if (game->state == GS_PAUSED) {
+    if (game->state == GS_LEVEL_UP) {
+      static char level_up_str[10];
+      PlayerData *pdata = (PlayerData *)game->player->custom_data;
+      sprintf(level_up_str, "%d -> %d", pdata->level - 1, pdata->level);
+
+      ui_begin_frame((Rectangle){0, 0, WINDOW_WIDTH, WINDOW_HEIGHT},
+                     (Color){0, 0, 0, 128});
+
+      ui_text("Level up!", 60, WHITE, (Vector2){0, -60}, CENTER, CENTER);
+      ui_text(level_up_str, 20, WHITE, (Vector2){0, -10}, CENTER, CENTER);
+
+      if (ui_button_ex("Get more ammo", 20, (Vector2){0, 20}, (Vector2){200, 0},
+                       CENTER, CENTER)) {
+        pdata->max_ammo += 1;
+        pdata->ammo += 1;
+        game->state = GS_RUNNING;
+      }
+      if (ui_button_ex("Get more health", 20, (Vector2){0, 60},
+                       (Vector2){200, 0}, CENTER, CENTER)) {
+        pdata->max_health += 20;
+        pdata->health += 20;
+        game->state = GS_RUNNING;
+      }
+
+      ui_end_frame();
+    } else if (game->state == GS_PAUSED) {
       ui_begin_frame((Rectangle){0, 0, WINDOW_WIDTH, WINDOW_HEIGHT},
                      (Color){0, 0, 0, 128});
 

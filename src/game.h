@@ -8,6 +8,7 @@
 typedef enum {
   GS_MAIN_MENU,
   GS_RUNNING,
+  GS_LEVEL_UP,
   GS_PAUSED,
   GS_GAME_OVER,
   GS_QUIT,

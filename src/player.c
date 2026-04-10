@@ -129,6 +129,8 @@ static void player_update(Entity *player, Game game) {
     data->level++;
     data->xp -= data->to_next_level;
     data->to_next_level *= 2;
+
+    game->state = GS_LEVEL_UP;
   }
 }
 
