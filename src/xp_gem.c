@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <raylib.h>
 #include <raymath.h>
 #include <stdlib.h>
@@ -7,13 +8,18 @@
 #include "entity_list.h"
 #include "game.h"
 #include "player.h"
+#include "types.h"
 #include "utils.h"
 #include "xp_gem.h"
 
 static XpGemData *xp_gem_init_data(u32 value) {
   XpGemData *data = malloc(sizeof(XpGemData));
   data->value = value;
-  data->velocity = (Vector2){0, 0};
+
+  f32 vx = (f32)rand() / INT_MAX * 2.0f - 1.0f;
+  f32 vy = (f32)rand() / INT_MAX * 2.0f - 1.0f;
+
+  data->velocity = Vector2Scale(Vector2Normalize((Vector2){vx, vy}), 1.0);
 
   return data;
 }

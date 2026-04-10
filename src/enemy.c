@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <math.h>
 #include <raylib.h>
 #include <raymath.h>
@@ -28,10 +29,12 @@ static void enemy_update(Entity *enemy, Game game) {
 
   // Die
   if (data->health <= 0) {
-    Vector2 gem_pos =
-        Vector2Add(enemy->position, Vector2Scale(data->size, 0.5f));
-    Entity *xp_gem = xp_gem_create(gem_pos, 1);
-    el_add(game->world, xp_gem);
+    do {
+      Vector2 gem_pos =
+          Vector2Add(enemy->position, Vector2Scale(data->size, 0.5f));
+      Entity *xp_gem = xp_gem_create(gem_pos, 1);
+      el_add(game->world, xp_gem);
+    } while ((f32)rand() / INT_MAX < 0.2);
 
     el_destroy(game->world, enemy);
     return;
