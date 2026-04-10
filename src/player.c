@@ -8,6 +8,7 @@
 #include "enemy.h"
 #include "entity.h"
 #include "entity_list.h"
+#include "game.h"
 #include "physics.h"
 #include "player.h"
 #include "types.h"
@@ -27,7 +28,7 @@ static PlayerData *player_init_data() {
 
   data->health = data->max_health = 100;
 
-  data->ammo = data->max_ammo = 10;
+  data->ammo = data->max_ammo = 5;
   data->fire_cooldown = 0.1f;
   data->fire_timer = 0.0f;
   data->firing = false;
@@ -35,18 +36,7 @@ static PlayerData *player_init_data() {
   return data;
 }
 
-Entity *player_create() {
-  Entity *player = ent_create(ENT_PLAYER);
-
-  player->position = (Vector2){0, 0};
-  player->custom_data = player_init_data();
-  player->update = player_update;
-  player->draw = player_draw;
-
-  return player;
-}
-
-void player_update(Entity *player, Game game) {
+static void player_update(Entity *player, Game game) {
   PlayerData *data = (PlayerData *)player->custom_data;
 
   // Die
@@ -131,7 +121,7 @@ void player_update(Entity *player, Game game) {
   data->fire_timer = fmaxf(data->fire_timer - game->delta_time, 0.0f);
 }
 
-void player_draw(Entity *player, Game game) {
+static void player_draw(Entity *player, Game game) {
   PlayerData *data = (PlayerData *)player->custom_data;
 
   Vector2 screen_pos = game_to_screen(player->position);
@@ -151,4 +141,15 @@ void player_draw(Entity *player, Game game) {
   aim = Vector2Add(aim, screen_pos);
 
   DrawLine(screen_pos.x, screen_pos.y, aim.x, aim.y, BLUE);
+}
+
+Entity *player_create() {
+  Entity *player = ent_create(ENT_PLAYER);
+
+  player->position = (Vector2){0, 0};
+  player->custom_data = player_init_data();
+  player->update = player_update;
+  player->draw = player_draw;
+
+  return player;
 }

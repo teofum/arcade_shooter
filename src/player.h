@@ -2,7 +2,6 @@
 #define PLAYER_H
 
 #include "entity.h"
-#include "game.h"
 #include "types.h"
 
 typedef struct PlayerData {
@@ -26,9 +25,5 @@ typedef struct PlayerData {
 } PlayerData;
 
 Entity *player_create();
-
-void player_update(Entity *player, Game game);
-
-void player_draw(Entity *player, Game game);
 
 #endif

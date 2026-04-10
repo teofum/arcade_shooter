@@ -6,7 +6,7 @@
 
 #define FIELD_HEIGHT 200
 #define FIELD_WIDTH 120
-#define FIELD_COLS 6
+#define FIELD_COLS 8
 #define GRID_SIZE ((float)FIELD_WIDTH / FIELD_COLS)
 
 #define TARGET_FPS 120

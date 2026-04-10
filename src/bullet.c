@@ -8,6 +8,7 @@
 #include "enemy.h"
 #include "entity.h"
 #include "entity_list.h"
+#include "game.h"
 #include "physics.h"
 #include "player.h"
 #include "types.h"
@@ -24,22 +25,7 @@ static BulletData *bullet_init_data(Vector2 initial_velocity) {
   return data;
 }
 
-Entity *bullet_create(Vector2 position, Vector2 target) {
-  Entity *bullet = ent_create(ENT_BULLET);
-
-  bullet->position = position;
-
-  Vector2 aim = Vector2Subtract(target, position);
-  Vector2 velocity = Vector2Scale(Vector2Normalize(aim), BULLET_SPEED);
-  bullet->custom_data = bullet_init_data(velocity);
-
-  bullet->update = bullet_update;
-  bullet->draw = bullet_draw;
-
-  return bullet;
-}
-
-void bullet_update(Entity *bullet, Game game) {
+static void bullet_update(Entity *bullet, Game game) {
   BulletData *data = (BulletData *)bullet->custom_data;
 
   Vector2 delta_pos = Vector2Scale(data->velocity, game->delta_time);
@@ -105,7 +91,7 @@ void bullet_update(Entity *bullet, Game game) {
   }
 }
 
-void bullet_draw(Entity *bullet, Game game) {
+static void bullet_draw(Entity *bullet, Game game) {
   BulletData *data = (BulletData *)bullet->custom_data;
 
   // Draw bullet
@@ -113,4 +99,19 @@ void bullet_draw(Entity *bullet, Game game) {
   f32 screen_size = game_to_screen_scale(data->size);
 
   DrawCircle(screen_pos.x, screen_pos.y, screen_size, BLUE);
+}
+
+Entity *bullet_create(Vector2 position, Vector2 target) {
+  Entity *bullet = ent_create(ENT_BULLET);
+
+  bullet->position = position;
+
+  Vector2 aim = Vector2Subtract(target, position);
+  Vector2 velocity = Vector2Scale(Vector2Normalize(aim), BULLET_SPEED);
+  bullet->custom_data = bullet_init_data(velocity);
+
+  bullet->update = bullet_update;
+  bullet->draw = bullet_draw;
+
+  return bullet;
 }

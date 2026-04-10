@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "entity.h"
+#include "game.h"
 #include "utils.h"
 #include "wall.h"
 
@@ -10,6 +11,17 @@ static WallData *wall_init_data(Rectangle bounds) {
   data->bounds = bounds;
 
   return data;
+}
+
+static void wall_update(Entity *wall, Game game) {
+  // Do nothing. It's a wall.
+}
+
+static void wall_draw(Entity *wall, Game game) {
+  WallData *data = (WallData *)wall->custom_data;
+
+  // Draw player
+  DrawRectangleRec(game_to_screen_rect(data->bounds), GREEN);
 }
 
 Entity *wall_create(Rectangle bounds) {
@@ -21,15 +33,4 @@ Entity *wall_create(Rectangle bounds) {
   wall->draw = wall_draw;
 
   return wall;
-}
-
-void wall_update(Entity *wall, Game game) {
-  // Do nothing. It's a wall.
-}
-
-void wall_draw(Entity *wall, Game game) {
-  WallData *data = (WallData *)wall->custom_data;
-
-  // Draw player
-  DrawRectangleRec(game_to_screen_rect(data->bounds), GREEN);
 }
