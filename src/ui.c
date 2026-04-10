@@ -179,7 +179,7 @@ void ui_draw_ammo_counter(PlayerData *pdata) {
     x += size * 2 + 5;
     if (i % 8 == 7) {
       x = x0;
-      y += size * 2 + 5;
+      y -= size * 2 + 5;
     }
   }
 }

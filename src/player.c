@@ -11,6 +11,7 @@
 #include "game.h"
 #include "physics.h"
 #include "player.h"
+#include "powerup.h"
 #include "types.h"
 #include "utils.h"
 #include "wall.h"
@@ -33,6 +34,11 @@ static PlayerData *player_init_data() {
   data->to_next_level = 5;
 
   data->ammo = data->max_ammo = 5;
+  data->special_bullet_count = 0;
+
+  data->active_powerup = POWER_NONE;
+  data->powerup_timer = 0.0f;
+
   data->fire_cooldown = 0.1f;
   data->fire_timer = 0.0f;
   data->firing = false;
@@ -50,7 +56,8 @@ static void player_update(Entity *player, Game game) {
   }
 
   // Update velocity
-  Vector2 target_velocity = Vector2Scale(data->direction, PLAYER_SPEED);
+  f32 speed = PLAYER_SPEED * (data->active_powerup == POWER_FAST ? 2 : 1);
+  Vector2 target_velocity = Vector2Scale(data->direction, speed);
   data->velocity = Vector2Lerp(data->velocity, target_velocity, PLAYER_ACCEL);
 
   Vector2 delta_pos = Vector2Scale(data->velocity, game->delta_time);
@@ -113,7 +120,9 @@ static void player_update(Entity *player, Game game) {
   // Spawn a bullet
   if (data->firing) {
     if (data->fire_timer == 0.0f && data->ammo > 0) {
-      Entity *bullet = bullet_create(player->position, data->crosshair);
+      Entity *bullet =
+          bullet_create(player->position, data->crosshair,
+                        data->active_powerup == POWER_DMG ? 20 : 10);
       el_add(game->world, bullet);
 
       data->fire_timer = data->fire_cooldown;
@@ -123,6 +132,15 @@ static void player_update(Entity *player, Game game) {
 
   // Update firing timer
   data->fire_timer = fmaxf(data->fire_timer - game->delta_time, 0.0f);
+
+  // Update powerup state
+  if (data->active_powerup != POWER_NONE) {
+    if (data->powerup_timer <= 0.0f) {
+      data->active_powerup = POWER_NONE;
+    } else {
+      data->powerup_timer -= game->delta_time;
+    }
+  }
 
   // Level up
   if (data->xp >= data->to_next_level) {

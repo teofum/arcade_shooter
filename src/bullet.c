@@ -16,12 +16,12 @@
 #include "utils.h"
 #include "wall.h"
 
-static BulletData *bullet_init_data(Vector2 initial_velocity) {
+static BulletData *bullet_init_data(Vector2 initial_velocity, i32 damage) {
   BulletData *data = malloc(sizeof(BulletData));
   data->velocity = initial_velocity;
   data->size = 1.5f;
 
-  data->damage = 10;
+  data->damage = damage;
 
   return data;
 }
@@ -61,10 +61,8 @@ static void bullet_update(Entity *bullet, Game game) {
       if (c.direction != COL_NONE) {
         edata->health -= data->damage;
 
-        Vector2 dmg_pos =
-            Vector2Add(e->position, Vector2Scale(edata->size, 0.5f));
         Entity *dmg_number =
-            dmg_number_create(dmg_pos, data->damage, DMG_NUMBER_SIZE);
+            dmg_number_create(bullet->position, data->damage, DMG_NUMBER_SIZE);
         el_add(game->world, dmg_number);
       }
     }
@@ -109,14 +107,14 @@ static void bullet_draw(Entity *bullet, Game game) {
   DrawCircle(screen_pos.x, screen_pos.y, screen_size, BLUE);
 }
 
-Entity *bullet_create(Vector2 position, Vector2 target) {
+Entity *bullet_create(Vector2 position, Vector2 target, i32 damage) {
   Entity *bullet = ent_create(ENT_BULLET);
 
   bullet->position = position;
 
   Vector2 aim = Vector2Subtract(target, position);
   Vector2 velocity = Vector2Scale(Vector2Normalize(aim), BULLET_SPEED);
-  bullet->custom_data = bullet_init_data(velocity);
+  bullet->custom_data = bullet_init_data(velocity, damage);
 
   bullet->update = bullet_update;
   bullet->draw = bullet_draw;

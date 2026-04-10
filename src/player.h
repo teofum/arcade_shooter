@@ -1,8 +1,17 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include "bullet.h"
+#include "config.h"
 #include "entity.h"
+#include "powerup.h"
 #include "types.h"
+
+typedef struct SpecialBulletSlot {
+  BulletType type;
+  u32 level;
+  bool fired;
+} SpecialBulletSlot;
 
 typedef struct PlayerData {
   f32 size;
@@ -15,6 +24,8 @@ typedef struct PlayerData {
 
   u32 max_ammo;
   u32 ammo;
+  u32 special_bullet_count;
+  SpecialBulletSlot special_bullets[MAX_SPECIAL_BULLETS];
 
   f32 fire_cooldown;
   f32 fire_timer;
@@ -22,6 +33,9 @@ typedef struct PlayerData {
   u32 level;
   u32 xp;
   u32 to_next_level;
+
+  PowerupType active_powerup;
+  f32 powerup_timer;
 
   // Input
   Vector2 direction;

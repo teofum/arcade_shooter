@@ -11,6 +11,7 @@
 #include "entity_list.h"
 #include "game.h"
 #include "player.h"
+#include "powerup.h"
 #include "utils.h"
 #include "xp_gem.h"
 
@@ -29,12 +30,17 @@ static void enemy_update(Entity *enemy, Game game) {
 
   // Die
   if (data->health <= 0) {
+    Vector2 gem_pos =
+        Vector2Add(enemy->position, Vector2Scale(data->size, 0.5f));
     do {
-      Vector2 gem_pos =
-          Vector2Add(enemy->position, Vector2Scale(data->size, 0.5f));
       Entity *xp_gem = xp_gem_create(gem_pos, 1);
       el_add(game->world, xp_gem);
     } while ((f32)rand() / INT_MAX < 0.2);
+
+    if ((f32)rand() / INT_MAX < POWERUP_SPAWN_PROB) {
+      Entity *powerup = powerup_create(gem_pos, rand() % 2);
+      el_add(game->world, powerup);
+    }
 
     el_destroy(game->world, enemy);
     return;

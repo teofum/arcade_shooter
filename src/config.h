@@ -30,4 +30,9 @@
 #define XP_MAGNET_RANGE 25.0f
 #define XP_MAGNET_POWER 10.0f
 
+#define MAX_SPECIAL_BULLETS 3
+
+#define POWERUP_DURATION 5.0f
+#define POWERUP_SPAWN_PROB 0.25f
+
 #endif

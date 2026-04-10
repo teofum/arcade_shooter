@@ -18,8 +18,9 @@ static XpGemData *xp_gem_init_data(u32 value) {
 
   f32 vx = (f32)rand() / INT_MAX * 2.0f - 1.0f;
   f32 vy = (f32)rand() / INT_MAX * 2.0f - 1.0f;
+  f32 speed = (f32)rand() / INT_MAX * 0.6f + 0.7f;
 
-  data->velocity = Vector2Scale(Vector2Normalize((Vector2){vx, vy}), 1.0);
+  data->velocity = Vector2Scale(Vector2Normalize((Vector2){vx, vy}), speed);
 
   return data;
 }
