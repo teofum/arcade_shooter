@@ -8,6 +8,7 @@ typedef enum {
   ENT_BULLET,
   ENT_WALL,
   ENT_ENEMY,
+  ENT_DMG_NUMBER,
 } EntityType;
 
 struct Entity;

@@ -5,6 +5,7 @@
 
 #include "bullet.h"
 #include "config.h"
+#include "dmg_number.h"
 #include "enemy.h"
 #include "entity.h"
 #include "entity_list.h"
@@ -56,8 +57,15 @@ static void bullet_update(Entity *bullet, Game game) {
       collision.direction |= c.direction;
       collision.t = fminf(collision.t, c.t);
 
+      // Damage enemy and spawn a dopamine inducing number
       if (c.direction != COL_NONE) {
         edata->health -= data->damage;
+
+        Vector2 dmg_pos =
+            Vector2Add(e->position, Vector2Scale(edata->size, 0.5f));
+        Entity *dmg_number =
+            dmg_number_create(dmg_pos, data->damage, DMG_NUMBER_SIZE);
+        el_add(game->world, dmg_number);
       }
     }
   }

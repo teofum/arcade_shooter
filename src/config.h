@@ -21,4 +21,9 @@
 // Time it takes an enemy to move one row, in seconds
 #define ROW_TIME (GRID_SIZE / ENEMY_SPEED)
 
+#define DMG_NUMBER_SIZE 20.0f
+#define DMG_NUMBER_TTL 0.5f
+#define DMG_NUMBER_SPEED 10.0f
+#define DMG_NUMBER_ACCEL (-DMG_NUMBER_SPEED / DMG_NUMBER_TTL)
+
 #endif
