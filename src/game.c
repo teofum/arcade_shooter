@@ -143,11 +143,11 @@ void game_draw(Game game) {
 
     ui_text("arcade shooter", 60, BLUE, (Vector2){0, -60}, CENTER, CENTER);
 
-    if (ui_button_ex("Start", 20, (Vector2){0, 20}, (Vector2){0, 0}, CENTER,
+    if (ui_button_ex("Start", 20, (Vector2){0, 20}, (Vector2){200, 0}, CENTER,
                      CENTER)) {
       game->state = GS_RUNNING;
     }
-    if (ui_button_ex("Quit", 20, (Vector2){0, 60}, (Vector2){0, 0}, CENTER,
+    if (ui_button_ex("Quit", 20, (Vector2){0, 60}, (Vector2){200, 0}, CENTER,
                      CENTER)) {
       game->state = GS_QUIT;
     }
@@ -170,15 +170,15 @@ void game_draw(Game game) {
 
       ui_text("Paused", 60, WHITE, (Vector2){0, -60}, CENTER, CENTER);
 
-      if (ui_button_ex("Resume", 20, (Vector2){0, 20}, (Vector2){0, 0}, CENTER,
-                       CENTER)) {
+      if (ui_button_ex("Resume", 20, (Vector2){0, 20}, (Vector2){200, 0},
+                       CENTER, CENTER)) {
         game->state = GS_RUNNING;
       }
-      if (ui_button_ex("Main menu", 20, (Vector2){0, 60}, (Vector2){0, 0},
+      if (ui_button_ex("Main menu", 20, (Vector2){0, 60}, (Vector2){200, 0},
                        CENTER, CENTER)) {
         game_reset(game);
       }
-      if (ui_button_ex("Quit", 20, (Vector2){0, 100}, (Vector2){0, 0}, CENTER,
+      if (ui_button_ex("Quit", 20, (Vector2){0, 100}, (Vector2){200, 0}, CENTER,
                        CENTER)) {
         game->state = GS_QUIT;
       }
@@ -190,11 +190,11 @@ void game_draw(Game game) {
 
       ui_text("You Died", 60, WHITE, (Vector2){0, -60}, CENTER, CENTER);
 
-      if (ui_button_ex("Main menu", 20, (Vector2){0, 20}, (Vector2){0, 0},
+      if (ui_button_ex("Main menu", 20, (Vector2){0, 20}, (Vector2){200, 0},
                        CENTER, CENTER)) {
         game_reset(game);
       }
-      if (ui_button_ex("Quit", 20, (Vector2){0, 60}, (Vector2){0, 0}, CENTER,
+      if (ui_button_ex("Quit", 20, (Vector2){0, 60}, (Vector2){200, 0}, CENTER,
                        CENTER)) {
         game->state = GS_QUIT;
       }
