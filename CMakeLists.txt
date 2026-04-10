@@ -41,6 +41,7 @@ add_executable(${PROJECT_NAME}
   src/xp_gem.h src/xp_gem.c
   src/physics.h src/physics.c
   src/game.h src/game.c
+  src/ui.h src/ui.c
   src/utils.h src/utils.c
 )
 target_link_libraries(${PROJECT_NAME} raylib)

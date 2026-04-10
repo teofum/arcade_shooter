@@ -5,6 +5,13 @@
 #include "entity_list.h"
 #include "types.h"
 
+typedef enum {
+  GS_RUNNING,
+  GS_PAUSED,
+  GS_GAME_OVER,
+  GS_QUIT,
+} GameState;
+
 typedef struct Game {
   EntityList world;
   Entity *player;
@@ -16,7 +23,7 @@ typedef struct Game {
   f32 enemy_spawn_timer;
   f32 enemy_spawn_p;
 
-  bool game_over;
+  GameState state;
 } *Game;
 
 Game game_init();

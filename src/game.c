@@ -1,5 +1,4 @@
 #include <limits.h>
-#include <math.h>
 #include <raylib.h>
 #include <raymath.h>
 #include <stdio.h>
@@ -11,6 +10,7 @@
 #include "entity_list.h"
 #include "game.h"
 #include "player.h"
+#include "ui.h"
 #include "utils.h"
 #include "wall.h"
 
@@ -42,13 +42,24 @@ Game game_init() {
   game->enemy_spawn_p = 0.2f;
   game->next_wave_size = 2;
 
-  game->game_over = false;
+  game->state = GS_RUNNING;
 
   return game;
 }
 
 void game_process_input(Game game) {
-  if (game->game_over)
+  if (game->state == GS_GAME_OVER)
+    return;
+
+  if (IsKeyPressed(KEY_ESCAPE)) {
+    if (game->state == GS_PAUSED) {
+      game->state = GS_RUNNING;
+    } else {
+      game->state = GS_PAUSED;
+    }
+  }
+
+  if (game->state == GS_PAUSED)
     return;
 
   // Player movement
@@ -78,6 +89,9 @@ void game_update(Game game) {
   f32 now = GetTime();
   game->delta_time = now - game->total_time;
   game->total_time = now;
+
+  if (game->state == GS_PAUSED)
+    return;
 
   // Update entities
   EntityListIterator it = el_iter(game->world);
@@ -110,68 +124,6 @@ void game_update(Game game) {
   }
 }
 
-// UI TODO move these to some other file?
-static void ui_draw_health_bar(PlayerData *pdata) {
-  static char health_text[10];
-
-  f32 w = 200;
-  f32 h = 20;
-  f32 x = 20;
-  f32 y = WINDOW_HEIGHT - 40 - h;
-
-  f32 relative_health = (f32)pdata->health / pdata->max_health;
-
-  DrawRectangle(x, y, w, h, DARKGRAY);
-  DrawRectangle(x, y, relative_health * w, h, RED);
-  DrawRectangleLines(x, y, w, h, BLACK);
-
-  sprintf(health_text, "%3d/%3d", pdata->health, pdata->max_health);
-  DrawText(health_text, x + 5, y, 20, WHITE);
-}
-
-static void ui_draw_xp_bar(PlayerData *pdata) {
-  static char level_text[10];
-
-  f32 w = 200;
-  f32 h = 10;
-  f32 x = 20;
-  f32 y = WINDOW_HEIGHT - 20 - h;
-
-  f32 relative_xp = (f32)pdata->xp / pdata->to_next_level;
-
-  DrawRectangle(x, y, w, h, DARKGRAY);
-  DrawRectangle(x, y, relative_xp * w, h, MAGENTA);
-  DrawRectangleLines(x, y, w, h, BLACK);
-
-  sprintf(level_text, "Lv. %d", pdata->level);
-  DrawText(level_text, x + 5, y, 10, WHITE);
-}
-
-static void ui_draw_ammo_counter(PlayerData *pdata) {
-  f32 size = 5;
-  f32 x0 = 20 + size;
-  f32 x = x0;
-  f32 y = WINDOW_HEIGHT - 70 - size;
-
-  for (i32 i = 0; i < pdata->max_ammo; i++) {
-    DrawCircle(x, y, size, i < pdata->ammo ? BLUE : DARKGRAY);
-
-    x += size * 2 + 5;
-    if (i % 8 == 7) {
-      x = x0;
-      y += size * 2 + 5;
-    }
-  }
-}
-
-static void ui_draw_game_ui(Game game) {
-  PlayerData *pdata = (PlayerData *)game->player->custom_data;
-
-  ui_draw_health_bar(pdata);
-  ui_draw_xp_bar(pdata);
-  ui_draw_ammo_counter(pdata);
-}
-
 void game_draw(Game game) {
   BeginDrawing();
   ClearBackground(WHITE);
@@ -186,9 +138,30 @@ void game_draw(Game game) {
 
   ui_draw_game_ui(game);
 
-  if (game->game_over) {
+  if (game->state == GS_PAUSED) {
+    ui_begin_frame((Rectangle){0, 0, WINDOW_WIDTH, WINDOW_HEIGHT},
+                   (Color){0, 0, 0, 128});
+
+    ui_text("Paused", 60, WHITE, (Vector2){0, -60}, CENTER, CENTER);
+
+    if (ui_button_ex("Resume", 20, (Vector2){0, 20}, (Vector2){0, 0}, CENTER,
+                     CENTER)) {
+      game->state = GS_RUNNING;
+    }
+    if (ui_button_ex("Quit", 20, (Vector2){0, 60}, (Vector2){0, 0}, CENTER,
+                     CENTER)) {
+      game->state = GS_QUIT;
+    }
+
+    ui_end_frame();
+  }
+
+  if (game->state == GS_GAME_OVER) {
     DrawText("you died", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 60, BLACK);
   }
+
+  // TODO better mouse cursor
+  DrawCircleV(GetMousePosition(), 5, BLACK);
 
   EndDrawing();
 }

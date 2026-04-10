@@ -45,7 +45,7 @@ static void player_update(Entity *player, Game game) {
 
   // Die
   if (data->health <= 0) {
-    game->game_over = true;
+    game->state = GS_GAME_OVER;
     return;
   }
 

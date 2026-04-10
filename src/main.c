@@ -13,7 +13,7 @@ int main() {
   init();
 
   Game game = game_init();
-  while (!WindowShouldClose()) {
+  while (!WindowShouldClose() && game->state != GS_QUIT) {
     game_process_input(game);
     game_update(game);
     game_draw(game);
@@ -29,6 +29,7 @@ void init() {
   SetTargetFPS(TARGET_FPS);
 
   HideCursor();
+  SetExitKey(0); // Stop "esc" key from immediately quitting the game
 }
 
 void cleanup() { CloseWindow(); }
