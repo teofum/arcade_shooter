@@ -39,7 +39,7 @@ static void dmg_number_draw(Entity *dmg_number, Game game) {
   f32 w = MeasureText(data->string, data->size);
   f32 h = data->size;
   DrawText(data->string, game_to_screen_x(dmg_number->position.x) - w / 2,
-           game_to_screen_y(dmg_number->position.y) - h / 2, data->size, RED);
+           game_to_screen_y(dmg_number->position.y) - h / 2, data->size, BLACK);
 }
 
 Entity *dmg_number_create(Vector2 position, i32 dmg, f32 size) {

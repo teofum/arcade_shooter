@@ -1,4 +1,5 @@
 #include <limits.h>
+#include <math.h>
 #include <raylib.h>
 #include <raymath.h>
 #include <stdlib.h>
@@ -108,6 +109,44 @@ void game_update(Game game) {
   }
 }
 
+// UI TODO move these to some other file?
+static void ui_draw_health_bar(PlayerData *pdata) {
+  f32 w = fminf(pdata->max_health, 400);
+  f32 h = 20;
+  f32 x = 20;
+  f32 y = WINDOW_HEIGHT - 20 - h;
+
+  f32 relative_health = (f32)pdata->health / pdata->max_health;
+
+  DrawRectangle(x, y, w, h, DARKGRAY);
+  DrawRectangle(x, y, relative_health * w, h, RED);
+  DrawRectangleLines(x, y, w, h, BLACK);
+}
+
+static void ui_draw_ammo_counter(PlayerData *pdata) {
+  f32 size = 5;
+  f32 x0 = 20 + size;
+  f32 x = x0;
+  f32 y = WINDOW_HEIGHT - 50 - size;
+
+  for (i32 i = 0; i < pdata->max_ammo; i++) {
+    DrawCircle(x, y, size, i < pdata->ammo ? BLUE : DARKGRAY);
+
+    x += size * 2 + 5;
+    if (i % 8 == 7) {
+      x = x0;
+      y += size * 2 + 5;
+    }
+  }
+}
+
+static void ui_draw_game_ui(Game game) {
+  PlayerData *pdata = (PlayerData *)game->player->custom_data;
+
+  ui_draw_health_bar(pdata);
+  ui_draw_ammo_counter(pdata);
+}
+
 void game_draw(Game game) {
   BeginDrawing();
   ClearBackground(WHITE);
@@ -120,11 +159,7 @@ void game_draw(Game game) {
     }
   }
 
-  // Health bar (TODO: actual ui)
-  PlayerData *pdata = (PlayerData *)game->player->custom_data;
-  DrawRectangle(10, 10, pdata->max_health, 20, BLACK);
-  DrawRectangle(10, 10, pdata->health, 20, BLUE);
-  DrawRectangleLines(10, 10, pdata->max_health, 20, BLACK);
+  ui_draw_game_ui(game);
 
   if (game->game_over) {
     DrawText("you died", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 60, BLACK);
