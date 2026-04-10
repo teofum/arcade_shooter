@@ -1,5 +1,6 @@
 #include <math.h>
 #include <raylib.h>
+#include <raymath.h>
 #include <stdlib.h>
 
 #include "bullet.h"
@@ -10,6 +11,7 @@
 #include "game.h"
 #include "player.h"
 #include "utils.h"
+#include "xp_gem.h"
 
 static EnemyData *enemy_init_data(Vector2 size) {
   EnemyData *data = malloc(sizeof(EnemyData));
@@ -26,6 +28,11 @@ static void enemy_update(Entity *enemy, Game game) {
 
   // Die
   if (data->health <= 0) {
+    Vector2 gem_pos =
+        Vector2Add(enemy->position, Vector2Scale(data->size, 0.5f));
+    Entity *xp_gem = xp_gem_create(gem_pos, 1);
+    el_add(game->world, xp_gem);
+
     el_destroy(game->world, enemy);
     return;
   }

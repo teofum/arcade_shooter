@@ -28,6 +28,10 @@ static PlayerData *player_init_data() {
 
   data->health = data->max_health = 100;
 
+  data->level = 1;
+  data->xp = 0;
+  data->to_next_level = 5;
+
   data->ammo = data->max_ammo = 5;
   data->fire_cooldown = 0.1f;
   data->fire_timer = 0.0f;
@@ -119,6 +123,13 @@ static void player_update(Entity *player, Game game) {
 
   // Update firing timer
   data->fire_timer = fmaxf(data->fire_timer - game->delta_time, 0.0f);
+
+  // Level up
+  if (data->xp >= data->to_next_level) {
+    data->level++;
+    data->xp -= data->to_next_level;
+    data->to_next_level *= 2;
+  }
 }
 
 static void player_draw(Entity *player, Game game) {

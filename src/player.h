@@ -19,6 +19,10 @@ typedef struct PlayerData {
   f32 fire_cooldown;
   f32 fire_timer;
 
+  u32 level;
+  u32 xp;
+  u32 to_next_level;
+
   // Input
   Vector2 direction;
   bool firing;

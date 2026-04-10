@@ -2,6 +2,7 @@
 #include <math.h>
 #include <raylib.h>
 #include <raymath.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "config.h"
@@ -111,23 +112,46 @@ void game_update(Game game) {
 
 // UI TODO move these to some other file?
 static void ui_draw_health_bar(PlayerData *pdata) {
-  f32 w = fminf(pdata->max_health, 400);
+  static char health_text[10];
+
+  f32 w = 200;
   f32 h = 20;
   f32 x = 20;
-  f32 y = WINDOW_HEIGHT - 20 - h;
+  f32 y = WINDOW_HEIGHT - 40 - h;
 
   f32 relative_health = (f32)pdata->health / pdata->max_health;
 
   DrawRectangle(x, y, w, h, DARKGRAY);
   DrawRectangle(x, y, relative_health * w, h, RED);
   DrawRectangleLines(x, y, w, h, BLACK);
+
+  sprintf(health_text, "%3d/%3d", pdata->health, pdata->max_health);
+  DrawText(health_text, x + 5, y, 20, WHITE);
+}
+
+static void ui_draw_xp_bar(PlayerData *pdata) {
+  static char level_text[10];
+
+  f32 w = 200;
+  f32 h = 10;
+  f32 x = 20;
+  f32 y = WINDOW_HEIGHT - 20 - h;
+
+  f32 relative_xp = (f32)pdata->xp / pdata->to_next_level;
+
+  DrawRectangle(x, y, w, h, DARKGRAY);
+  DrawRectangle(x, y, relative_xp * w, h, MAGENTA);
+  DrawRectangleLines(x, y, w, h, BLACK);
+
+  sprintf(level_text, "Lv. %d", pdata->level);
+  DrawText(level_text, x + 5, y, 10, WHITE);
 }
 
 static void ui_draw_ammo_counter(PlayerData *pdata) {
   f32 size = 5;
   f32 x0 = 20 + size;
   f32 x = x0;
-  f32 y = WINDOW_HEIGHT - 50 - size;
+  f32 y = WINDOW_HEIGHT - 70 - size;
 
   for (i32 i = 0; i < pdata->max_ammo; i++) {
     DrawCircle(x, y, size, i < pdata->ammo ? BLUE : DARKGRAY);
@@ -144,6 +168,7 @@ static void ui_draw_game_ui(Game game) {
   PlayerData *pdata = (PlayerData *)game->player->custom_data;
 
   ui_draw_health_bar(pdata);
+  ui_draw_xp_bar(pdata);
   ui_draw_ammo_counter(pdata);
 }
 

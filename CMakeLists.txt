@@ -38,6 +38,7 @@ add_executable(${PROJECT_NAME}
   src/wall.h src/wall.c
   src/enemy.h src/enemy.c
   src/dmg_number.h src/dmg_number.c
+  src/xp_gem.h src/xp_gem.c
   src/physics.h src/physics.c
   src/game.h src/game.c
   src/utils.h src/utils.c
