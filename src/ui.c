@@ -111,7 +111,7 @@ bool ui_button_ex(const char *text, f32 font_size, Vector2 position,
   Rectangle rect = ui_align_v(position, size, align_x, align_y);
 
   bool hovered = CheckCollisionPointRec(GetMousePosition(), rect);
-  bool clicked = hovered && IsMouseButtonDown(MOUSE_LEFT_BUTTON);
+  bool clicked = hovered && IsMouseButtonDown(MOUSE_BUTTON_LEFT);
 
   Color color = ColorLerp(WHITE, BLUE, clicked ? 0.4 : hovered ? 0.2 : 0);
   ui_begin_frame_ex(rect, color, BLACK,
@@ -120,7 +120,7 @@ bool ui_button_ex(const char *text, f32 font_size, Vector2 position,
   DrawText(text, text_rect.x, text_rect.y, font_size, BLACK);
   ui_end_frame();
 
-  return clicked;
+  return hovered && IsMouseButtonReleased(MOUSE_BUTTON_LEFT);
 }
 
 void ui_text(const char *text, f32 font_size, Color color, Vector2 position,

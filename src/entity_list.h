@@ -17,4 +17,6 @@ EntityListIterator el_iter(EntityList el);
 
 Entity *eli_next(EntityListIterator *eli);
 
+void el_free(EntityList el);
+
 #endif

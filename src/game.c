@@ -16,6 +16,18 @@
 
 Game game_init() {
   Game game = malloc(sizeof(struct Game));
+  game->world = NULL;
+
+  game_reset(game);
+
+  return game;
+}
+
+void game_reset(Game game) {
+  // Destroy old world if it exists
+  if (game->world) {
+    el_free(game->world);
+  }
 
   // Create world
   game->world = el_create();
@@ -42,9 +54,7 @@ Game game_init() {
   game->enemy_spawn_p = 0.2f;
   game->next_wave_size = 2;
 
-  game->state = GS_RUNNING;
-
-  return game;
+  game->state = GS_MAIN_MENU;
 }
 
 void game_process_input(Game game) {
@@ -59,7 +69,7 @@ void game_process_input(Game game) {
     }
   }
 
-  if (game->state == GS_PAUSED)
+  if (game->state != GS_RUNNING)
     return;
 
   // Player movement
@@ -90,7 +100,7 @@ void game_update(Game game) {
   game->delta_time = now - game->total_time;
   game->total_time = now;
 
-  if (game->state == GS_PAUSED)
+  if (game->state != GS_RUNNING)
     return;
 
   // Update entities
@@ -128,23 +138,12 @@ void game_draw(Game game) {
   BeginDrawing();
   ClearBackground(WHITE);
 
-  EntityListIterator it = el_iter(game->world);
-  Entity *e;
-  while ((e = eli_next(&it))) {
-    if (e->draw != NULL) {
-      e->draw(e, game);
-    }
-  }
+  if (game->state == GS_MAIN_MENU) {
+    ui_begin_frame((Rectangle){0, 0, WINDOW_WIDTH, WINDOW_HEIGHT}, WHITE);
 
-  ui_draw_game_ui(game);
+    ui_text("arcade shooter", 60, BLUE, (Vector2){0, -60}, CENTER, CENTER);
 
-  if (game->state == GS_PAUSED) {
-    ui_begin_frame((Rectangle){0, 0, WINDOW_WIDTH, WINDOW_HEIGHT},
-                   (Color){0, 0, 0, 128});
-
-    ui_text("Paused", 60, WHITE, (Vector2){0, -60}, CENTER, CENTER);
-
-    if (ui_button_ex("Resume", 20, (Vector2){0, 20}, (Vector2){0, 0}, CENTER,
+    if (ui_button_ex("Start", 20, (Vector2){0, 20}, (Vector2){0, 0}, CENTER,
                      CENTER)) {
       game->state = GS_RUNNING;
     }
@@ -154,14 +153,63 @@ void game_draw(Game game) {
     }
 
     ui_end_frame();
-  }
+  } else {
+    EntityListIterator it = el_iter(game->world);
+    Entity *e;
+    while ((e = eli_next(&it))) {
+      if (e->draw != NULL) {
+        e->draw(e, game);
+      }
+    }
 
-  if (game->state == GS_GAME_OVER) {
-    DrawText("you died", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 60, BLACK);
+    ui_draw_game_ui(game);
+
+    if (game->state == GS_PAUSED) {
+      ui_begin_frame((Rectangle){0, 0, WINDOW_WIDTH, WINDOW_HEIGHT},
+                     (Color){0, 0, 0, 128});
+
+      ui_text("Paused", 60, WHITE, (Vector2){0, -60}, CENTER, CENTER);
+
+      if (ui_button_ex("Resume", 20, (Vector2){0, 20}, (Vector2){0, 0}, CENTER,
+                       CENTER)) {
+        game->state = GS_RUNNING;
+      }
+      if (ui_button_ex("Main menu", 20, (Vector2){0, 60}, (Vector2){0, 0},
+                       CENTER, CENTER)) {
+        game_reset(game);
+      }
+      if (ui_button_ex("Quit", 20, (Vector2){0, 100}, (Vector2){0, 0}, CENTER,
+                       CENTER)) {
+        game->state = GS_QUIT;
+      }
+
+      ui_end_frame();
+    } else if (game->state == GS_GAME_OVER) {
+      ui_begin_frame((Rectangle){0, 0, WINDOW_WIDTH, WINDOW_HEIGHT},
+                     (Color){0, 0, 0, 128});
+
+      ui_text("You Died", 60, WHITE, (Vector2){0, -60}, CENTER, CENTER);
+
+      if (ui_button_ex("Main menu", 20, (Vector2){0, 20}, (Vector2){0, 0},
+                       CENTER, CENTER)) {
+        game_reset(game);
+      }
+      if (ui_button_ex("Quit", 20, (Vector2){0, 60}, (Vector2){0, 0}, CENTER,
+                       CENTER)) {
+        game->state = GS_QUIT;
+      }
+
+      ui_end_frame();
+    }
   }
 
   // TODO better mouse cursor
   DrawCircleV(GetMousePosition(), 5, BLACK);
 
   EndDrawing();
+}
+
+void game_end(Game game) {
+  el_free(game->world);
+  free(game);
 }

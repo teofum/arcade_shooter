@@ -18,6 +18,7 @@ int main() {
     game_update(game);
     game_draw(game);
   }
+  game_end(game);
 
   cleanup();
 

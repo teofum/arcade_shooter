@@ -79,3 +79,15 @@ Entity *eli_next(EntityListIterator *eli) {
 
   return entity;
 }
+
+void el_free(EntityList el) {
+  while (el->first) {
+    EntityListEntry next = el->first->next;
+    free(el->first->entity->custom_data);
+    free(el->first->entity);
+    free(el->first);
+    el->first = next;
+  }
+
+  free(el);
+}

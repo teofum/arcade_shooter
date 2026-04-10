@@ -6,6 +6,7 @@
 #include "types.h"
 
 typedef enum {
+  GS_MAIN_MENU,
   GS_RUNNING,
   GS_PAUSED,
   GS_GAME_OVER,
@@ -28,10 +29,14 @@ typedef struct Game {
 
 Game game_init();
 
+void game_reset(Game game);
+
 void game_process_input(Game game);
 
 void game_update(Game game);
 
 void game_draw(Game game);
+
+void game_end(Game game);
 
 #endif
