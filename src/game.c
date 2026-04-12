@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "bullet.h"
 #include "config.h"
 #include "enemy.h"
 #include "entity.h"
@@ -185,6 +186,19 @@ void game_draw(Game game) {
                        (Vector2){200, 0}, CENTER, CENTER)) {
         pdata->max_health += 20;
         pdata->health += 20;
+        game->state = GS_RUNNING;
+      }
+      if (pdata->special_bullet_count < MAX_SPECIAL_BULLETS &&
+          ui_button_ex("Get special ball", 20, (Vector2){0, 100},
+                       (Vector2){200, 0}, CENTER, CENTER)) {
+        SpecialBulletSlot *bullet =
+            &pdata->special_bullets[pdata->special_bullet_count];
+
+        bullet->fired = false;
+        bullet->level = 1;
+        bullet->type = BULLET_SHRAPNEL;
+        pdata->special_bullet_count++;
+
         game->state = GS_RUNNING;
       }
 

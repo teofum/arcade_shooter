@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <math.h>
 #include <raylib.h>
 #include <raymath.h>
@@ -16,12 +17,16 @@
 #include "utils.h"
 #include "wall.h"
 
-static BulletData *bullet_init_data(Vector2 initial_velocity, i32 damage) {
+static BulletData *bullet_init_data(Vector2 initial_velocity, BulletType type,
+                                    u32 level, i32 damage, u32 special_idx) {
   BulletData *data = malloc(sizeof(BulletData));
   data->velocity = initial_velocity;
-  data->size = 1.5f;
+  data->size = type > BULLET_NORMAL ? 2.5f : 1.5f;
 
+  data->type = type;
+  data->level = level;
   data->damage = damage;
+  data->special_idx = special_idx;
 
   return data;
 }
@@ -64,6 +69,26 @@ static void bullet_update(Entity *bullet, Game game) {
         Entity *dmg_number =
             dmg_number_create(bullet->position, data->damage, DMG_NUMBER_SIZE);
         el_add(game->world, dmg_number);
+
+        if (data->type == BULLET_SHRAPNEL) {
+          for (u32 i = 0; i < data->level + 2; i++) {
+            f32 vx = (f32)rand() / INT_MAX * 2.0f - 1.0f;
+            f32 vy = (f32)rand() / INT_MAX * 2.0f - 1.0f;
+
+            Vector2 direction = Vector2Normalize((Vector2){vx, vy});
+            Vector2 target = Vector2Add(bullet->position, direction);
+
+            Entity *new_bullet = bullet_create(
+                bullet->position, target, BULLET_SECONDARY, 1, data->damage, 0);
+            el_add(game->world, new_bullet);
+          }
+
+          PlayerData *pdata = (PlayerData *)game->player->custom_data;
+          pdata->special_bullets[data->special_idx].fired = false;
+          pdata->special_bullets[data->special_idx].cooldown = 3.0f;
+          el_destroy(game->world, bullet);
+          return;
+        }
       }
     }
   }
@@ -92,7 +117,13 @@ static void bullet_update(Entity *bullet, Game game) {
   // Destroy the bullet when it reaches the bottom of the screen
   if (bullet->position.y >= 100) {
     PlayerData *pdata = (PlayerData *)game->player->custom_data;
-    pdata->ammo++;
+
+    if (data->type == BULLET_NORMAL) {
+      pdata->ammo++;
+    } else if (data->type != BULLET_SECONDARY) {
+      pdata->special_bullets[data->special_idx].fired = false;
+    }
+
     el_destroy(game->world, bullet);
   }
 }
@@ -107,14 +138,16 @@ static void bullet_draw(Entity *bullet, Game game) {
   DrawCircle(screen_pos.x, screen_pos.y, screen_size, BLUE);
 }
 
-Entity *bullet_create(Vector2 position, Vector2 target, i32 damage) {
+Entity *bullet_create(Vector2 position, Vector2 target, BulletType type,
+                      u32 level, i32 damage, u32 special_idx) {
   Entity *bullet = ent_create(ENT_BULLET);
 
   bullet->position = position;
 
   Vector2 aim = Vector2Subtract(target, position);
   Vector2 velocity = Vector2Scale(Vector2Normalize(aim), BULLET_SPEED);
-  bullet->custom_data = bullet_init_data(velocity, damage);
+  bullet->custom_data =
+      bullet_init_data(velocity, type, level, damage, special_idx);
 
   bullet->update = bullet_update;
   bullet->draw = bullet_draw;

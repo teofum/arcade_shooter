@@ -33,6 +33,6 @@
 #define MAX_SPECIAL_BULLETS 3
 
 #define POWERUP_DURATION 5.0f
-#define POWERUP_SPAWN_PROB 0.25f
+#define POWERUP_SPAWN_PROB 0.05f
 
 #endif

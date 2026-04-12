@@ -11,6 +11,7 @@ typedef struct SpecialBulletSlot {
   BulletType type;
   u32 level;
   bool fired;
+  f32 cooldown;
 } SpecialBulletSlot;
 
 typedef struct PlayerData {

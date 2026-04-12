@@ -14,15 +14,20 @@ typedef enum {
   BULLET_SHRAPNEL,  // spam
   BULLET_LASER,     // firewall
   BULLET_HEALING,   // ???
+  BULLET_SECONDARY = -1,
 } BulletType;
 
 typedef struct BulletData {
   Vector2 velocity;
   f32 size;
 
+  BulletType type;
+  u32 level;
   i32 damage;
+  u32 special_idx;
 } BulletData;
 
-Entity *bullet_create(Vector2 position, Vector2 target, i32 damage);
+Entity *bullet_create(Vector2 position, Vector2 target, BulletType type,
+                      u32 level, i32 damage, u32 special_idx);
 
 #endif

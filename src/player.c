@@ -119,19 +119,48 @@ static void player_update(Entity *player, Game game) {
 
   // Spawn a bullet
   if (data->firing) {
-    if (data->fire_timer == 0.0f && data->ammo > 0) {
-      Entity *bullet =
-          bullet_create(player->position, data->crosshair,
-                        data->active_powerup == POWER_DMG ? 20 : 10);
-      el_add(game->world, bullet);
+    if (data->fire_timer == 0.0f) {
+      Entity *bullet = NULL;
 
-      data->fire_timer = data->fire_cooldown;
-      data->ammo--;
+      i32 damage = data->active_powerup == POWER_DMG ? 20 : 10;
+
+      // First check if any special bullets are available
+      for (u32 i = 0; i < data->special_bullet_count; i++) {
+        SpecialBulletSlot *sb = &data->special_bullets[i];
+        if (!sb->fired) {
+          if (sb->cooldown <= 0) {
+            sb->fired = true;
+            bullet = bullet_create(player->position, data->crosshair, sb->type,
+                                   sb->level, damage, i);
+            break;
+          }
+        }
+      }
+
+      // Otherwise fire a regular bullet if we have ammo
+      if (!bullet && data->ammo > 0) {
+        bullet = bullet_create(player->position, data->crosshair, BULLET_NORMAL,
+                               1, damage, 0);
+        data->ammo--;
+      }
+
+      if (bullet) {
+        el_add(game->world, bullet);
+        data->fire_timer = data->fire_cooldown;
+      }
     }
   }
 
   // Update firing timer
   data->fire_timer = fmaxf(data->fire_timer - game->delta_time, 0.0f);
+
+  // Update special bullet cooldowns
+  for (u32 i = 0; i < data->special_bullet_count; i++) {
+    SpecialBulletSlot *sb = &data->special_bullets[i];
+    if (!sb->fired && sb->cooldown > 0) {
+      sb->cooldown -= game->delta_time;
+    }
+  }
 
   // Update powerup state
   if (data->active_powerup != POWER_NONE) {
