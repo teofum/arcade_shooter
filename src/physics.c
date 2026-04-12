@@ -2,9 +2,16 @@
 #include <raylib.h>
 #include <raymath.h>
 
+#include "enemy.h"
+#include "entity.h"
+#include "game.h"
 #include "physics.h"
+#include "types.h"
+#include "wall.h"
 
-// Simple collision detection
+/*
+ * Simple collision detection
+ */
 Collision collide_particle_rect(Vector2 p_last, Vector2 p, f32 size,
                                 Rectangle rect) {
   Collision collision = {
@@ -58,4 +65,67 @@ Collision collide_particle_rect(Vector2 p_last, Vector2 p, f32 size,
   }
 
   return collision;
+}
+
+/*
+ * Get collision bounds for a wall or enemy. Assumes entity is one of these
+ * two types.
+ */
+static Rectangle get_collision_bounds(Entity *entity) {
+  if (entity->type == ENT_WALL) {
+    WallData *wdata = (WallData *)entity->custom_data;
+    return wdata->bounds;
+  } else {
+    EnemyData *edata = (EnemyData *)entity->custom_data;
+    return (Rectangle){entity->position.x, entity->position.y, edata->size.x,
+                       edata->size.y};
+  }
+}
+
+/*
+ * Check collisions with walls/enemies, optionally triggering something on hit
+ */
+Collision check_collisions(Entity *self, Game game, Vector2 next_pos, f32 size,
+                           CollisionCallback on_enemy_hit) {
+  // Check for collisions with walls
+  Collision collision = {
+      .direction = COL_NONE,
+      .t = INFINITY,
+  };
+  EntityListIterator it = el_iter(game->world);
+  Entity *entity;
+  while ((entity = eli_next(&it))) {
+    if (entity->type == ENT_WALL || entity->type == ENT_ENEMY) {
+      Rectangle rect = get_collision_bounds(entity);
+
+      Collision c = collide_particle_rect(self->position, next_pos, size, rect);
+      collision.direction |= c.direction;
+      collision.t = fminf(collision.t, c.t);
+
+      if (c.direction != COL_NONE && entity->type == ENT_ENEMY &&
+          on_enemy_hit != NULL) {
+        if (on_enemy_hit(self, entity, game))
+          break;
+      }
+    }
+  }
+
+  return collision;
+}
+
+Vector2 apply_collision(Vector2 pos, Vector2 delta_pos, Vector2 *velocity,
+                        f32 elasticity, Collision collision, Game game) {
+  // 1. Move in the original direction up to the point of collision
+  delta_pos = Vector2Scale(delta_pos, collision.t);
+  pos = Vector2Add(pos, delta_pos);
+
+  // 2. Modify velocity (fully plastic collision, ie wallslide)
+  if (collision.direction & COL_X)
+    velocity->x *= -elasticity;
+  if (collision.direction & COL_Y)
+    velocity->y *= -elasticity;
+
+  // 3. Move the rest of the way
+  delta_pos = Vector2Scale(*velocity, game->delta_time * (1 - collision.t));
+  return Vector2Add(pos, delta_pos);
 }

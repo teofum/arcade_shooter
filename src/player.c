@@ -5,7 +5,6 @@
 
 #include "bullet.h"
 #include "config.h"
-#include "enemy.h"
 #include "entity.h"
 #include "entity_list.h"
 #include "game.h"
@@ -14,10 +13,13 @@
 #include "powerup.h"
 #include "types.h"
 #include "utils.h"
-#include "wall.h"
 
+// Imaginary bottom wall to prevent player going OOB
 static Rectangle bottom_wall = {-FIELD_WIDTH / 2.0f, 100, FIELD_WIDTH, 100};
 
+/*============================================================================*
+ * Player initialization                                                      *
+ *============================================================================*/
 static PlayerData *player_init_data() {
   PlayerData *data = malloc(sizeof(PlayerData));
 
@@ -46,8 +48,50 @@ static PlayerData *player_init_data() {
   return data;
 }
 
-static void player_update(Entity *player, Game game) {
+/*============================================================================*
+ * Player update helpers                                                      *
+ *============================================================================*/
+
+/*
+ * Player movement
+ */
+static void player_move(Entity *player, Game game) {
   PlayerData *data = (PlayerData *)player->custom_data;
+
+  // Update velocity
+  f32 speed = PLAYER_SPEED * (data->active_powerup == POWER_FAST ? 2 : 1);
+  Vector2 target_velocity = Vector2Scale(data->direction, speed);
+  data->velocity = Vector2Lerp(data->velocity, target_velocity, PLAYER_ACCEL);
+
+  // Predict next position
+  Vector2 delta_pos = Vector2Scale(data->velocity, game->delta_time);
+  Vector2 next_pos = Vector2Add(player->position, delta_pos);
+
+  // Check for collisions
+  // Also collide with a "fake" wall at the bottom so player can't go OOB
+  Collision collision =
+      check_collisions(player, game, next_pos, data->size, NULL);
+
+  Collision c = collide_particle_rect(player->position, next_pos, data->size,
+                                      bottom_wall);
+  collision.direction |= c.direction;
+  collision.t = fminf(collision.t, c.t);
+
+  // If there was a collision, change the trajectory
+  if (collision.direction != COL_NONE) {
+    next_pos = apply_collision(player->position, delta_pos, &data->velocity, 0,
+                               collision, game);
+  }
+
+  // Update position
+  player->position = next_pos;
+}
+
+/*============================================================================*
+ * Player update function                                                     *
+ *============================================================================*/
+static void player_update(Entity *self, Game game) {
+  PlayerData *data = (PlayerData *)self->custom_data;
 
   // Die
   if (data->health <= 0) {
@@ -55,67 +99,7 @@ static void player_update(Entity *player, Game game) {
     return;
   }
 
-  // Update velocity
-  f32 speed = PLAYER_SPEED * (data->active_powerup == POWER_FAST ? 2 : 1);
-  Vector2 target_velocity = Vector2Scale(data->direction, speed);
-  data->velocity = Vector2Lerp(data->velocity, target_velocity, PLAYER_ACCEL);
-
-  Vector2 delta_pos = Vector2Scale(data->velocity, game->delta_time);
-  Vector2 next_pos = Vector2Add(player->position, delta_pos);
-
-  // Check for collisions with walls
-  Collision collision = {
-      .direction = COL_NONE,
-      .t = INFINITY,
-  };
-  EntityListIterator it = el_iter(game->world);
-  Entity *e;
-  while ((e = eli_next(&it))) {
-    if (e->type == ENT_WALL || e->type == ENT_ENEMY) {
-      Rectangle rect;
-      if (e->type == ENT_WALL) {
-        WallData *wdata = (WallData *)e->custom_data;
-        rect = wdata->bounds;
-      } else {
-        EnemyData *edata = (EnemyData *)e->custom_data;
-        rect = (Rectangle){e->position.x, e->position.y, edata->size.x,
-                           edata->size.y};
-      }
-
-      Collision c =
-          collide_particle_rect(player->position, next_pos, data->size, rect);
-      collision.direction |= c.direction;
-      collision.t = fminf(collision.t, c.t);
-    }
-  }
-
-  // Also collide with an "imaginary" wall at the bottom so player can't leave
-  // the screen
-  Collision c = collide_particle_rect(player->position, next_pos, data->size,
-                                      bottom_wall);
-  collision.direction |= c.direction;
-  collision.t = fminf(collision.t, c.t);
-
-  // If there was a collision change the trajectory
-  if (collision.direction != COL_NONE) {
-    // 1. Move in the original direction up to the point of collision
-    delta_pos = Vector2Scale(delta_pos, collision.t);
-    next_pos = Vector2Add(player->position, delta_pos);
-
-    // 2. Modify velocity (fully plastic collision, ie wallslide)
-    if (collision.direction & COL_X)
-      data->velocity.x = 0;
-    if (collision.direction & COL_Y)
-      data->velocity.y = 0;
-
-    // 3. Move the rest of the way
-    delta_pos =
-        Vector2Scale(data->velocity, game->delta_time * (1 - collision.t));
-    next_pos = Vector2Add(next_pos, delta_pos);
-  }
-
-  // Update position
-  player->position = next_pos;
+  player_move(self, game);
 
   // Spawn a bullet
   if (data->firing) {
@@ -130,7 +114,7 @@ static void player_update(Entity *player, Game game) {
         if (!sb->fired) {
           if (sb->cooldown <= 0) {
             sb->fired = true;
-            bullet = bullet_create(player->position, data->crosshair, sb->type,
+            bullet = bullet_create(self->position, data->crosshair, sb->type,
                                    sb->level, damage, i);
             break;
           }
@@ -139,7 +123,7 @@ static void player_update(Entity *player, Game game) {
 
       // Otherwise fire a regular bullet if we have ammo
       if (!bullet && data->ammo > 0) {
-        bullet = bullet_create(player->position, data->crosshair, BULLET_NORMAL,
+        bullet = bullet_create(self->position, data->crosshair, BULLET_NORMAL,
                                1, damage, 0);
         data->ammo--;
       }
@@ -181,6 +165,9 @@ static void player_update(Entity *player, Game game) {
   }
 }
 
+/*============================================================================*
+ * Player draw function                                                       *
+ *============================================================================*/
 static void player_draw(Entity *player, Game game) {
   PlayerData *data = (PlayerData *)player->custom_data;
 
@@ -203,6 +190,9 @@ static void player_draw(Entity *player, Game game) {
   DrawLine(screen_pos.x, screen_pos.y, aim.x, aim.y, BLUE);
 }
 
+/*============================================================================*
+ * Player constructor                                                         *
+ *============================================================================*/
 Entity *player_create() {
   Entity *player = ent_create(ENT_PLAYER);
 
