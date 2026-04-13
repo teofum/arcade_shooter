@@ -6,6 +6,7 @@
 #include "enemy.h"
 #include "entity_list.h"
 #include "explosion.h"
+#include "game.h"
 #include "raymath.h"
 #include "utils.h"
 

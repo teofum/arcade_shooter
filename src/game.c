@@ -240,6 +240,19 @@ void game_draw(Game game) {
 
         game->state = GS_RUNNING;
       }
+      if (pdata->special_bullet_count < MAX_SPECIAL_BULLETS &&
+          ui_button_ex("Get laser", 20, (Vector2){0, 260}, (Vector2){200, 0},
+                       CENTER, CENTER)) {
+        SpecialBulletSlot *bullet =
+            &pdata->special_bullets[pdata->special_bullet_count];
+
+        bullet->fired = false;
+        bullet->level = 1;
+        bullet->type = BULLET_LASER;
+        pdata->special_bullet_count++;
+
+        game->state = GS_RUNNING;
+      }
 
       ui_end_frame();
     } else if (game->state == GS_PAUSED) {

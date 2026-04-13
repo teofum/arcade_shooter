@@ -12,6 +12,7 @@
 #include "entity_list.h"
 #include "explosion.h"
 #include "game.h"
+#include "laser.h"
 #include "physics.h"
 #include "player.h"
 #include "types.h"
@@ -104,7 +105,9 @@ bool hit_shrapnel(Entity *self, Entity *enemy, Game game) {
 bool hit_laser(Entity *self, Entity *enemy, Game game) {
   BulletData *data = (BulletData *)self->custom_data;
 
-  // todo spawn laser
+  f32 damage = data->damage * 0.5f;
+  Entity *laser = laser_create(self->position, damage);
+  el_add(game->world, laser);
 
   return false;
 }

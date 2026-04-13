@@ -4,7 +4,7 @@
 #include <raylib.h>
 
 #include "entity.h"
-#include "game.h"
+#include "types.h"
 
 typedef struct ExplosionData {
   f32 radius;
