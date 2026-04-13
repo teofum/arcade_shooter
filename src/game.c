@@ -187,7 +187,7 @@ void game_draw(Game game) {
           sprintf(button_text, "New: %s",
                   bullet_type_names[option->bullet_type]);
 
-          if (ui_button_ex(button_text, 20, button_pos, (Vector2){200, 0},
+          if (ui_button_ex(button_text, 20, button_pos, (Vector2){300, 0},
                            CENTER, CENTER)) {
             SpecialBulletSlot *bullet =
                 &pdata->special_bullets[pdata->special_bullet_count];
@@ -207,7 +207,7 @@ void game_draw(Game game) {
                   bullet_type_names[bullet->type], bullet->level,
                   bullet->level + 1);
 
-          if (ui_button_ex(button_text, 20, button_pos, (Vector2){200, 0},
+          if (ui_button_ex(button_text, 20, button_pos, (Vector2){300, 0},
                            CENTER, CENTER)) {
             bullet->level++;
             game->state = GS_RUNNING;
