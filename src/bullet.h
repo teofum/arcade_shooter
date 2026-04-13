@@ -19,6 +19,7 @@ typedef enum {
 } BulletType;
 
 extern const char *bullet_type_names[6];
+extern Color bullet_type_colors[6];
 
 typedef struct BulletData {
   Vector2 velocity;

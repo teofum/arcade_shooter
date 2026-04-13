@@ -196,7 +196,8 @@ static void ui_draw_special_ammo(PlayerData *pdata) {
     DrawCircle(x, y, size, DARKGRAY);
     if (!sb->fired) {
       f32 angle = (1 - sb->cooldown / 3.0f) * 360;
-      DrawCircleSector((Vector2){x, y}, size, 0, angle, 20, BLUE);
+      DrawCircleSector((Vector2){x, y}, size, 0, angle, 20,
+                       bullet_type_colors[sb->type]);
     }
 
     x += size * 2 + 5;

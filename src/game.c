@@ -137,7 +137,7 @@ void game_update(Game game) {
 
 void game_draw(Game game) {
   BeginDrawing();
-  ClearBackground(WHITE);
+  ClearBackground((Color){0, 128, 128, 255});
 
   if (game->state == GS_MAIN_MENU) {
     ui_begin_frame((Rectangle){0, 0, WINDOW_WIDTH, WINDOW_HEIGHT}, WHITE);

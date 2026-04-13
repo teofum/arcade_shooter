@@ -109,7 +109,7 @@ static void player_fire(Entity *self, Game game) {
     return;
 
   if (data->fire_timer == 0.0f) {
-    i32 damage = data->active_powerup == POWER_DMG ? 20 : 10;
+    i32 damage = data->active_powerup == POWER_DMG ? 10 : 5;
 
     // Fire special bullets first if available
     Entity *bullet = player_fire_special(self, game, damage);
@@ -247,7 +247,7 @@ static void player_draw(Entity *player, Game game) {
   aim = Vector2Scale(Vector2Normalize(aim), 40);
   aim = Vector2Add(aim, screen_pos);
 
-  DrawLine(screen_pos.x, screen_pos.y, aim.x, aim.y, BLUE);
+  DrawLine(screen_pos.x, screen_pos.y, aim.x, aim.y, WHITE);
 }
 
 /*============================================================================*

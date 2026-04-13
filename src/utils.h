@@ -14,4 +14,6 @@ Vector2 screen_to_game(Vector2 p);
 
 Rectangle game_to_screen_rect(Rectangle rect);
 
+i32 get_damage(i32 base_damage);
+
 #endif

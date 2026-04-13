@@ -1,5 +1,4 @@
 #include <limits.h>
-#include <math.h>
 #include <raylib.h>
 #include <raymath.h>
 #include <stdlib.h>
@@ -22,6 +21,10 @@ const char *bullet_type_names[] = {
     "Normal bullet", "Replicating", "Explosive", "Shrapnel", "Laser", "Healing",
 };
 
+Color bullet_type_colors[] = {
+    WHITE, PINK, ORANGE, GRAY, RED, GREEN,
+};
+
 /*============================================================================*
  * Bullet initialization                                                      *
  *============================================================================*/
@@ -33,7 +36,7 @@ static BulletData *bullet_init_data(Vector2 initial_velocity, BulletType type,
 
   data->type = type;
   data->level = level;
-  data->damage = damage;
+  data->damage = type > BULLET_NORMAL ? damage * (1.5f + level / 2.0f) : damage;
   data->special_idx = special_idx;
 
   data->deferred_destroy = false;
@@ -48,7 +51,7 @@ static BulletData *bullet_init_data(Vector2 initial_velocity, BulletType type,
 /*
  * Special bullet hit functions
  */
-bool hit_replicate(Entity *self, Entity *enemy, Game game) {
+static bool hit_replicate(Entity *self, Entity *enemy, Game game) {
   BulletData *data = (BulletData *)self->custom_data;
 
   f32 spawn_p = 0.25f + 0.1f * data->level;
@@ -60,18 +63,18 @@ bool hit_replicate(Entity *self, Entity *enemy, Game game) {
     Vector2 target = Vector2Add(self->position, direction);
 
     Entity *new_bullet = bullet_create(self->position, target, BULLET_SECONDARY,
-                                       1, data->damage, 0);
+                                       1, data->damage / 2, 0);
     el_add(game->world, new_bullet);
   }
 
   return false;
 }
 
-bool hit_explosive(Entity *self, Entity *enemy, Game game) {
+static bool hit_explosive(Entity *self, Entity *enemy, Game game) {
   BulletData *data = (BulletData *)self->custom_data;
 
   f32 radius = 25 + data->level * 5;
-  f32 damage = data->damage * (2 + data->level * 0.25f);
+  f32 damage = data->damage * 2;
   Entity *explosion = explosion_create(self->position, radius, damage);
   el_add(game->world, explosion);
 
@@ -83,7 +86,7 @@ bool hit_explosive(Entity *self, Entity *enemy, Game game) {
   return true;
 }
 
-bool hit_shrapnel(Entity *self, Entity *enemy, Game game) {
+static bool hit_shrapnel(Entity *self, Entity *enemy, Game game) {
   BulletData *data = (BulletData *)self->custom_data;
 
   for (u32 i = 0; i < data->level + 2; i++) {
@@ -94,7 +97,7 @@ bool hit_shrapnel(Entity *self, Entity *enemy, Game game) {
     Vector2 target = Vector2Add(self->position, direction);
 
     Entity *new_bullet = bullet_create(self->position, target, BULLET_SECONDARY,
-                                       1, data->damage, 0);
+                                       1, data->damage / 2, 0);
     el_add(game->world, new_bullet);
   }
 
@@ -106,7 +109,7 @@ bool hit_shrapnel(Entity *self, Entity *enemy, Game game) {
   return true;
 }
 
-bool hit_laser(Entity *self, Entity *enemy, Game game) {
+static bool hit_laser(Entity *self, Entity *enemy, Game game) {
   BulletData *data = (BulletData *)self->custom_data;
 
   f32 damage = data->damage * 0.5f;
@@ -116,7 +119,7 @@ bool hit_laser(Entity *self, Entity *enemy, Game game) {
   return false;
 }
 
-bool hit_healing(Entity *self, Entity *enemy, Game game) {
+static bool hit_healing(Entity *self, Entity *enemy, Game game) {
   BulletData *data = (BulletData *)self->custom_data;
   PlayerData *pdata = (PlayerData *)game->player->custom_data;
 
@@ -136,7 +139,7 @@ bool hit_healing(Entity *self, Entity *enemy, Game game) {
   return false;
 }
 
-CollisionCallback special_bullet_hit[6] = {
+static CollisionCallback special_bullet_hit[6] = {
     [BULLET_NORMAL] = NULL,
     [BULLET_REPLICATE] = hit_replicate,
     [BULLET_EXPLOSIVE] = hit_explosive,
@@ -152,10 +155,11 @@ bool bullet_hit_enemy(Entity *self, Entity *enemy, Game game) {
   BulletData *data = (BulletData *)self->custom_data;
   EnemyData *edata = (EnemyData *)enemy->custom_data;
 
-  edata->health -= data->damage;
+  i32 damage = get_damage(data->damage);
+  edata->health -= damage;
 
   Entity *dmg_number =
-      dmg_number_create(self->position, data->damage, DMG_NUMBER_SIZE);
+      dmg_number_create(self->position, damage, DMG_NUMBER_SIZE);
   el_add(game->world, dmg_number);
 
   if (data->type > 0) {
@@ -218,7 +222,9 @@ static void bullet_draw(Entity *bullet, Game game) {
   Vector2 screen_pos = game_to_screen(bullet->position);
   f32 screen_size = game_to_screen_scale(data->size);
 
-  DrawCircle(screen_pos.x, screen_pos.y, screen_size, BLUE);
+  u32 color_type = data->type == BULLET_SECONDARY ? BULLET_NORMAL : data->type;
+  DrawCircle(screen_pos.x, screen_pos.y, screen_size,
+             bullet_type_colors[color_type]);
 }
 
 /*============================================================================*

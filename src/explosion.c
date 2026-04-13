@@ -37,12 +37,13 @@ static void explosion_update(Entity *self, Game game) {
                               edata->size.x, edata->size.y};
 
           if (CheckCollisionCircleRec(self->position, data->radius, bounds)) {
-            edata->health -= data->damage;
+            i32 damage = get_damage(data->damage);
+            edata->health -= damage;
 
             Vector2 enemy_center =
                 Vector2Add(entity->position, Vector2Scale(edata->size, 0.5f));
             Entity *dmg_number =
-                dmg_number_create(enemy_center, data->damage, DMG_NUMBER_SIZE);
+                dmg_number_create(enemy_center, damage, DMG_NUMBER_SIZE);
             el_add(game->world, dmg_number);
           }
         }

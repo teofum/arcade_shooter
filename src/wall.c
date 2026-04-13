@@ -21,7 +21,7 @@ static void wall_draw(Entity *wall, Game game) {
   WallData *data = (WallData *)wall->custom_data;
 
   // Draw player
-  DrawRectangleRec(game_to_screen_rect(data->bounds), GREEN);
+  DrawRectangleRec(game_to_screen_rect(data->bounds), (Color){0, 64, 64, 255});
 }
 
 Entity *wall_create(Rectangle bounds) {
