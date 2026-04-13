@@ -20,6 +20,7 @@ static Rectangle bottom_wall = {-FIELD_WIDTH / 2.0f, 100, FIELD_WIDTH, 100};
 /*============================================================================*
  * Player initialization                                                      *
  *============================================================================*/
+
 static PlayerData *player_init_data() {
   PlayerData *data = malloc(sizeof(PlayerData));
 
@@ -52,11 +53,8 @@ static PlayerData *player_init_data() {
  * Player update helpers                                                      *
  *============================================================================*/
 
-/*
- * Player movement
- */
-static void player_move(Entity *player, Game game) {
-  PlayerData *data = (PlayerData *)player->custom_data;
+static void player_move(Entity *self, Game game) {
+  PlayerData *data = (PlayerData *)self->custom_data;
 
   // Update velocity
   f32 speed = PLAYER_SPEED * (data->active_powerup == POWER_FAST ? 2 : 1);
@@ -65,75 +63,73 @@ static void player_move(Entity *player, Game game) {
 
   // Predict next position
   Vector2 delta_pos = Vector2Scale(data->velocity, game->delta_time);
-  Vector2 next_pos = Vector2Add(player->position, delta_pos);
+  Vector2 next_pos = Vector2Add(self->position, delta_pos);
 
   // Check for collisions
   // Also collide with a "fake" wall at the bottom so player can't go OOB
   Collision collision =
-      check_collisions(player, game, next_pos, data->size, NULL);
+      check_collisions(self, game, next_pos, data->size, NULL);
 
-  Collision c = collide_particle_rect(player->position, next_pos, data->size,
-                                      bottom_wall);
+  Collision c =
+      collide_particle_rect(self->position, next_pos, data->size, bottom_wall);
   collision.direction |= c.direction;
   collision.t = fminf(collision.t, c.t);
 
   // If there was a collision, change the trajectory
   if (collision.direction != COL_NONE) {
-    next_pos = apply_collision(player->position, delta_pos, &data->velocity, 0,
+    next_pos = apply_collision(self->position, delta_pos, &data->velocity, 0,
                                collision, game);
   }
 
   // Update position
-  player->position = next_pos;
+  self->position = next_pos;
 }
 
-/*============================================================================*
- * Player update function                                                     *
- *============================================================================*/
-static void player_update(Entity *self, Game game) {
+static Entity *player_fire_special(Entity *self, Game game, i32 damage) {
   PlayerData *data = (PlayerData *)self->custom_data;
 
-  // Die
-  if (data->health <= 0) {
-    game->state = GS_GAME_OVER;
-    return;
-  }
-
-  player_move(self, game);
-
-  // Spawn a bullet
-  if (data->firing) {
-    if (data->fire_timer == 0.0f) {
-      Entity *bullet = NULL;
-
-      i32 damage = data->active_powerup == POWER_DMG ? 20 : 10;
-
-      // First check if any special bullets are available
-      for (u32 i = 0; i < data->special_bullet_count; i++) {
-        SpecialBulletSlot *sb = &data->special_bullets[i];
-        if (!sb->fired) {
-          if (sb->cooldown <= 0) {
-            sb->fired = true;
-            bullet = bullet_create(self->position, data->crosshair, sb->type,
-                                   sb->level, damage, i);
-            break;
-          }
-        }
-      }
-
-      // Otherwise fire a regular bullet if we have ammo
-      if (!bullet && data->ammo > 0) {
-        bullet = bullet_create(self->position, data->crosshair, BULLET_NORMAL,
-                               1, damage, 0);
-        data->ammo--;
-      }
-
-      if (bullet) {
-        el_add(game->world, bullet);
-        data->fire_timer = data->fire_cooldown;
+  for (u32 i = 0; i < data->special_bullet_count; i++) {
+    SpecialBulletSlot *sb = &data->special_bullets[i];
+    if (!sb->fired) {
+      if (sb->cooldown <= 0) {
+        sb->fired = true;
+        return bullet_create(self->position, data->crosshair, sb->type,
+                             sb->level, damage, i);
       }
     }
   }
+
+  return NULL;
+}
+
+static void player_fire(Entity *self, Game game) {
+  PlayerData *data = (PlayerData *)self->custom_data;
+
+  if (!data->firing)
+    return;
+
+  if (data->fire_timer == 0.0f) {
+    i32 damage = data->active_powerup == POWER_DMG ? 20 : 10;
+
+    // Fire special bullets first if available
+    Entity *bullet = player_fire_special(self, game, damage);
+
+    // Otherwise fire a regular bullet if we have ammo
+    if (!bullet && data->ammo > 0) {
+      bullet = bullet_create(self->position, data->crosshair, BULLET_NORMAL, 1,
+                             damage, 0);
+      data->ammo--;
+    }
+
+    if (bullet) {
+      el_add(game->world, bullet);
+      data->fire_timer = data->fire_cooldown;
+    }
+  }
+}
+
+static void player_update_timers(Entity *self, Game game) {
+  PlayerData *data = (PlayerData *)self->custom_data;
 
   // Update firing timer
   data->fire_timer = fmaxf(data->fire_timer - game->delta_time, 0.0f);
@@ -154,20 +150,45 @@ static void player_update(Entity *self, Game game) {
       data->powerup_timer -= game->delta_time;
     }
   }
+}
 
-  // Level up
-  if (data->xp >= data->to_next_level) {
-    data->level++;
-    data->xp -= data->to_next_level;
-    data->to_next_level *= 2;
+static void player_level_up(Entity *self, Game game) {
+  PlayerData *data = (PlayerData *)self->custom_data;
 
-    game->state = GS_LEVEL_UP;
+  data->level++;
+  data->xp -= data->to_next_level;
+  data->to_next_level *= 2;
+
+  game->state = GS_LEVEL_UP;
+}
+
+/*============================================================================*
+ * Player update function                                                     *
+ *============================================================================*/
+
+static void player_update(Entity *self, Game game) {
+  PlayerData *data = (PlayerData *)self->custom_data;
+
+  // Die
+  if (data->health <= 0) {
+    game->state = GS_GAME_OVER;
+    return;
   }
+
+  player_move(self, game);
+  player_fire(self, game);
+
+  if (data->xp >= data->to_next_level) {
+    player_level_up(self, game);
+  }
+
+  player_update_timers(self, game);
 }
 
 /*============================================================================*
  * Player draw function                                                       *
  *============================================================================*/
+
 static void player_draw(Entity *player, Game game) {
   PlayerData *data = (PlayerData *)player->custom_data;
 
@@ -193,6 +214,7 @@ static void player_draw(Entity *player, Game game) {
 /*============================================================================*
  * Player constructor                                                         *
  *============================================================================*/
+
 Entity *player_create() {
   Entity *player = ent_create(ENT_PLAYER);
 
