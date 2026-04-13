@@ -9,6 +9,7 @@
 #include "enemy.h"
 #include "entity.h"
 #include "entity_list.h"
+#include "explosion.h"
 #include "game.h"
 #include "player.h"
 #include "powerup.h"
@@ -30,17 +31,21 @@ static void enemy_update(Entity *self, Game game) {
 
   // Die
   if (data->health <= 0) {
-    Vector2 gem_pos =
-        Vector2Add(self->position, Vector2Scale(data->size, 0.5f));
+    Vector2 center = Vector2Add(self->position, Vector2Scale(data->size, 0.5f));
+
     do {
-      Entity *xp_gem = xp_gem_create(gem_pos, 1);
+      Entity *xp_gem = xp_gem_create(center, 1);
       el_add(game->world, xp_gem);
     } while ((f32)rand() / INT_MAX < 0.2);
 
     if ((f32)rand() / INT_MAX < POWERUP_SPAWN_PROB) {
-      Entity *powerup = powerup_create(gem_pos, rand() % 2);
+      Entity *powerup = powerup_create(center, rand() % 2);
       el_add(game->world, powerup);
     }
+
+    // kaboom
+    Entity *explosion = explosion_create(center, data->size.x * 0.6f, 0);
+    el_add(game->world, explosion);
 
     el_destroy(game->world, self);
     return;

@@ -10,6 +10,7 @@
 #include "enemy.h"
 #include "entity.h"
 #include "entity_list.h"
+#include "explosion.h"
 #include "game.h"
 #include "physics.h"
 #include "player.h"
@@ -64,7 +65,10 @@ bool hit_replicate(Entity *self, Entity *enemy, Game game) {
 bool hit_explosive(Entity *self, Entity *enemy, Game game) {
   BulletData *data = (BulletData *)self->custom_data;
 
-  // todo spawn explosion
+  f32 radius = 25 + data->level * 5;
+  f32 damage = data->damage * (2 + data->level * 0.25f);
+  Entity *explosion = explosion_create(self->position, radius, damage);
+  el_add(game->world, explosion);
 
   PlayerData *pdata = (PlayerData *)game->player->custom_data;
   pdata->special_bullets[data->special_idx].fired = false;

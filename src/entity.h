@@ -11,6 +11,7 @@ typedef enum {
   ENT_DMG_NUMBER,
   ENT_XP_GEM,
   ENT_POWERUP,
+  ENT_EXPLOSION,
 } EntityType;
 
 struct Entity;
