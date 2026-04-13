@@ -9,6 +9,7 @@
 typedef struct DmgNumberData {
   char string[10];
   f32 size;
+  i32 damage;
   f32 timer;
   f32 speed;
 } DmgNumberData;

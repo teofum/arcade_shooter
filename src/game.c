@@ -189,7 +189,7 @@ void game_draw(Game game) {
         game->state = GS_RUNNING;
       }
       if (pdata->special_bullet_count < MAX_SPECIAL_BULLETS &&
-          ui_button_ex("Get special ball", 20, (Vector2){0, 100},
+          ui_button_ex("Get shrapnel ball", 20, (Vector2){0, 100},
                        (Vector2){200, 0}, CENTER, CENTER)) {
         SpecialBulletSlot *bullet =
             &pdata->special_bullets[pdata->special_bullet_count];
@@ -197,6 +197,32 @@ void game_draw(Game game) {
         bullet->fired = false;
         bullet->level = 1;
         bullet->type = BULLET_SHRAPNEL;
+        pdata->special_bullet_count++;
+
+        game->state = GS_RUNNING;
+      }
+      if (pdata->special_bullet_count < MAX_SPECIAL_BULLETS &&
+          ui_button_ex("Get replicate ball", 20, (Vector2){0, 140},
+                       (Vector2){200, 0}, CENTER, CENTER)) {
+        SpecialBulletSlot *bullet =
+            &pdata->special_bullets[pdata->special_bullet_count];
+
+        bullet->fired = false;
+        bullet->level = 1;
+        bullet->type = BULLET_REPLICATE;
+        pdata->special_bullet_count++;
+
+        game->state = GS_RUNNING;
+      }
+      if (pdata->special_bullet_count < MAX_SPECIAL_BULLETS &&
+          ui_button_ex("Get healing ball", 20, (Vector2){0, 180},
+                       (Vector2){200, 0}, CENTER, CENTER)) {
+        SpecialBulletSlot *bullet =
+            &pdata->special_bullets[pdata->special_bullet_count];
+
+        bullet->fired = false;
+        bullet->level = 1;
+        bullet->type = BULLET_HEALING;
         pdata->special_bullet_count++;
 
         game->state = GS_RUNNING;

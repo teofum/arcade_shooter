@@ -1,4 +1,5 @@
 #include <limits.h>
+#include <math.h>
 #include <raylib.h>
 #include <raymath.h>
 #include <stdlib.h>
@@ -39,6 +40,101 @@ static BulletData *bullet_init_data(Vector2 initial_velocity, BulletType type,
  *============================================================================*/
 
 /*
+ * Special bullet hit functions
+ */
+bool hit_replicate(Entity *self, Entity *enemy, Game game) {
+  BulletData *data = (BulletData *)self->custom_data;
+
+  f32 spawn_p = 0.25f + 0.1f * data->level;
+  if ((f32)rand() / INT_MAX < spawn_p) {
+    f32 vx = (f32)rand() / INT_MAX * 2.0f - 1.0f;
+    f32 vy = (f32)rand() / INT_MAX * 2.0f - 1.0f;
+
+    Vector2 direction = Vector2Normalize((Vector2){vx, vy});
+    Vector2 target = Vector2Add(self->position, direction);
+
+    Entity *new_bullet = bullet_create(self->position, target, BULLET_SECONDARY,
+                                       1, data->damage, 0);
+    el_add(game->world, new_bullet);
+  }
+
+  return false;
+}
+
+bool hit_explosive(Entity *self, Entity *enemy, Game game) {
+  BulletData *data = (BulletData *)self->custom_data;
+
+  // todo spawn explosion
+
+  PlayerData *pdata = (PlayerData *)game->player->custom_data;
+  pdata->special_bullets[data->special_idx].fired = false;
+  pdata->special_bullets[data->special_idx].cooldown = 3.0f;
+  data->deferred_destroy = true;
+
+  return true;
+}
+
+bool hit_shrapnel(Entity *self, Entity *enemy, Game game) {
+  BulletData *data = (BulletData *)self->custom_data;
+
+  for (u32 i = 0; i < data->level + 2; i++) {
+    f32 vx = (f32)rand() / INT_MAX * 2.0f - 1.0f;
+    f32 vy = (f32)rand() / INT_MAX * 2.0f - 1.0f;
+
+    Vector2 direction = Vector2Normalize((Vector2){vx, vy});
+    Vector2 target = Vector2Add(self->position, direction);
+
+    Entity *new_bullet = bullet_create(self->position, target, BULLET_SECONDARY,
+                                       1, data->damage, 0);
+    el_add(game->world, new_bullet);
+  }
+
+  PlayerData *pdata = (PlayerData *)game->player->custom_data;
+  pdata->special_bullets[data->special_idx].fired = false;
+  pdata->special_bullets[data->special_idx].cooldown = 3.0f;
+  data->deferred_destroy = true;
+
+  return true;
+}
+
+bool hit_laser(Entity *self, Entity *enemy, Game game) {
+  BulletData *data = (BulletData *)self->custom_data;
+
+  // todo spawn laser
+
+  return false;
+}
+
+bool hit_healing(Entity *self, Entity *enemy, Game game) {
+  BulletData *data = (BulletData *)self->custom_data;
+  PlayerData *pdata = (PlayerData *)game->player->custom_data;
+
+  f32 heal_p = 0.04 + 0.02f * data->level;
+  if ((f32)rand() / INT_MAX < heal_p && pdata->health < pdata->max_health) {
+    i32 heal_amount = 1 + data->level / 4;
+    i32 player_damage = pdata->max_health - pdata->health;
+    if (heal_amount > player_damage)
+      heal_amount = player_damage;
+
+    pdata->health += heal_amount;
+    Entity *dmg_number = dmg_number_create(game->player->position, -heal_amount,
+                                           DMG_NUMBER_SIZE);
+    el_add(game->world, dmg_number);
+  }
+
+  return false;
+}
+
+CollisionCallback special_bullet_hit[6] = {
+    [BULLET_NORMAL] = NULL,
+    [BULLET_REPLICATE] = hit_replicate,
+    [BULLET_EXPLOSIVE] = hit_explosive,
+    [BULLET_SHRAPNEL] = hit_shrapnel,
+    [BULLET_LASER] = hit_laser,
+    [BULLET_HEALING] = hit_healing,
+};
+
+/*
  * Hit callback
  */
 bool bullet_hit_enemy(Entity *self, Entity *enemy, Game game) {
@@ -51,27 +147,11 @@ bool bullet_hit_enemy(Entity *self, Entity *enemy, Game game) {
       dmg_number_create(self->position, data->damage, DMG_NUMBER_SIZE);
   el_add(game->world, dmg_number);
 
-  if (data->type == BULLET_SHRAPNEL) {
-    for (u32 i = 0; i < data->level + 2; i++) {
-      f32 vx = (f32)rand() / INT_MAX * 2.0f - 1.0f;
-      f32 vy = (f32)rand() / INT_MAX * 2.0f - 1.0f;
-
-      Vector2 direction = Vector2Normalize((Vector2){vx, vy});
-      Vector2 target = Vector2Add(self->position, direction);
-
-      Entity *new_bullet = bullet_create(self->position, target,
-                                         BULLET_SECONDARY, 1, data->damage, 0);
-      el_add(game->world, new_bullet);
-    }
-
-    PlayerData *pdata = (PlayerData *)game->player->custom_data;
-    pdata->special_bullets[data->special_idx].fired = false;
-    pdata->special_bullets[data->special_idx].cooldown = 3.0f;
-    data->deferred_destroy = true;
-
-    return true;
+  if (data->type > 0) {
+    return special_bullet_hit[data->type](self, enemy, game);
+  } else {
+    return false;
   }
-  return false;
 }
 
 /*============================================================================*

@@ -104,8 +104,8 @@ static void enemy_draw(Entity *enemy, Game game) {
   Rectangle rect2 = rect;
   rect2.height *= (float)data->health / data->max_health;
 
-  DrawRectangleRec(rect, RED);
-  DrawRectangleRec(rect2, ORANGE);
+  DrawRectangleRec(rect, DARKBROWN);
+  DrawRectangleRec(rect2, BROWN);
   DrawRectangleLinesEx(rect, 1.0f, BLACK);
 }
 

@@ -12,8 +12,9 @@
 static DmgNumberData *dmg_number_init_data(i32 damage, f32 size) {
   DmgNumberData *data = malloc(sizeof(DmgNumberData));
 
-  sprintf(data->string, "%d", damage);
+  sprintf(data->string, damage < 0 ? "+%d" : "%d", abs(damage));
   data->size = size;
+  data->damage = damage;
   data->timer = DMG_NUMBER_TTL;
   data->speed = DMG_NUMBER_SPEED;
 
@@ -39,7 +40,8 @@ static void dmg_number_draw(Entity *dmg_number, Game game) {
   f32 w = MeasureText(data->string, data->size);
   f32 h = data->size;
   DrawText(data->string, game_to_screen_x(dmg_number->position.x) - w / 2,
-           game_to_screen_y(dmg_number->position.y) - h / 2, data->size, BLACK);
+           game_to_screen_y(dmg_number->position.y) - h / 2, data->size,
+           data->damage > 0 ? RED : GREEN);
 }
 
 Entity *dmg_number_create(Vector2 position, i32 dmg, f32 size) {
