@@ -182,25 +182,25 @@ void game_draw(Game game) {
         sprintf(level_up_str, "Ammo: %d -> %d", pdata->max_ammo - 1,
                 pdata->max_ammo);
         ui_text(level_up_str, 20, WHITE, cursor, CENTER, CENTER);
-        cursor.y += 25;
+        cursor.y += 30;
       }
       if (pdata->leveled_up_stats[STAT_DAMAGE]) {
         sprintf(level_up_str, "Damage: %d -> %d", pdata->base_damage - 1,
                 pdata->base_damage);
         ui_text(level_up_str, 20, WHITE, cursor, CENTER, CENTER);
-        cursor.y += 25;
+        cursor.y += 30;
       }
       if (pdata->leveled_up_stats[STAT_HEALTH]) {
         sprintf(level_up_str, "Health: %d -> %d", pdata->max_health - 10,
                 pdata->max_health);
         ui_text(level_up_str, 20, WHITE, cursor, CENTER, CENTER);
-        cursor.y += 25;
+        cursor.y += 30;
       }
       if (pdata->leveled_up_stats[STAT_MOVEMENT]) {
-        sprintf(level_up_str, "Damage: %.0f -> %.0f", pdata->move_speed - 5,
+        sprintf(level_up_str, "Move speed: %.0f -> %.0f", pdata->move_speed - 5,
                 pdata->move_speed);
         ui_text(level_up_str, 20, WHITE, cursor, CENTER, CENTER);
-        cursor.y += 25;
+        cursor.y += 30;
       }
 
       for (u32 i = 0; i < LEVEL_UP_OPTIONS; i++) {
