@@ -14,6 +14,19 @@ typedef struct SpecialBulletSlot {
   f32 cooldown;
 } SpecialBulletSlot;
 
+typedef enum {
+  LU_UPGRADE,
+  LU_NEW,
+} LevelUpOptionType;
+
+typedef struct LevelUpOption {
+  LevelUpOptionType type;
+  union {
+    u32 bullet_idx;
+    BulletType bullet_type;
+  };
+} LevelUpOption;
+
 typedef struct PlayerData {
   f32 size;
 
@@ -34,6 +47,7 @@ typedef struct PlayerData {
   u32 level;
   u32 xp;
   u32 to_next_level;
+  LevelUpOption *level_up_options[LEVEL_UP_OPTIONS];
 
   PowerupType active_powerup;
   f32 powerup_timer;

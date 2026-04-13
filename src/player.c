@@ -155,10 +155,49 @@ static void player_update_timers(Entity *self, Game game) {
 static void player_level_up(Entity *self, Game game) {
   PlayerData *data = (PlayerData *)self->custom_data;
 
+  // Level up
   data->level++;
   data->xp -= data->to_next_level;
   data->to_next_level *= 2;
 
+  // Prepare level up
+  // Populate list with valid options
+  static LevelUpOption all_level_up_options[MAX_SPECIAL_BULLETS + 5];
+  u32 option_count = 0;
+
+  // Upgrade options for existing bullets
+  for (u32 i = 0; i < data->special_bullet_count; i++) {
+    all_level_up_options[option_count].type = LU_UPGRADE;
+    all_level_up_options[option_count].bullet_idx = i;
+    option_count++;
+  }
+
+  // New bullet options
+  if (data->special_bullet_count < MAX_SPECIAL_BULLETS) {
+    for (u32 i = 0; i < 5; i++) {
+      all_level_up_options[option_count].type = LU_NEW;
+      all_level_up_options[option_count].bullet_type = i + 1;
+      option_count++;
+    }
+  }
+
+  // If there are more than three options, shuffle them
+  if (option_count > LEVEL_UP_OPTIONS) {
+    for (u32 i = 0; i < option_count - 1; i++) {
+      u32 j = i + rand() / (RAND_MAX / (option_count - i) + 1);
+      LevelUpOption t = all_level_up_options[j];
+      all_level_up_options[j] = all_level_up_options[i];
+      all_level_up_options[i] = t;
+    }
+  }
+
+  // Pick the first three
+  for (u32 i = 0; i < LEVEL_UP_OPTIONS; i++) {
+    data->level_up_options[i] =
+        i < option_count ? &all_level_up_options[i] : NULL;
+  }
+
+  // Show level up screen
   game->state = GS_LEVEL_UP;
 }
 

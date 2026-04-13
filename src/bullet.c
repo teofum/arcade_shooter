@@ -18,6 +18,10 @@
 #include "types.h"
 #include "utils.h"
 
+const char *bullet_type_names[] = {
+    "Normal bullet", "Replicating", "Explosive", "Shrapnel", "Laser", "Healing",
+};
+
 /*============================================================================*
  * Bullet initialization                                                      *
  *============================================================================*/

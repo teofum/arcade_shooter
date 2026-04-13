@@ -176,82 +176,45 @@ void game_draw(Game game) {
       ui_text("Level up!", 60, WHITE, (Vector2){0, -60}, CENTER, CENTER);
       ui_text(level_up_str, 20, WHITE, (Vector2){0, -10}, CENTER, CENTER);
 
-      if (ui_button_ex("Get more ammo", 20, (Vector2){0, 20}, (Vector2){200, 0},
-                       CENTER, CENTER)) {
-        pdata->max_ammo += 1;
-        pdata->ammo += 1;
-        game->state = GS_RUNNING;
-      }
-      if (ui_button_ex("Get more health", 20, (Vector2){0, 60},
-                       (Vector2){200, 0}, CENTER, CENTER)) {
-        pdata->max_health += 20;
-        pdata->health += 20;
-        game->state = GS_RUNNING;
-      }
-      if (pdata->special_bullet_count < MAX_SPECIAL_BULLETS &&
-          ui_button_ex("Get shrapnel ball", 20, (Vector2){0, 100},
-                       (Vector2){200, 0}, CENTER, CENTER)) {
-        SpecialBulletSlot *bullet =
-            &pdata->special_bullets[pdata->special_bullet_count];
+      Vector2 button_pos = {0, 20};
+      for (u32 i = 0; i < LEVEL_UP_OPTIONS; i++) {
+        LevelUpOption *option = pdata->level_up_options[i];
+        if (!option)
+          break;
 
-        bullet->fired = false;
-        bullet->level = 1;
-        bullet->type = BULLET_SHRAPNEL;
-        pdata->special_bullet_count++;
+        static char button_text[30];
+        if (option->type == LU_NEW) {
+          sprintf(button_text, "New: %s",
+                  bullet_type_names[option->bullet_type]);
 
-        game->state = GS_RUNNING;
-      }
-      if (pdata->special_bullet_count < MAX_SPECIAL_BULLETS &&
-          ui_button_ex("Get replicate ball", 20, (Vector2){0, 140},
-                       (Vector2){200, 0}, CENTER, CENTER)) {
-        SpecialBulletSlot *bullet =
-            &pdata->special_bullets[pdata->special_bullet_count];
+          if (ui_button_ex(button_text, 20, button_pos, (Vector2){200, 0},
+                           CENTER, CENTER)) {
+            SpecialBulletSlot *bullet =
+                &pdata->special_bullets[pdata->special_bullet_count];
 
-        bullet->fired = false;
-        bullet->level = 1;
-        bullet->type = BULLET_REPLICATE;
-        pdata->special_bullet_count++;
+            bullet->fired = false;
+            bullet->level = 1;
+            bullet->type = option->bullet_type;
+            pdata->special_bullet_count++;
 
-        game->state = GS_RUNNING;
-      }
-      if (pdata->special_bullet_count < MAX_SPECIAL_BULLETS &&
-          ui_button_ex("Get healing ball", 20, (Vector2){0, 180},
-                       (Vector2){200, 0}, CENTER, CENTER)) {
-        SpecialBulletSlot *bullet =
-            &pdata->special_bullets[pdata->special_bullet_count];
+            game->state = GS_RUNNING;
+          }
+        } else {
+          SpecialBulletSlot *bullet =
+              &pdata->special_bullets[option->bullet_idx];
 
-        bullet->fired = false;
-        bullet->level = 1;
-        bullet->type = BULLET_HEALING;
-        pdata->special_bullet_count++;
+          sprintf(button_text, "%s: Lv. %d -> Lv. %d",
+                  bullet_type_names[bullet->type], bullet->level,
+                  bullet->level + 1);
 
-        game->state = GS_RUNNING;
-      }
-      if (pdata->special_bullet_count < MAX_SPECIAL_BULLETS &&
-          ui_button_ex("Get bomb", 20, (Vector2){0, 220}, (Vector2){200, 0},
-                       CENTER, CENTER)) {
-        SpecialBulletSlot *bullet =
-            &pdata->special_bullets[pdata->special_bullet_count];
+          if (ui_button_ex(button_text, 20, button_pos, (Vector2){200, 0},
+                           CENTER, CENTER)) {
+            bullet->level++;
+            game->state = GS_RUNNING;
+          }
+        }
 
-        bullet->fired = false;
-        bullet->level = 1;
-        bullet->type = BULLET_EXPLOSIVE;
-        pdata->special_bullet_count++;
-
-        game->state = GS_RUNNING;
-      }
-      if (pdata->special_bullet_count < MAX_SPECIAL_BULLETS &&
-          ui_button_ex("Get laser", 20, (Vector2){0, 260}, (Vector2){200, 0},
-                       CENTER, CENTER)) {
-        SpecialBulletSlot *bullet =
-            &pdata->special_bullets[pdata->special_bullet_count];
-
-        bullet->fired = false;
-        bullet->level = 1;
-        bullet->type = BULLET_LASER;
-        pdata->special_bullet_count++;
-
-        game->state = GS_RUNNING;
+        button_pos.y += 40;
       }
 
       ui_end_frame();

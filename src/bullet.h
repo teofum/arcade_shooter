@@ -18,6 +18,8 @@ typedef enum {
   BULLET_SECONDARY = -1,
 } BulletType;
 
+extern const char *bullet_type_names[6];
+
 typedef struct BulletData {
   Vector2 velocity;
   f32 size;
