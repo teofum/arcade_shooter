@@ -166,7 +166,8 @@ void game_draw(Game game) {
     ui_draw_game_ui(game);
 
     if (game->state == GS_LEVEL_UP) {
-      static char level_up_str[10];
+      // TODO clean up this logic
+      static char level_up_str[30];
       PlayerData *pdata = (PlayerData *)game->player->custom_data;
       sprintf(level_up_str, "%d -> %d", pdata->level - 1, pdata->level);
 
@@ -176,7 +177,32 @@ void game_draw(Game game) {
       ui_text("Level up!", 60, WHITE, (Vector2){0, -60}, CENTER, CENTER);
       ui_text(level_up_str, 20, WHITE, (Vector2){0, -10}, CENTER, CENTER);
 
-      Vector2 button_pos = {0, 20};
+      Vector2 cursor = {0, 20};
+      if (pdata->leveled_up_stats[STAT_AMMO]) {
+        sprintf(level_up_str, "Ammo: %d -> %d", pdata->max_ammo - 1,
+                pdata->max_ammo);
+        ui_text(level_up_str, 20, WHITE, cursor, CENTER, CENTER);
+        cursor.y += 25;
+      }
+      if (pdata->leveled_up_stats[STAT_DAMAGE]) {
+        sprintf(level_up_str, "Damage: %d -> %d", pdata->base_damage - 1,
+                pdata->base_damage);
+        ui_text(level_up_str, 20, WHITE, cursor, CENTER, CENTER);
+        cursor.y += 25;
+      }
+      if (pdata->leveled_up_stats[STAT_HEALTH]) {
+        sprintf(level_up_str, "Health: %d -> %d", pdata->max_health - 10,
+                pdata->max_health);
+        ui_text(level_up_str, 20, WHITE, cursor, CENTER, CENTER);
+        cursor.y += 25;
+      }
+      if (pdata->leveled_up_stats[STAT_MOVEMENT]) {
+        sprintf(level_up_str, "Damage: %.0f -> %.0f", pdata->move_speed - 5,
+                pdata->move_speed);
+        ui_text(level_up_str, 20, WHITE, cursor, CENTER, CENTER);
+        cursor.y += 25;
+      }
+
       for (u32 i = 0; i < LEVEL_UP_OPTIONS; i++) {
         LevelUpOption *option = pdata->level_up_options[i];
         if (!option)
@@ -187,8 +213,8 @@ void game_draw(Game game) {
           sprintf(button_text, "New: %s",
                   bullet_type_names[option->bullet_type]);
 
-          if (ui_button_ex(button_text, 20, button_pos, (Vector2){300, 0},
-                           CENTER, CENTER)) {
+          if (ui_button_ex(button_text, 20, cursor, (Vector2){300, 0}, CENTER,
+                           CENTER)) {
             SpecialBulletSlot *bullet =
                 &pdata->special_bullets[pdata->special_bullet_count];
 
@@ -207,14 +233,14 @@ void game_draw(Game game) {
                   bullet_type_names[bullet->type], bullet->level,
                   bullet->level + 1);
 
-          if (ui_button_ex(button_text, 20, button_pos, (Vector2){300, 0},
-                           CENTER, CENTER)) {
+          if (ui_button_ex(button_text, 20, cursor, (Vector2){300, 0}, CENTER,
+                           CENTER)) {
             bullet->level++;
             game->state = GS_RUNNING;
           }
         }
 
-        button_pos.y += 40;
+        cursor.y += 40;
       }
 
       ui_end_frame();

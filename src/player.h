@@ -27,6 +27,13 @@ typedef struct LevelUpOption {
   };
 } LevelUpOption;
 
+typedef enum {
+  STAT_AMMO,
+  STAT_DAMAGE,
+  STAT_HEALTH,
+  STAT_MOVEMENT,
+} PlayerStats;
+
 typedef struct PlayerData {
   f32 size;
 
@@ -35,6 +42,8 @@ typedef struct PlayerData {
 
   i32 max_health;
   i32 health;
+  i32 base_damage;
+  f32 move_speed;
 
   u32 max_ammo;
   u32 ammo;
@@ -48,6 +57,7 @@ typedef struct PlayerData {
   u32 xp;
   u32 to_next_level;
   LevelUpOption *level_up_options[LEVEL_UP_OPTIONS];
+  bool leveled_up_stats[4];
 
   PowerupType active_powerup;
   f32 powerup_timer;

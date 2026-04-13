@@ -31,6 +31,8 @@ static PlayerData *player_init_data() {
   data->crosshair = (Vector2){0, 0};
 
   data->health = data->max_health = 100;
+  data->base_damage = 5;
+  data->move_speed = PLAYER_SPEED;
 
   data->level = 1;
   data->xp = 0;
@@ -57,7 +59,7 @@ static void player_move(Entity *self, Game game) {
   PlayerData *data = (PlayerData *)self->custom_data;
 
   // Update velocity
-  f32 speed = PLAYER_SPEED * (data->active_powerup == POWER_FAST ? 2 : 1);
+  f32 speed = data->move_speed * (data->active_powerup == POWER_FAST ? 2 : 1);
   Vector2 target_velocity = Vector2Scale(data->direction, speed);
   data->velocity = Vector2Lerp(data->velocity, target_velocity, PLAYER_ACCEL);
 
@@ -109,7 +111,8 @@ static void player_fire(Entity *self, Game game) {
     return;
 
   if (data->fire_timer == 0.0f) {
-    i32 damage = data->active_powerup == POWER_DMG ? 10 : 5;
+    i32 damage =
+        data->base_damage * (data->active_powerup == POWER_DMG ? 2 : 1);
 
     // Fire special bullets first if available
     Entity *bullet = player_fire_special(self, game, damage);
@@ -159,6 +162,37 @@ static void player_level_up(Entity *self, Game game) {
   data->level++;
   data->xp -= data->to_next_level;
   data->to_next_level *= 2;
+
+  // Increase stats
+  u32 leveled_up_stats = 0;
+  for (u32 i = 0; i < 4; i++) {
+    data->leveled_up_stats[i] = false;
+  }
+
+  while (leveled_up_stats == 0) {
+    if ((f32)rand() / RAND_MAX < 0.5f) {
+      data->max_ammo++;
+      data->ammo++;
+      data->leveled_up_stats[STAT_AMMO] = true;
+      leveled_up_stats++;
+    }
+    if ((f32)rand() / RAND_MAX < 0.5f) {
+      data->base_damage++;
+      data->leveled_up_stats[STAT_DAMAGE] = true;
+      leveled_up_stats++;
+    }
+    if ((f32)rand() / RAND_MAX < 0.5f) {
+      data->max_health += 10;
+      data->health += 10;
+      data->leveled_up_stats[STAT_HEALTH] = true;
+      leveled_up_stats++;
+    }
+    if ((f32)rand() / RAND_MAX < 0.5f) {
+      data->move_speed += 5;
+      data->leveled_up_stats[STAT_MOVEMENT] = true;
+      leveled_up_stats++;
+    }
+  }
 
   // Prepare level up
   // Populate list with valid options
