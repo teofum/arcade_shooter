@@ -131,7 +131,7 @@ void ui_text(const char *text, f32 font_size, Color color, Vector2 position,
   DrawText(text, text_rect.x, text_rect.y, font_size, color);
 }
 
-void ui_draw_health_bar(PlayerData *pdata) {
+static void ui_draw_health_bar(PlayerData *pdata) {
   static char health_text[10];
 
   f32 w = 200;
@@ -149,7 +149,7 @@ void ui_draw_health_bar(PlayerData *pdata) {
   DrawText(health_text, x + 5, y, 20, WHITE);
 }
 
-void ui_draw_xp_bar(PlayerData *pdata) {
+static void ui_draw_xp_bar(PlayerData *pdata) {
   static char level_text[10];
 
   f32 w = 200;
@@ -167,7 +167,7 @@ void ui_draw_xp_bar(PlayerData *pdata) {
   DrawText(level_text, x + 5, y, 10, WHITE);
 }
 
-void ui_draw_ammo_counter(PlayerData *pdata) {
+static void ui_draw_ammo_counter(PlayerData *pdata) {
   f32 size = 5;
   f32 x0 = 20 + size;
   f32 x = x0;
@@ -184,10 +184,30 @@ void ui_draw_ammo_counter(PlayerData *pdata) {
   }
 }
 
+static void ui_draw_special_ammo(PlayerData *pdata) {
+  f32 size = 10;
+  f32 x0 = 150 + size;
+  f32 x = x0;
+  f32 y = WINDOW_HEIGHT - 70 - size;
+
+  for (i32 i = 0; i < pdata->special_bullet_count; i++) {
+    SpecialBulletSlot *sb = &pdata->special_bullets[i];
+
+    DrawCircle(x, y, size, DARKGRAY);
+    if (!sb->fired) {
+      f32 angle = (1 - sb->cooldown / 3.0f) * 360;
+      DrawCircleSector((Vector2){x, y}, size, 0, angle, 20, BLUE);
+    }
+
+    x += size * 2 + 5;
+  }
+}
+
 void ui_draw_game_ui(Game game) {
   PlayerData *pdata = (PlayerData *)game->player->custom_data;
 
   ui_draw_health_bar(pdata);
   ui_draw_xp_bar(pdata);
   ui_draw_ammo_counter(pdata);
+  ui_draw_special_ammo(pdata);
 }

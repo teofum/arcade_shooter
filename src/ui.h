@@ -44,9 +44,7 @@ bool ui_button_ex(const char *text, f32 font_size, Vector2 position,
 void ui_text(const char *text, f32 font_size, Color color, Vector2 position,
              Alignment align_x, Alignment align_y);
 
-void ui_draw_health_bar(PlayerData *pdata);
-void ui_draw_xp_bar(PlayerData *pdata);
-void ui_draw_ammo_counter(PlayerData *pdata);
+// Game UI
 void ui_draw_game_ui(Game game);
 
 #endif
