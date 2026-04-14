@@ -20,6 +20,7 @@ typedef struct EnemyData {
   i32 health;
   i32 damage;
   i32 ranged_damage;
+  u32 stat_scaling;
 
   f32 fire_cooldown;
   f32 fire_timer;

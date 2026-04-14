@@ -29,13 +29,18 @@ static Color enemy_colors[][2] = {
 static const char *level_text[] = {"I", "II", "III", "IV", "V"};
 static f32 avg_xp_drop[] = {1.5f, 5.0f, 15.0f, 45.0f, 150.0f};
 
-static EnemyData *enemy_init_data(Vector2 size, EnemyType type, u32 level) {
+static EnemyData *enemy_init_data(u32 w, u32 h, EnemyType type, u32 level) {
   EnemyData *data = malloc(sizeof(EnemyData));
+
+  Vector2 size = {w * GRID_SIZE, h * GRID_SIZE};
   data->size = size;
+  data->stat_scaling = w * h;
 
   data->type = type;
   data->level = level;
-  data->health = data->max_health = base_health[type] * level;
+  data->health = data->max_health =
+      base_health[type] * level * data->stat_scaling;
+
   data->damage = 20;
   data->ranged_damage = 5 * level;
 
@@ -51,7 +56,7 @@ static void enemy_update(Entity *self, Game game) {
   if (data->health <= 0) {
     Vector2 center = Vector2Add(self->position, Vector2Scale(data->size, 0.5f));
 
-    f32 xp_drop_p = 1 - 1 / avg_xp_drop[data->level - 1];
+    f32 xp_drop_p = 1 - 1 / (avg_xp_drop[data->level - 1] * data->stat_scaling);
     u32 xp_drop = 0;
     do {
       xp_drop++;
@@ -169,9 +174,7 @@ Entity *enemy_create(u32 x, u32 y, u32 w, u32 h, EnemyType type, u32 level) {
       -FIELD_WIDTH / 2.0f + x * GRID_SIZE,
       -FIELD_HEIGHT / 2.0f + y * GRID_SIZE,
   };
-  Vector2 size = {w * GRID_SIZE, h * GRID_SIZE};
-
-  enemy->custom_data = enemy_init_data(size, type, level);
+  enemy->custom_data = enemy_init_data(w, h, type, level);
 
   enemy->update = enemy_update;
   enemy->draw = enemy_draw;

@@ -125,7 +125,13 @@ void game_update(Game game) {
                   : ENEMY_NORMAL;
           u32 level = 1 + (game->enemy_spawn_p - r) * 5;
 
-          Entity *enemy = enemy_create(j, i, 1, 1, type, level);
+          u32 w = 1;
+          if (j < FIELD_COLS - 1 && (f32)rand() / RAND_MAX < 0.02f) {
+            w = 2;
+            j++;
+          }
+
+          Entity *enemy = enemy_create(j, i, w, 1, type, level);
           el_add(game->world, enemy);
         }
       }
