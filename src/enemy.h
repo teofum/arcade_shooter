@@ -9,11 +9,12 @@
 typedef struct EnemyData {
   Vector2 size;
 
+  u32 level;
   i32 max_health;
   i32 health;
   i32 damage;
 } EnemyData;
 
-Entity *enemy_create(u32 x, u32 y, u32 w, u32 h);
+Entity *enemy_create(u32 x, u32 y, u32 w, u32 h, u32 level);
 
 #endif

@@ -195,6 +195,7 @@ static void player_level_up(Entity *self, Game game) {
   }
 
   // Prepare level up
+  // TODO clean this up
   // Populate list with valid options
   static LevelUpOption all_level_up_options[MAX_SPECIAL_BULLETS + 5];
   u32 option_count = 0;

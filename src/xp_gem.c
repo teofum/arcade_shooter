@@ -61,8 +61,8 @@ static void xp_gem_draw(Entity *xp_gem, Game game) {
   XpGemData *data = (XpGemData *)xp_gem->custom_data;
 
   DrawCircle(game_to_screen_x(xp_gem->position.x),
-             game_to_screen_y(xp_gem->position.y), game_to_screen_scale(1.0f),
-             MAGENTA);
+             game_to_screen_y(xp_gem->position.y),
+             game_to_screen_scale(1.0f + logf(data->value) / logf(5)), MAGENTA);
 }
 
 Entity *xp_gem_create(Vector2 position, u32 value) {
