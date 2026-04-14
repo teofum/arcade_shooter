@@ -119,8 +119,13 @@ void game_update(Game game) {
       for (int j = 0; j < FIELD_COLS; j++) {
         f32 r = (f32)rand() / RAND_MAX;
         if (r < game->enemy_spawn_p) {
+          EnemyType type =
+              (game->enemy_spawn_p > 0.3f && (f32)rand() / RAND_MAX < 0.1f)
+                  ? ENEMY_SHOOTER
+                  : ENEMY_NORMAL;
           u32 level = 1 + (game->enemy_spawn_p - r) * 5;
-          Entity *enemy = enemy_create(j, i, 1, 1, level);
+
+          Entity *enemy = enemy_create(j, i, 1, 1, type, level);
           el_add(game->world, enemy);
         }
       }

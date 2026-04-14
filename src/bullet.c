@@ -213,7 +213,7 @@ static void bullet_update(Entity *self, Game game) {
 }
 
 /*============================================================================*
- * Player draw function                                                       *
+ * Bullet draw function                                                       *
  *============================================================================*/
 static void bullet_draw(Entity *bullet, Game game) {
   BulletData *data = (BulletData *)bullet->custom_data;
@@ -228,7 +228,7 @@ static void bullet_draw(Entity *bullet, Game game) {
 }
 
 /*============================================================================*
- * Player constructor                                                         *
+ * Bullet constructor                                                         *
  *============================================================================*/
 Entity *bullet_create(Vector2 position, Vector2 target, BulletType type,
                       u32 level, i32 damage, u32 special_idx) {

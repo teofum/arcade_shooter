@@ -7,6 +7,7 @@
 #include "bullet.h"
 #include "config.h"
 #include "enemy.h"
+#include "enemy_bullet.h"
 #include "entity.h"
 #include "entity_list.h"
 #include "explosion.h"
@@ -16,19 +17,32 @@
 #include "utils.h"
 #include "xp_gem.h"
 
-static EnemyData *enemy_init_data(Vector2 size, u32 level) {
-  EnemyData *data = malloc(sizeof(EnemyData));
-  data->size = size;
-
-  data->level = level;
-  data->health = data->max_health = 100 * level;
-  data->damage = 20;
-
-  return data;
-}
+static i32 base_health[] = {
+    [ENEMY_NORMAL] = 100,
+    [ENEMY_SHOOTER] = 50,
+};
+static Color enemy_colors[][2] = {
+    [ENEMY_NORMAL] = {BROWN, DARKBROWN},
+    [ENEMY_SHOOTER] = {BLUE, DARKBLUE},
+};
 
 static const char *level_text[] = {"I", "II", "III", "IV", "V"};
 static f32 avg_xp_drop[] = {1.5f, 5.0f, 15.0f, 45.0f, 150.0f};
+
+static EnemyData *enemy_init_data(Vector2 size, EnemyType type, u32 level) {
+  EnemyData *data = malloc(sizeof(EnemyData));
+  data->size = size;
+
+  data->type = type;
+  data->level = level;
+  data->health = data->max_health = base_health[type] * level;
+  data->damage = 20;
+  data->ranged_damage = 5 * level;
+
+  data->fire_timer = data->fire_cooldown = 5.5f - level * 0.5f;
+
+  return data;
+}
 
 static void enemy_update(Entity *self, Game game) {
   EnemyData *data = (EnemyData *)self->custom_data;
@@ -112,6 +126,19 @@ static void enemy_update(Entity *self, Game game) {
     }
   }
 
+  // If it's a shooty enemy, shoot
+  if (data->type == ENEMY_SHOOTER) {
+    if (data->fire_timer <= 0) {
+      Entity *bullet = enemy_bullet_create(
+          self->position, game->player->position, data->ranged_damage);
+      el_add(game->world, bullet);
+
+      data->fire_timer = data->fire_cooldown;
+    } else {
+      data->fire_timer -= game->delta_time;
+    }
+  }
+
   // Destroy self on reaching the bottom of the screen
   if (self->position.y > FIELD_HEIGHT / 2.0f - data->size.y * 2.0f) {
     pdata->health -= data->damage;
@@ -129,13 +156,13 @@ static void enemy_draw(Entity *enemy, Game game) {
   Rectangle rect2 = rect;
   rect2.height *= (float)data->health / data->max_health;
 
-  DrawRectangleRec(rect, DARKBROWN);
-  DrawRectangleRec(rect2, BROWN);
+  DrawRectangleRec(rect, enemy_colors[data->type][1]);
+  DrawRectangleRec(rect2, enemy_colors[data->type][0]);
   DrawRectangleLinesEx(rect, 1.0f, BLACK);
   DrawText(level_text[data->level - 1], rect.x + 10, rect.y + 10, 10, WHITE);
 }
 
-Entity *enemy_create(u32 x, u32 y, u32 w, u32 h, u32 level) {
+Entity *enemy_create(u32 x, u32 y, u32 w, u32 h, EnemyType type, u32 level) {
   Entity *enemy = ent_create(ENT_ENEMY);
 
   enemy->position = (Vector2){
@@ -144,7 +171,7 @@ Entity *enemy_create(u32 x, u32 y, u32 w, u32 h, u32 level) {
   };
   Vector2 size = {w * GRID_SIZE, h * GRID_SIZE};
 
-  enemy->custom_data = enemy_init_data(size, level);
+  enemy->custom_data = enemy_init_data(size, type, level);
 
   enemy->update = enemy_update;
   enemy->draw = enemy_draw;

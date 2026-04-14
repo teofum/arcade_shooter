@@ -13,6 +13,7 @@ typedef enum {
   ENT_POWERUP,
   ENT_EXPLOSION,
   ENT_LASER,
+  ENT_ENEMY_BULLET,
 } EntityType;
 
 struct Entity;

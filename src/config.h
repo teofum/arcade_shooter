@@ -15,6 +15,7 @@
 #define PLAYER_ACCEL 0.1f
 
 #define BULLET_SPEED 150.0f
+#define ENEMY_BULLET_SPEED 50.0f
 
 #define ENEMY_SPEED 5.0f
 
