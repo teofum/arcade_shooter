@@ -72,6 +72,11 @@ Rectangle ui_align_ex(f32 x, f32 y, f32 w, f32 h, Alignment align_x,
 
   Rectangle fb = current_frame->bounds;
 
+  if (align_x == END)
+    x = -x;
+  if (align_y == END)
+    y = -y;
+
   // Abuse enum values
   x += fb.x + fb.width * align_x / 2 - w * origin_x / 2;
   y += fb.y + fb.height * align_y / 2 - h * origin_y / 2;
@@ -131,40 +136,36 @@ void ui_text(const char *text, f32 font_size, Color color, Vector2 position,
   DrawText(text, text_rect.x, text_rect.y, font_size, color);
 }
 
+static void ui_draw_bar(f32 x, f32 y, f32 w, f32 h, f32 full, const char *text,
+                        Color bg_color, Color bar_color, Alignment align_x,
+                        Alignment align_y) {
+  f32 fill_w = w * full;
+  Rectangle bar_rect = ui_align(x, y, w, h, align_x, align_y);
+
+  ui_begin_frame_ex(bar_rect, bg_color, BLACK, (Vector2){0, 0});
+
+  Rectangle fill_rect = ui_align(0, 0, fill_w, h, START, START);
+  ui_begin_frame(fill_rect, bar_color);
+  ui_text(text, h, WHITE, (Vector2){5, 0}, START, START);
+  ui_end_frame();
+
+  ui_end_frame();
+}
+
 static void ui_draw_health_bar(PlayerData *pdata) {
   static char health_text[10];
-
-  f32 w = 200;
-  f32 h = 20;
-  f32 x = 20;
-  f32 y = WINDOW_HEIGHT - 40 - h;
-
-  f32 relative_health = (f32)pdata->health / pdata->max_health;
-
-  DrawRectangle(x, y, w, h, DARKGRAY);
-  DrawRectangle(x, y, relative_health * w, h, RED);
-  DrawRectangleLines(x, y, w, h, BLACK);
-
   sprintf(health_text, "%3d/%3d", pdata->health, pdata->max_health);
-  DrawText(health_text, x + 5, y, 20, WHITE);
+
+  ui_draw_bar(0, 20, 200, 20, (f32)pdata->health / pdata->max_health,
+              health_text, DARKGRAY, RED, START, END);
 }
 
 static void ui_draw_xp_bar(PlayerData *pdata) {
   static char level_text[10];
-
-  f32 w = 200;
-  f32 h = 10;
-  f32 x = 20;
-  f32 y = WINDOW_HEIGHT - 20 - h;
-
-  f32 relative_xp = (f32)pdata->xp / pdata->to_next_level;
-
-  DrawRectangle(x, y, w, h, DARKGRAY);
-  DrawRectangle(x, y, relative_xp * w, h, MAGENTA);
-  DrawRectangleLines(x, y, w, h, BLACK);
-
   sprintf(level_text, "Lv. %d", pdata->level);
-  DrawText(level_text, x + 5, y, 10, WHITE);
+
+  ui_draw_bar(0, 0, 200, 10, (f32)pdata->xp / pdata->to_next_level, level_text,
+              DARKGRAY, MAGENTA, START, END);
 }
 
 static void ui_draw_ammo_counter(PlayerData *pdata) {
@@ -174,7 +175,7 @@ static void ui_draw_ammo_counter(PlayerData *pdata) {
   f32 y = WINDOW_HEIGHT - 70 - size;
 
   for (i32 i = 0; i < pdata->max_ammo; i++) {
-    DrawCircle(x, y, size, i < pdata->ammo ? BLUE : DARKGRAY);
+    DrawCircle(x, y, size, i < pdata->ammo ? WHITE : DARKGRAY);
 
     x += size * 2 + 5;
     if (i % 8 == 7) {
@@ -208,14 +209,16 @@ void ui_draw_game_ui(Game game) {
   PlayerData *pdata = (PlayerData *)game->player->custom_data;
 
   ui_begin_frame_ex((Rectangle){0, 0, WINDOW_WIDTH, WINDOW_HEIGHT}, BLANK,
-                    BLANK, (Vector2){10, 10});
+                    BLANK, (Vector2){20, 20});
+
   static char score_str[30];
-  sprintf(score_str, "Score: %u", game->score);
-  ui_text(score_str, 20, WHITE, (Vector2){0, 0}, START, START);
-  ui_end_frame();
+  sprintf(score_str, "Score: %6u", game->score);
+  ui_text(score_str, 20, WHITE, (Vector2){0, 0}, END, START);
 
   ui_draw_health_bar(pdata);
   ui_draw_xp_bar(pdata);
   ui_draw_ammo_counter(pdata);
   ui_draw_special_ammo(pdata);
+
+  ui_end_frame();
 }
