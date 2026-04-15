@@ -207,6 +207,13 @@ static void ui_draw_special_ammo(PlayerData *pdata) {
 void ui_draw_game_ui(Game game) {
   PlayerData *pdata = (PlayerData *)game->player->custom_data;
 
+  ui_begin_frame_ex((Rectangle){0, 0, WINDOW_WIDTH, WINDOW_HEIGHT}, BLANK,
+                    BLANK, (Vector2){10, 10});
+  static char score_str[30];
+  sprintf(score_str, "Score: %u", game->score);
+  ui_text(score_str, 20, WHITE, (Vector2){0, 0}, START, START);
+  ui_end_frame();
+
   ui_draw_health_bar(pdata);
   ui_draw_xp_bar(pdata);
   ui_draw_ammo_counter(pdata);

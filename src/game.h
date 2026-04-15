@@ -26,6 +26,7 @@ typedef struct Game {
   f32 enemy_spawn_p;
 
   GameState state;
+  u32 score;
 } *Game;
 
 Game game_init();

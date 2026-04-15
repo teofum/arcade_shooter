@@ -56,6 +56,7 @@ void game_reset(Game game) {
   game->next_wave_size = 2;
 
   game->state = GS_MAIN_MENU;
+  game->score = 0;
 }
 
 void game_process_input(Game game) {
@@ -282,6 +283,9 @@ void game_draw(Game game) {
                      (Color){0, 0, 0, 128});
 
       ui_text("You Died", 60, WHITE, (Vector2){0, -60}, CENTER, CENTER);
+      static char score_str[30];
+      sprintf(score_str, "Score: %u", game->score);
+      ui_text(score_str, 20, WHITE, (Vector2){0, -20}, CENTER, CENTER);
 
       if (ui_button_ex("Main menu", 20, (Vector2){0, 20}, (Vector2){200, 0},
                        CENTER, CENTER)) {

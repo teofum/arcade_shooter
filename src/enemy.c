@@ -86,6 +86,8 @@ static void enemy_update(Entity *self, Game game) {
     Entity *explosion = explosion_create(center, data->size.x * 0.6f, 0);
     el_add(game->world, explosion);
 
+    game->score += 10 * data->level * data->stat_scaling;
+
     el_destroy(game->world, self);
     return;
   }
