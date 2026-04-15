@@ -182,44 +182,9 @@ void game_draw(Game game) {
     if (game->state == GS_LEVEL_UP) {
       ui_draw_level_up_screen(game);
     } else if (game->state == GS_PAUSED) {
-      ui_begin_frame((Rectangle){0, 0, WINDOW_WIDTH, WINDOW_HEIGHT},
-                     (Color){0, 0, 0, 128});
-
-      ui_text("Paused", 60, WHITE, (Vector2){0, -60}, CENTER, CENTER);
-
-      if (ui_button_ex("Resume", 20, (Vector2){0, 20}, (Vector2){200, 0},
-                       CENTER, CENTER)) {
-        game->state = GS_RUNNING;
-      }
-      if (ui_button_ex("Main menu", 20, (Vector2){0, 60}, (Vector2){200, 0},
-                       CENTER, CENTER)) {
-        game_reset(game);
-      }
-      if (ui_button_ex("Quit", 20, (Vector2){0, 100}, (Vector2){200, 0}, CENTER,
-                       CENTER)) {
-        game->state = GS_QUIT;
-      }
-
-      ui_end_frame();
+      ui_draw_pause_screen(game);
     } else if (game->state == GS_GAME_OVER) {
-      ui_begin_frame((Rectangle){0, 0, WINDOW_WIDTH, WINDOW_HEIGHT},
-                     (Color){0, 0, 0, 128});
-
-      ui_text("You Died", 60, WHITE, (Vector2){0, -60}, CENTER, CENTER);
-      static char score_str[30];
-      sprintf(score_str, "Score: %u", game->score);
-      ui_text(score_str, 20, WHITE, (Vector2){0, -20}, CENTER, CENTER);
-
-      if (ui_button_ex("Main menu", 20, (Vector2){0, 20}, (Vector2){200, 0},
-                       CENTER, CENTER)) {
-        game_reset(game);
-      }
-      if (ui_button_ex("Quit", 20, (Vector2){0, 60}, (Vector2){200, 0}, CENTER,
-                       CENTER)) {
-        game->state = GS_QUIT;
-      }
-
-      ui_end_frame();
+      ui_draw_game_over_screen(game);
     }
   }
 

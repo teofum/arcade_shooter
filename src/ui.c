@@ -344,3 +344,45 @@ void ui_draw_level_up_screen(Game game) {
 
   ui_end_frame();
 }
+
+void ui_draw_pause_screen(Game game) {
+  ui_begin_frame(full_screen, overlay_bg);
+
+  ui_text("Paused", 60, WHITE, (Vector2){0, -60}, CENTER, CENTER);
+
+  if (ui_button_ex("Resume", 20, (Vector2){0, 20}, (Vector2){200, 0}, CENTER,
+                   CENTER)) {
+    game->state = GS_RUNNING;
+  }
+  if (ui_button_ex("Main menu", 20, (Vector2){0, 60}, (Vector2){200, 0}, CENTER,
+                   CENTER)) {
+    game_reset(game);
+  }
+  if (ui_button_ex("Quit", 20, (Vector2){0, 100}, (Vector2){200, 0}, CENTER,
+                   CENTER)) {
+    game->state = GS_QUIT;
+  }
+
+  ui_end_frame();
+}
+
+void ui_draw_game_over_screen(Game game) {
+  static char score_str[30];
+  sprintf(score_str, "Score: %u", game->score);
+
+  ui_begin_frame(full_screen, overlay_bg);
+
+  ui_text("You Died", 60, WHITE, (Vector2){0, -60}, CENTER, CENTER);
+  ui_text(score_str, 20, WHITE, (Vector2){0, -20}, CENTER, CENTER);
+
+  if (ui_button_ex("Main menu", 20, (Vector2){0, 20}, (Vector2){200, 0}, CENTER,
+                   CENTER)) {
+    game_reset(game);
+  }
+  if (ui_button_ex("Quit", 20, (Vector2){0, 60}, (Vector2){200, 0}, CENTER,
+                   CENTER)) {
+    game->state = GS_QUIT;
+  }
+
+  ui_end_frame();
+}
