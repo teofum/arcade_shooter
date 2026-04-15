@@ -1,4 +1,3 @@
-#include <limits.h>
 #include <math.h>
 #include <raylib.h>
 #include <raymath.h>
@@ -60,7 +59,7 @@ static void enemy_update(Entity *self, Game game) {
     u32 xp_drop = 0;
     do {
       xp_drop++;
-    } while ((f32)rand() / INT_MAX < xp_drop_p);
+    } while (frand() < xp_drop_p);
     while (xp_drop >= 25) {
       Entity *xp_gem = xp_gem_create(center, 25);
       el_add(game->world, xp_gem);
@@ -77,7 +76,7 @@ static void enemy_update(Entity *self, Game game) {
       xp_drop--;
     }
 
-    if ((f32)rand() / INT_MAX < POWERUP_SPAWN_PROB) {
+    if (frand() < POWERUP_SPAWN_PROB) {
       Entity *powerup = powerup_create(center, rand() % 2);
       el_add(game->world, powerup);
     }

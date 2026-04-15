@@ -7,6 +7,8 @@
 #define OFFSET_X ((float)WINDOW_WIDTH / 2)
 #define OFFSET_Y ((float)WINDOW_HEIGHT / 2)
 
+f32 frand() { return (f32)rand() / RAND_MAX; }
+
 f32 game_to_screen_x(f32 x) { return x * SCALE + OFFSET_X; }
 
 f32 game_to_screen_y(f32 y) { return y * SCALE + OFFSET_Y; }

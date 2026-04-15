@@ -1,4 +1,3 @@
-#include <limits.h>
 #include <raylib.h>
 #include <raymath.h>
 #include <stdio.h>
@@ -61,9 +60,9 @@ static bool hit_replicate(Entity *self, Entity *enemy, Game game) {
   BulletData *data = (BulletData *)self->custom_data;
 
   f32 spawn_p = 0.25f + 0.1f * data->level;
-  if ((f32)rand() / INT_MAX < spawn_p) {
-    f32 vx = (f32)rand() / INT_MAX * 2.0f - 1.0f;
-    f32 vy = (f32)rand() / INT_MAX * 2.0f - 1.0f;
+  if (frand() < spawn_p) {
+    f32 vx = frand() * 2.0f - 1.0f;
+    f32 vy = frand() * 2.0f - 1.0f;
 
     Vector2 direction = Vector2Normalize((Vector2){vx, vy});
     Vector2 target = Vector2Add(self->position, direction);
@@ -96,8 +95,8 @@ static bool hit_shrapnel(Entity *self, Entity *enemy, Game game) {
   BulletData *data = (BulletData *)self->custom_data;
 
   for (u32 i = 0; i < data->level + 2; i++) {
-    f32 vx = (f32)rand() / INT_MAX * 2.0f - 1.0f;
-    f32 vy = (f32)rand() / INT_MAX * 2.0f - 1.0f;
+    f32 vx = frand() * 2.0f - 1.0f;
+    f32 vy = frand() * 2.0f - 1.0f;
 
     Vector2 direction = Vector2Normalize((Vector2){vx, vy});
     Vector2 target = Vector2Add(self->position, direction);
@@ -130,7 +129,7 @@ static bool hit_healing(Entity *self, Entity *enemy, Game game) {
   PlayerData *pdata = (PlayerData *)game->player->custom_data;
 
   f32 heal_p = 0.04 + 0.02f * data->level;
-  if ((f32)rand() / INT_MAX < heal_p && pdata->health < pdata->max_health) {
+  if (frand() < heal_p && pdata->health < pdata->max_health) {
     i32 heal_amount = 1 + data->level / 4;
     i32 player_damage = pdata->max_health - pdata->health;
     if (heal_amount > player_damage)

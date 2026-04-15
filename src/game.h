@@ -25,6 +25,9 @@ typedef struct Game {
   f32 enemy_spawn_timer;
   f32 enemy_spawn_p;
 
+  f32 boss_timer;
+  u32 boss_idx;
+
   GameState state;
   u32 score;
 } *Game;

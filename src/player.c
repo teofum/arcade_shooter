@@ -170,24 +170,24 @@ static void player_level_up(Entity *self, Game game) {
   }
 
   while (leveled_up_stats == 0) {
-    if ((f32)rand() / RAND_MAX < 0.5f) {
+    if (frand() < 0.5f) {
       data->max_ammo++;
       data->ammo++;
       data->leveled_up_stats[STAT_AMMO] = true;
       leveled_up_stats++;
     }
-    if ((f32)rand() / RAND_MAX < 0.5f) {
+    if (frand() < 0.5f) {
       data->base_damage++;
       data->leveled_up_stats[STAT_DAMAGE] = true;
       leveled_up_stats++;
     }
-    if ((f32)rand() / RAND_MAX < 0.5f) {
+    if (frand() < 0.5f) {
       data->max_health += 10;
       data->health += 10;
       data->leveled_up_stats[STAT_HEALTH] = true;
       leveled_up_stats++;
     }
-    if ((f32)rand() / RAND_MAX < 0.5f) {
+    if (frand() < 0.5f) {
       data->move_speed += 5;
       data->leveled_up_stats[STAT_MOVEMENT] = true;
       leveled_up_stats++;

@@ -1,10 +1,8 @@
-#include <limits.h>
 #include <raylib.h>
 #include <raymath.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "bullet.h"
 #include "config.h"
 #include "enemy.h"
 #include "entity.h"
@@ -96,6 +94,45 @@ void game_process_input(Game game) {
   pdata->firing = IsKeyDown(KEY_SPACE);
 }
 
+static void game_spawn_wave(Game game) {
+  for (int i = 0; i < game->next_wave_size; i++) {
+    for (int j = 0; j < FIELD_COLS; j++) {
+      f32 r = frand();
+      if (r < game->enemy_spawn_p) {
+        EnemyType type = (game->enemy_spawn_p > 0.3f && frand() < 0.1f)
+                             ? ENEMY_SHOOTER
+                             : ENEMY_NORMAL;
+        u32 level = 1 + (game->enemy_spawn_p - r) * 5;
+
+        u32 w = 1;
+        if (j < FIELD_COLS - 1 && frand() < 0.02f) {
+          w = 2;
+          j++;
+        }
+
+        Entity *enemy = enemy_create(j, i, w, 1, type, level);
+        el_add(game->world, enemy);
+      }
+    }
+  }
+}
+
+static void game_spawn_enemies(Game game) {
+  if (game->enemy_spawn_timer <= 0.0f) {
+    game_spawn_wave(game);
+
+    // Increase diffculty
+    if (game->enemy_spawn_p < 0.9) {
+      game->enemy_spawn_p += 0.01;
+    }
+
+    game->next_wave_size = rand() % 3 + 1;
+    game->enemy_spawn_timer = ROW_TIME * game->next_wave_size;
+  } else {
+    game->enemy_spawn_timer -= game->delta_time;
+  }
+}
+
 void game_update(Game game) {
   // Update timers
   f32 now = GetTime();
@@ -114,39 +151,7 @@ void game_update(Game game) {
     }
   }
 
-  // Spawn enemies
-  if (game->enemy_spawn_timer <= 0.0f) {
-    for (int i = 0; i < game->next_wave_size; i++) {
-      for (int j = 0; j < FIELD_COLS; j++) {
-        f32 r = (f32)rand() / RAND_MAX;
-        if (r < game->enemy_spawn_p) {
-          EnemyType type =
-              (game->enemy_spawn_p > 0.3f && (f32)rand() / RAND_MAX < 0.1f)
-                  ? ENEMY_SHOOTER
-                  : ENEMY_NORMAL;
-          u32 level = 1 + (game->enemy_spawn_p - r) * 5;
-
-          u32 w = 1;
-          if (j < FIELD_COLS - 1 && (f32)rand() / RAND_MAX < 0.02f) {
-            w = 2;
-            j++;
-          }
-
-          Entity *enemy = enemy_create(j, i, w, 1, type, level);
-          el_add(game->world, enemy);
-        }
-      }
-    }
-
-    if (game->enemy_spawn_p < 0.9) {
-      game->enemy_spawn_p += 0.01;
-    }
-
-    game->next_wave_size = rand() % 3 + 1;
-    game->enemy_spawn_timer = ROW_TIME * game->next_wave_size;
-  } else {
-    game->enemy_spawn_timer -= game->delta_time;
-  }
+  game_spawn_enemies(game);
 }
 
 void game_draw(Game game) {
