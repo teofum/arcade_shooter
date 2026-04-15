@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "bullet.h"
 #include "config.h"
 #include "game.h"
 #include "player.h"
@@ -10,6 +11,10 @@
 #include "ui.h"
 
 #define BUTTON_PADDING 5
+
+// Constants
+static Color overlay_bg = {0, 0, 0, 128};
+static Rectangle full_screen = {0, 0, WINDOW_WIDTH, WINDOW_HEIGHT};
 
 // Internal UI drawing state
 typedef struct UiFrame {
@@ -208,8 +213,7 @@ static void ui_draw_special_ammo(PlayerData *pdata) {
 void ui_draw_game_ui(Game game) {
   PlayerData *pdata = (PlayerData *)game->player->custom_data;
 
-  ui_begin_frame_ex((Rectangle){0, 0, WINDOW_WIDTH, WINDOW_HEIGHT}, BLANK,
-                    BLANK, (Vector2){20, 20});
+  ui_begin_frame_ex(full_screen, BLANK, BLANK, (Vector2){20, 20});
 
   static char score_str[30];
   sprintf(score_str, "Score: %6u", game->score);
@@ -219,6 +223,124 @@ void ui_draw_game_ui(Game game) {
   ui_draw_xp_bar(pdata);
   ui_draw_ammo_counter(pdata);
   ui_draw_special_ammo(pdata);
+
+  ui_end_frame();
+}
+
+static void ui_draw_level_up_option(Game game, LevelUpOption *option, u32 i) {
+  PlayerData *pdata = (PlayerData *)game->player->custom_data;
+  static char text[30];
+
+  f32 button_x = (i + 1) * 220;
+
+  ui_begin_frame(ui_align(button_x, 0, 200, 300, START, START), BLANK);
+
+  bool clicked =
+      ui_button_ex("", 0, (Vector2){0, 0}, (Vector2){200, 300}, START, START);
+
+  BulletType type;
+  u32 level;
+
+  if (option->type == LU_NEW) {
+    sprintf(text, "New");
+    type = option->bullet_type;
+    level = 1;
+  } else {
+    SpecialBulletSlot *bullet = &pdata->special_bullets[option->bullet_idx];
+    sprintf(text, "Lv. %d -> %d", bullet->level, bullet->level + 1);
+    type = bullet->type;
+    level = bullet->level + 1;
+  }
+
+  ui_text(bullet_type_names[type], 20, BLACK, (Vector2){0, 10}, CENTER, START);
+  ui_text(text, 15, BLACK, (Vector2){0, 40}, CENTER, START);
+
+  DrawRectangleRec(ui_align(0, 70, 60, 60, CENTER, START),
+                   bullet_type_colors[type]);
+
+  ui_text(get_bullet_description(game, type, level), 10, BLACK,
+          (Vector2){0, 150}, CENTER, START);
+
+  ui_end_frame();
+
+  if (clicked) {
+    if (option->type == LU_NEW) {
+      SpecialBulletSlot *bullet =
+          &pdata->special_bullets[pdata->special_bullet_count];
+
+      bullet->fired = false;
+      bullet->level = 1;
+      bullet->type = option->bullet_type;
+      pdata->special_bullet_count++;
+      game->state = GS_RUNNING;
+    } else {
+      SpecialBulletSlot *bullet = &pdata->special_bullets[option->bullet_idx];
+
+      bullet->level++;
+      game->state = GS_RUNNING;
+    }
+  }
+}
+
+void ui_draw_level_up_screen(Game game) {
+  PlayerData *pdata = (PlayerData *)game->player->custom_data;
+
+  static char level_up_str[30];
+  sprintf(level_up_str, "Lv. %d -> %d", pdata->level - 1, pdata->level);
+
+  ui_begin_frame(full_screen, overlay_bg);
+
+  // Level up title
+  ui_begin_frame_ex(
+      ui_align_ex(0, -200, WINDOW_WIDTH, 120, START, CENTER, START, END),
+      overlay_bg, BLANK, (Vector2){10, 10});
+  ui_text("Level up!", 60, WHITE, (Vector2){0, 0}, CENTER, START);
+  ui_text(level_up_str, 30, WHITE, (Vector2){0, 70}, CENTER, START);
+  ui_end_frame();
+
+  ui_begin_frame(ui_align_ex(0, -160, 860, 400, CENTER, CENTER, CENTER, START),
+                 BLANK);
+
+  // Increased stats
+  ui_begin_frame_ex(ui_align(0, 0, 200, 300, START, START), overlay_bg, BLANK,
+                    (Vector2){10, 10});
+  Vector2 cursor = {0, 0};
+  if (pdata->leveled_up_stats[STAT_AMMO]) {
+    sprintf(level_up_str, "Ammo: %d -> %d", pdata->max_ammo - 1,
+            pdata->max_ammo);
+    ui_text(level_up_str, 15, WHITE, cursor, START, START);
+    cursor.y += 20;
+  }
+  if (pdata->leveled_up_stats[STAT_DAMAGE]) {
+    sprintf(level_up_str, "Damage: %d -> %d", pdata->base_damage - 1,
+            pdata->base_damage);
+    ui_text(level_up_str, 15, WHITE, cursor, START, START);
+    cursor.y += 20;
+  }
+  if (pdata->leveled_up_stats[STAT_HEALTH]) {
+    sprintf(level_up_str, "Health: %d -> %d", pdata->max_health - 10,
+            pdata->max_health);
+    ui_text(level_up_str, 15, WHITE, cursor, START, START);
+    cursor.y += 20;
+  }
+  if (pdata->leveled_up_stats[STAT_MOVEMENT]) {
+    sprintf(level_up_str, "Move speed: %.0f -> %.0f", pdata->move_speed - 5,
+            pdata->move_speed);
+    ui_text(level_up_str, 15, WHITE, cursor, START, START);
+    cursor.y += 20;
+  }
+  ui_end_frame();
+
+  // Level up options
+  for (u32 i = 0; i < LEVEL_UP_OPTIONS; i++) {
+    LevelUpOption *option = pdata->level_up_options[i];
+    if (!option)
+      break;
+
+    ui_draw_level_up_option(game, option, i);
+  }
+
+  ui_end_frame();
 
   ui_end_frame();
 }

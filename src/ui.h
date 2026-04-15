@@ -4,7 +4,6 @@
 #include <raylib.h>
 
 #include "game.h"
-#include "player.h"
 
 typedef enum {
   START = 0,
@@ -46,5 +45,8 @@ void ui_text(const char *text, f32 font_size, Color color, Vector2 position,
 
 // Game UI
 void ui_draw_game_ui(Game game);
+
+// Overlays
+void ui_draw_level_up_screen(Game game);
 
 #endif

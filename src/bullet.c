@@ -1,6 +1,7 @@
 #include <limits.h>
 #include <raylib.h>
 #include <raymath.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "bullet.h"
@@ -25,6 +26,11 @@ Color bullet_type_colors[] = {
     WHITE, PINK, ORANGE, GRAY, RED, GREEN,
 };
 
+static i32 get_bullet_damage(BulletType type, u32 level, i32 base_damage) {
+  return type > BULLET_NORMAL ? base_damage * (1.5f + level / 2.0f)
+                              : base_damage;
+}
+
 /*============================================================================*
  * Bullet initialization                                                      *
  *============================================================================*/
@@ -36,7 +42,7 @@ static BulletData *bullet_init_data(Vector2 initial_velocity, BulletType type,
 
   data->type = type;
   data->level = level;
-  data->damage = type > BULLET_NORMAL ? damage * (1.5f + level / 2.0f) : damage;
+  data->damage = get_bullet_damage(type, level, damage);
   data->special_idx = special_idx;
 
   data->deferred_destroy = false;
@@ -245,4 +251,80 @@ Entity *bullet_create(Vector2 position, Vector2 target, BulletType type,
   bullet->draw = bullet_draw;
 
   return bullet;
+}
+
+/*============================================================================*
+ * Misc functions                                                             *
+ *============================================================================*/
+const char *get_bullet_description(Game game, BulletType type, u32 level) {
+  PlayerData *pdata = (PlayerData *)game->player->custom_data;
+  static char text[200];
+
+  i32 damage = get_bullet_damage(type, level, pdata->base_damage);
+  Range damage_range = get_damage_range(damage);
+
+  switch (type) {
+  case BULLET_REPLICATE: {
+    i32 sec_damage = get_bullet_damage(BULLET_SECONDARY, 1, damage / 2);
+    Range sec_damage_range = get_damage_range(damage);
+    f32 spawn_p = 0.25f + 0.1f * level;
+
+    sprintf(text,
+            "Upon hitting an enemy, %.0f%% chance\n"
+            "of shooting an extra bullet in\n"
+            "a random direction that deals\n"
+            "%d-%d damage.",
+            spawn_p * 100, sec_damage_range.min, sec_damage_range.max);
+    return text;
+  }
+  case BULLET_EXPLOSIVE: {
+    f32 radius = 25 + level * 5;
+    Range expl_damage_range = get_damage_range(damage * 2);
+
+    sprintf(text,
+            "Upon hitting an enemy, explodes\n"
+            "dealing %d-%d damage in a %.0f unit\n"
+            "radius. Has a 3 second cooldown\n"
+            "before it can be fired again.",
+            expl_damage_range.min, expl_damage_range.max, radius);
+    return text;
+  }
+  case BULLET_SHRAPNEL: {
+    i32 sec_damage = get_bullet_damage(BULLET_SECONDARY, 1, damage / 2);
+    Range sec_damage_range = get_damage_range(damage);
+    u32 n_spawned = level + 2;
+
+    sprintf(text,
+            "Upon hitting an enemy, explodes\n"
+            "into %u small bullets fired in random\n"
+            "directions that deal %d-%d damage.\n"
+            "Has a 3 second cooldown\n"
+            "before it can be fired again.",
+            n_spawned, sec_damage_range.min, sec_damage_range.max);
+    return text;
+  }
+  case BULLET_LASER: {
+    Range laser_damage_range = get_damage_range(damage / 2);
+
+    sprintf(text,
+            "Upon hitting an enemy, fires a\n"
+            "laser that deals %d-%d damage \n"
+            "to all enemies in the same row.",
+            laser_damage_range.min, laser_damage_range.max);
+    return text;
+  }
+  case BULLET_HEALING: {
+    f32 heal_p = 0.04 + 0.02f * level;
+    i32 heal_amount = 1 + level / 4;
+
+    sprintf(text,
+            "Upon hitting an enemy, %.0f%% chance\n"
+            "to heal the player for\n"
+            "%d hit points.",
+            heal_p * 100, heal_amount);
+    return text;
+  }
+  default:
+    return "A normal bullet";
+  }
 }

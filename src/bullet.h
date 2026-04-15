@@ -38,4 +38,6 @@ Entity *bullet_create(Vector2 position, Vector2 target, BulletType type,
 
 bool bullet_hit_enemy(Entity *self, Entity *enemy, Game game);
 
+const char *get_bullet_description(Game game, BulletType type, u32 level);
+
 #endif
