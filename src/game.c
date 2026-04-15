@@ -53,6 +53,9 @@ void game_reset(Game game) {
   game->enemy_spawn_p = 0.2f;
   game->next_wave_size = 2;
 
+  game->boss_idx = 0;
+  game->boss_timer = BOSS_TIME;
+
   game->state = GS_MAIN_MENU;
   game->score = 0;
 }
@@ -117,20 +120,66 @@ static void game_spawn_wave(Game game) {
   }
 }
 
+static void game_spawn_boss(Game game) {
+  switch (game->boss_idx) {
+  case 0: {
+    // Miniboss 1: Big Chungus
+    Entity *enemy = enemy_create(FIELD_COLS / 2 - 2, 0, 4, 4, ENEMY_NORMAL, 2);
+    el_add(game->world, enemy);
+    break;
+  }
+  case 1: {
+    // Miniboss 2: Big Iron
+    Entity *enemy = enemy_create(FIELD_COLS / 2 - 1, 0, 2, 2, ENEMY_SHOOTER, 5);
+    el_add(game->world, enemy);
+
+    for (u32 j = FIELD_COLS / 2 - 2; j <= FIELD_COLS / 2 + 1; j++) {
+      enemy = enemy_create(j, 2, 1, 1, ENEMY_NORMAL, 5);
+      el_add(game->world, enemy);
+    }
+    for (u32 i = 0; i < 2; i++) {
+      enemy = enemy_create(FIELD_COLS / 2 - 2, i, 1, 1, ENEMY_NORMAL, 3);
+      el_add(game->world, enemy);
+      enemy = enemy_create(FIELD_COLS / 2 + 1, i, 1, 1, ENEMY_NORMAL, 3);
+      el_add(game->world, enemy);
+    }
+    break;
+  }
+  case 2: {
+    // Final boss
+    // TODO
+    break;
+  }
+  }
+
+  game->boss_idx += 1;
+  game->boss_timer = BOSS_TIME;
+}
+
 static void game_spawn_enemies(Game game) {
   if (game->enemy_spawn_timer <= 0.0f) {
-    game_spawn_wave(game);
+    if (game->next_wave_size == 0) {
+      game_spawn_boss(game);
+    } else {
+      game_spawn_wave(game);
 
-    // Increase diffculty
-    if (game->enemy_spawn_p < 0.9) {
-      game->enemy_spawn_p += 0.01;
+      // Increase diffculty
+      if (game->enemy_spawn_p < 0.9) {
+        game->enemy_spawn_p += 0.01 * game->next_wave_size;
+      }
     }
 
-    game->next_wave_size = rand() % 3 + 1;
-    game->enemy_spawn_timer = ROW_TIME * game->next_wave_size;
-  } else {
-    game->enemy_spawn_timer -= game->delta_time;
+    if (game->boss_timer <= 0.0f) {
+      game->next_wave_size = 0;
+      game->enemy_spawn_timer = ROW_TIME * 4;
+    } else {
+      game->next_wave_size = rand() % 3 + 1;
+      game->enemy_spawn_timer = ROW_TIME * game->next_wave_size;
+    }
   }
+
+  game->enemy_spawn_timer -= game->delta_time;
+  game->boss_timer -= game->delta_time;
 }
 
 void game_update(Game game) {
@@ -151,7 +200,8 @@ void game_update(Game game) {
     }
   }
 
-  game_spawn_enemies(game);
+  if (game->boss_idx < N_BOSSES)
+    game_spawn_enemies(game);
 }
 
 void game_draw(Game game) {

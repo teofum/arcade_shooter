@@ -210,6 +210,28 @@ static void ui_draw_special_ammo(PlayerData *pdata) {
   }
 }
 
+static void ui_draw_progress(Game game) {
+  f32 end_time = BOSS_TIME * N_BOSSES;
+  f32 progress =
+      (BOSS_TIME * game->boss_idx + BOSS_TIME - game->boss_timer) / end_time;
+
+  ui_begin_frame_ex(ui_align(0, 0, 20, 400, END, CENTER), DARKGRAY, BLACK,
+                    (Vector2){0, 0});
+
+  DrawRectangleRec(ui_align(0, 0, 20, 400 * progress, START, END), RED);
+
+  for (int i = 1; i <= 3; i++) {
+    f32 w = i == 3 ? 32 : 28;
+    f32 h = i == 3 ? 24 : 20;
+    Rectangle r = ui_align(0, 400 * i / 3.0f - 10, w, h, CENTER, END);
+
+    DrawRectangleRec(r, game->boss_idx >= i ? RED : DARKGRAY);
+    DrawRectangleLines(r.x, r.y, r.width, r.height, BLACK);
+  }
+
+  ui_end_frame();
+}
+
 void ui_draw_game_ui(Game game) {
   PlayerData *pdata = (PlayerData *)game->player->custom_data;
 
@@ -223,6 +245,8 @@ void ui_draw_game_ui(Game game) {
   ui_draw_xp_bar(pdata);
   ui_draw_ammo_counter(pdata);
   ui_draw_special_ammo(pdata);
+
+  ui_draw_progress(game);
 
   ui_end_frame();
 }

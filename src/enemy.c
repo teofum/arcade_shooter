@@ -45,15 +45,22 @@ static EnemyData *enemy_init_data(u32 w, u32 h, EnemyType type, u32 level) {
 
   data->fire_timer = data->fire_cooldown = 5.5f - level * 0.5f;
 
+  // Miniboss
+  if (data->stat_scaling >= 4) {
+    data->damage = 9999;
+    data->fire_timer = data->fire_cooldown = 0.5f;
+    data->stat_scaling *= 4; // 4x XP drop
+  }
+
   return data;
 }
 
 static void enemy_update(Entity *self, Game game) {
   EnemyData *data = (EnemyData *)self->custom_data;
+  Vector2 center = Vector2Add(self->position, Vector2Scale(data->size, 0.5f));
 
   // Die
   if (data->health <= 0) {
-    Vector2 center = Vector2Add(self->position, Vector2Scale(data->size, 0.5f));
 
     f32 xp_drop_p = 1 - 1 / (avg_xp_drop[data->level - 1] * data->stat_scaling);
     u32 xp_drop = 0;
@@ -135,8 +142,8 @@ static void enemy_update(Entity *self, Game game) {
   // If it's a shooty enemy, shoot
   if (data->type == ENEMY_SHOOTER) {
     if (data->fire_timer <= 0) {
-      Entity *bullet = enemy_bullet_create(
-          self->position, game->player->position, data->ranged_damage);
+      Entity *bullet = enemy_bullet_create(center, game->player->position,
+                                           data->ranged_damage);
       el_add(game->world, bullet);
 
       data->fire_timer = data->fire_cooldown;
@@ -146,7 +153,8 @@ static void enemy_update(Entity *self, Game game) {
   }
 
   // Destroy self on reaching the bottom of the screen
-  if (self->position.y > FIELD_HEIGHT / 2.0f - data->size.y * 2.0f) {
+  if (self->position.y >
+      FIELD_HEIGHT / 2.0f - data->size.y - ((f32)FIELD_WIDTH / FIELD_COLS)) {
     pdata->health -= data->damage;
     el_destroy(game->world, self);
   }
