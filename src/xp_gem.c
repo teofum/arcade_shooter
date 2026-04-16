@@ -11,6 +11,8 @@
 #include "utils.h"
 #include "xp_gem.h"
 
+u32 xp_gem_values[XP_GEM_TIERS] = {25, 5, 1};
+
 static XpGemData *xp_gem_init_data(u32 value) {
   XpGemData *data = malloc(sizeof(XpGemData));
   data->value = value;

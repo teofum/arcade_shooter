@@ -6,6 +6,10 @@
 #include "entity.h"
 #include "types.h"
 
+#define XP_GEM_TIERS 3
+
+extern u32 xp_gem_values[XP_GEM_TIERS];
+
 typedef struct XpGemData {
   u32 value;
 

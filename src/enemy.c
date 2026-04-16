@@ -28,6 +28,12 @@ static Color enemy_colors[][2] = {
 static const char *level_text[] = {"I", "II", "III", "IV", "V"};
 static f32 avg_xp_drop[] = {1.5f, 5.0f, 15.0f, 45.0f, 150.0f};
 
+#define EPS 1e-6f
+
+/*============================================================================*
+ * Enemy initialization                                                       *
+ *============================================================================*/
+
 static EnemyData *enemy_init_data(u32 w, u32 h, EnemyType type, u32 level) {
   EnemyData *data = malloc(sizeof(EnemyData));
 
@@ -55,34 +61,78 @@ static EnemyData *enemy_init_data(u32 w, u32 h, EnemyType type, u32 level) {
   return data;
 }
 
+/*============================================================================*
+ * Enemy update helpers                                                       *
+ *============================================================================*/
+
+static void enemy_drop_xp(Entity *self, Game game, Vector2 position) {
+  EnemyData *data = (EnemyData *)self->custom_data;
+
+  f32 xp_drop_p = 1 - 1 / (avg_xp_drop[data->level - 1] * data->stat_scaling);
+  u32 xp_drop = 0;
+  do {
+    xp_drop++;
+  } while (frand() < xp_drop_p);
+
+  for (u32 i = 0; i < XP_GEM_TIERS; i++) {
+    u32 amt = xp_gem_values[i];
+    while (xp_drop >= amt) {
+      Entity *xp_gem = xp_gem_create(position, amt);
+      el_add(game->world, xp_gem);
+      xp_drop -= amt;
+    }
+  }
+}
+
+static void enemy_move(Entity *self, Game game) {
+  EnemyData *data = (EnemyData *)self->custom_data;
+  PlayerData *pdata = (PlayerData *)game->player->custom_data;
+
+  // Move, pushing the player and bullets if it collides
+  f32 delta_y = game->delta_time * ENEMY_SPEED;
+  self->position.y += delta_y;
+
+  Rectangle bounds = {self->position.x + EPS, self->position.y + EPS,
+                      data->size.x - 2 * EPS, data->size.y - 2 * EPS};
+
+  if (CheckCollisionCircleRec(game->player->position, pdata->size, bounds)) {
+    game->player->position.y = bounds.y + bounds.width + pdata->size;
+  }
+
+  EntityListIterator it = el_iter(game->world);
+  Entity *entity;
+  while ((entity = eli_next(&it))) {
+    if (entity->type == ENT_BULLET) {
+      BulletData *bdata = (BulletData *)entity->custom_data;
+
+      if (CheckCollisionCircleRec(entity->position, bdata->size, bounds)) {
+        bullet_hit_enemy(entity, self, game);
+
+        if (bdata->deferred_destroy) {
+          el_destroy(game->world, entity);
+        } else {
+          entity->position.y = bounds.y + bounds.width + bdata->size;
+          bdata->velocity.y = fabsf(bdata->velocity.y);
+        }
+      }
+    }
+  }
+}
+
+/*============================================================================*
+ * Enemy update function                                                      *
+ *============================================================================*/
+
 static void enemy_update(Entity *self, Game game) {
   EnemyData *data = (EnemyData *)self->custom_data;
+  PlayerData *pdata = (PlayerData *)game->player->custom_data;
   Vector2 center = Vector2Add(self->position, Vector2Scale(data->size, 0.5f));
 
   // Die
   if (data->health <= 0) {
+    enemy_drop_xp(self, game, center);
 
-    f32 xp_drop_p = 1 - 1 / (avg_xp_drop[data->level - 1] * data->stat_scaling);
-    u32 xp_drop = 0;
-    do {
-      xp_drop++;
-    } while (frand() < xp_drop_p);
-    while (xp_drop >= 25) {
-      Entity *xp_gem = xp_gem_create(center, 25);
-      el_add(game->world, xp_gem);
-      xp_drop -= 25;
-    }
-    while (xp_drop >= 5) {
-      Entity *xp_gem = xp_gem_create(center, 5);
-      el_add(game->world, xp_gem);
-      xp_drop -= 5;
-    }
-    while (xp_drop > 0) {
-      Entity *xp_gem = xp_gem_create(center, 1);
-      el_add(game->world, xp_gem);
-      xp_drop--;
-    }
-
+    // Drop a powerup sometimes
     if (frand() < POWERUP_SPAWN_PROB) {
       Entity *powerup = powerup_create(center, rand() % 2);
       el_add(game->world, powerup);
@@ -98,46 +148,7 @@ static void enemy_update(Entity *self, Game game) {
     return;
   }
 
-  // Move, pushing the player and bullets if it collides
-  f32 delta_y = game->delta_time * ENEMY_SPEED;
-  self->position.y += delta_y;
-
-  PlayerData *pdata = (PlayerData *)game->player->custom_data;
-  Vector2 ppos = game->player->position;
-
-  f32 top = self->position.y - pdata->size;
-  f32 bottom = self->position.y + data->size.y + pdata->size;
-  f32 left = self->position.x - pdata->size;
-  f32 right = self->position.x + data->size.x + pdata->size;
-
-  if (left < ppos.x && ppos.x < right && top < ppos.y && ppos.y < bottom) {
-    game->player->position.y = bottom;
-  }
-
-  EntityListIterator it = el_iter(game->world);
-  Entity *entity;
-  while ((entity = eli_next(&it))) {
-    if (entity->type == ENT_BULLET) {
-      BulletData *bdata = (BulletData *)entity->custom_data;
-      Vector2 bpos = entity->position;
-
-      f32 top = self->position.y - bdata->size;
-      f32 bottom = self->position.y + data->size.y + bdata->size;
-      f32 left = self->position.x - bdata->size;
-      f32 right = self->position.x + data->size.x + bdata->size;
-
-      if (left < bpos.x && bpos.x < right && top < bpos.y && bpos.y < bottom) {
-        bullet_hit_enemy(entity, self, game);
-
-        if (bdata->deferred_destroy) {
-          el_destroy(game->world, entity);
-        } else {
-          entity->position.y = bottom;
-          bdata->velocity.y = fabsf(bdata->velocity.y);
-        }
-      }
-    }
-  }
+  enemy_move(self, game);
 
   // If it's a shooty enemy, shoot
   if (data->type == ENEMY_SHOOTER) {
@@ -160,6 +171,10 @@ static void enemy_update(Entity *self, Game game) {
   }
 }
 
+/*============================================================================*
+ * Enemy draw function                                                        *
+ *============================================================================*/
+
 static void enemy_draw(Entity *enemy, Game game) {
   EnemyData *data = (EnemyData *)enemy->custom_data;
 
@@ -175,6 +190,10 @@ static void enemy_draw(Entity *enemy, Game game) {
   DrawRectangleLinesEx(rect, 1.0f, BLACK);
   DrawText(level_text[data->level - 1], rect.x + 10, rect.y + 10, 10, WHITE);
 }
+
+/*============================================================================*
+ * Enemy constructor                                                          *
+ *============================================================================*/
 
 Entity *enemy_create(u32 x, u32 y, u32 w, u32 h, EnemyType type, u32 level) {
   Entity *enemy = ent_create(ENT_ENEMY);
