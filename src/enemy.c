@@ -30,6 +30,11 @@ static f32 avg_xp_drop[] = {1.5f, 5.0f, 15.0f, 45.0f, 150.0f};
 
 #define EPS 1e-6f
 
+static Vector2 up = {0, -1};
+static Vector2 down = {0, 1};
+static Vector2 left = {-1, 0};
+static Vector2 right = {1, 0};
+
 /*============================================================================*
  * Enemy initialization                                                       *
  *============================================================================*/
@@ -84,19 +89,37 @@ static void enemy_drop_xp(Entity *self, Game game, Vector2 position) {
   }
 }
 
-static void enemy_move(Entity *self, Game game) {
+static void push_entity(Entity *entity, Rectangle bounds, f32 size,
+                        Vector2 direction) {
+  if (direction.x != 0) {
+    if (direction.x < 0) {
+      entity->position.x = bounds.x - size;
+    } else {
+      entity->position.x = bounds.x + bounds.height + size;
+    }
+  }
+  if (direction.y != 0) {
+    if (direction.y < 0) {
+      entity->position.y = bounds.y - size;
+    } else {
+      entity->position.y = bounds.y + bounds.width + size;
+    }
+  }
+}
+
+static void enemy_move(Entity *self, Game game, Vector2 direction) {
   EnemyData *data = (EnemyData *)self->custom_data;
   PlayerData *pdata = (PlayerData *)game->player->custom_data;
 
   // Move, pushing the player and bullets if it collides
-  f32 delta_y = game->delta_time * ENEMY_SPEED;
-  self->position.y += delta_y;
+  Vector2 delta = Vector2Scale(direction, game->delta_time * ENEMY_SPEED);
+  self->position = Vector2Add(self->position, delta);
 
   Rectangle bounds = {self->position.x + EPS, self->position.y + EPS,
                       data->size.x - 2 * EPS, data->size.y - 2 * EPS};
 
   if (CheckCollisionCircleRec(game->player->position, pdata->size, bounds)) {
-    game->player->position.y = bounds.y + bounds.width + pdata->size;
+    push_entity(game->player, bounds, pdata->size, direction);
   }
 
   EntityListIterator it = el_iter(game->world);
@@ -111,8 +134,11 @@ static void enemy_move(Entity *self, Game game) {
         if (bdata->deferred_destroy) {
           el_destroy(game->world, entity);
         } else {
-          entity->position.y = bounds.y + bounds.width + bdata->size;
-          bdata->velocity.y = fabsf(bdata->velocity.y);
+          push_entity(entity, bounds, bdata->size, direction);
+          if (direction.y != 0)
+            bdata->velocity.y = fabsf(bdata->velocity.y) * direction.y;
+          if (direction.x != 0)
+            bdata->velocity.x = fabsf(bdata->velocity.x) * direction.x;
         }
       }
     }
@@ -148,7 +174,7 @@ static void enemy_update(Entity *self, Game game) {
     return;
   }
 
-  enemy_move(self, game);
+  enemy_move(self, game, down);
 
   // If it's a shooty enemy, shoot
   if (data->type == ENEMY_SHOOTER) {
