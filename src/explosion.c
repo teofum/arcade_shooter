@@ -1,6 +1,7 @@
 #include <raylib.h>
 #include <stdlib.h>
 
+#include "assets.h"
 #include "config.h"
 #include "dmg_number.h"
 #include "enemy.h"
@@ -21,11 +22,8 @@ static ExplosionData *explosion_init_data(f32 radius, i32 damage) {
 
 static void explosion_update(Entity *self, Game game) {
   ExplosionData *data = (ExplosionData *)self->custom_data;
-  f32 current_radius = data->radius * (data->ttl / EXPLOSION_TTL);
 
-  data->ttl -= game->delta_time;
-
-  if (data->ttl <= 0) {
+  if (data->ttl == EXPLOSION_TTL) {
     // Damage enemies and remove from game
     if (data->damage > 0) {
       EntityListIterator it = el_iter(game->world);
@@ -49,23 +47,28 @@ static void explosion_update(Entity *self, Game game) {
         }
       }
     }
+  }
 
+  data->ttl -= game->delta_time;
+
+  if (data->ttl <= 0) {
     el_destroy(game->world, self);
   }
 }
 
 static void explosion_draw(Entity *self, Game game) {
   ExplosionData *data = (ExplosionData *)self->custom_data;
-  f32 current_radius = data->radius * (1 - data->ttl / EXPLOSION_TTL);
+
+  Sprite *sprite = &assets.explosion;
+  u32 frame = sprite->frames * (1 - data->ttl / EXPLOSION_TTL);
 
   // Draw explosion
-  Vector2 screen_pos = game_to_screen(self->position);
-  f32 screen_size = game_to_screen_scale(current_radius);
-
-  DrawCircle(screen_pos.x, screen_pos.y, screen_size, RED);
-  DrawCircle(screen_pos.x, screen_pos.y, screen_size * 0.95f, ORANGE);
-  DrawCircle(screen_pos.x, screen_pos.y, screen_size * 0.8f, YELLOW);
-  DrawCircle(screen_pos.x, screen_pos.y, screen_size * 0.5f, WHITE);
+  Rectangle rect = {self->position.x - data->radius,
+                    self->position.y - data->radius, data->radius * 2,
+                    data->radius * 2};
+  rect = game_to_screen_rect(rect);
+  DrawTexturePro(sprite->texture, get_frame_rect(sprite, frame), rect,
+                 (Vector2){0, 0}, 0, WHITE);
 }
 
 Entity *explosion_create(Vector2 position, f32 radius, i32 damage) {

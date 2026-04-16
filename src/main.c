@@ -2,6 +2,7 @@
 #include <raymath.h>
 #include <stdio.h>
 
+#include "assets.h"
 #include "config.h"
 #include "game.h"
 
@@ -31,6 +32,8 @@ void init() {
 
   HideCursor();
   SetExitKey(0); // Stop "esc" key from immediately quitting the game
+
+  load_assets();
 }
 
 void cleanup() { CloseWindow(); }

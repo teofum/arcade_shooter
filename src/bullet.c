@@ -7,7 +7,6 @@
 #include "config.h"
 #include "dmg_number.h"
 #include "enemy.h"
-#include "enemy_bullet.h"
 #include "entity.h"
 #include "entity_list.h"
 #include "explosion.h"
@@ -86,6 +85,7 @@ static bool hit_explosive(Entity *self, Entity *enemy, Game game) {
 
   PlayerData *pdata = (PlayerData *)game->player->custom_data;
   pdata->special_bullets[data->special_idx].cooldown = 3.0f;
+  pdata->special_bullets[data->special_idx].fired = false;
   data->deferred_destroy = true;
 
   return true;
@@ -108,6 +108,7 @@ static bool hit_shrapnel(Entity *self, Entity *enemy, Game game) {
 
   PlayerData *pdata = (PlayerData *)game->player->custom_data;
   pdata->special_bullets[data->special_idx].cooldown = 3.0f;
+  pdata->special_bullets[data->special_idx].fired = false;
   data->deferred_destroy = true;
 
   return true;
