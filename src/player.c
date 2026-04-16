@@ -5,6 +5,8 @@
 
 #include "bullet.h"
 #include "config.h"
+#include "dmg_number.h"
+#include "enemy_bullet.h"
 #include "entity.h"
 #include "entity_list.h"
 #include "game.h"
@@ -55,6 +57,24 @@ static PlayerData *player_init_data() {
  * Player update helpers                                                      *
  *============================================================================*/
 
+/*
+ * Hit callback for enemy projectiles
+ */
+static bool player_hit_bullet(Entity *self, Entity *enemy_bullet, Game game) {
+  PlayerData *data = (PlayerData *)self->custom_data;
+  EnemyBulletData *bdata = (EnemyBulletData *)enemy_bullet->custom_data;
+
+  i32 damage = get_damage(bdata->damage);
+  data->health -= damage;
+
+  Entity *dmg_number =
+      dmg_number_create(enemy_bullet->position, damage, DMG_NUMBER_SIZE);
+  el_add(game->world, dmg_number);
+
+  el_destroy(game->world, enemy_bullet);
+  return false;
+}
+
 static void player_move(Entity *self, Game game) {
   PlayerData *data = (PlayerData *)self->custom_data;
 
@@ -69,8 +89,8 @@ static void player_move(Entity *self, Game game) {
 
   // Check for collisions
   // Also collide with a "fake" wall at the bottom so player can't go OOB
-  Collision collision =
-      check_collisions(self, game, next_pos, data->size, NULL);
+  Collision collision = check_collisions(self, game, next_pos, data->size, NULL,
+                                         player_hit_bullet);
 
   Collision c =
       collide_particle_rect(self->position, next_pos, data->size, bottom_wall);

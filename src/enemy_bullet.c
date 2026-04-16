@@ -54,15 +54,6 @@ static void bullet_update(Entity *self, Game game) {
   Vector2 delta_pos = Vector2Scale(data->velocity, game->delta_time);
   self->position = Vector2Add(self->position, delta_pos);
 
-  // If hit player damage and destroy
-  PlayerData *pdata = (PlayerData *)game->player->custom_data;
-  if (CheckCollisionCircles(self->position, data->size, game->player->position,
-                            pdata->size)) {
-    bullet_hit_player(self, game);
-    el_destroy(game->world, self);
-    return;
-  }
-
   // Destroy the bullet when it goes out of bounds
   static Rectangle screen_bounds = {-FIELD_WIDTH / 2.0f, -FIELD_HEIGHT / 2.0f,
                                     FIELD_WIDTH, FIELD_HEIGHT};

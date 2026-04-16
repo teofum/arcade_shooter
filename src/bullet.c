@@ -7,6 +7,7 @@
 #include "config.h"
 #include "dmg_number.h"
 #include "enemy.h"
+#include "enemy_bullet.h"
 #include "entity.h"
 #include "entity_list.h"
 #include "explosion.h"
@@ -154,7 +155,7 @@ static CollisionCallback special_bullet_hit[6] = {
 };
 
 /*
- * Hit callback
+ * Hit callback for enemies
  */
 bool bullet_hit_enemy(Entity *self, Entity *enemy, Game game) {
   BulletData *data = (BulletData *)self->custom_data;
@@ -174,6 +175,22 @@ bool bullet_hit_enemy(Entity *self, Entity *enemy, Game game) {
   }
 }
 
+/*
+ * Hit callback for enemy projectiles
+ */
+bool bullet_hit_bullet(Entity *self, Entity *enemy_bullet, Game game) {
+  BulletData *data = (BulletData *)self->custom_data;
+
+  el_destroy(game->world, enemy_bullet);
+
+  if (data->type <= 0) {
+    data->deferred_destroy = true;
+    return true;
+  } else {
+    return false;
+  }
+}
+
 /*============================================================================*
  * Bullet update function                                                     *
  *============================================================================*/
@@ -185,8 +202,8 @@ static void bullet_update(Entity *self, Game game) {
   Vector2 next_pos = Vector2Add(self->position, delta_pos);
 
   // Check collisions
-  Collision collision =
-      check_collisions(self, game, next_pos, data->size, bullet_hit_enemy);
+  Collision collision = check_collisions(self, game, next_pos, data->size,
+                                         bullet_hit_enemy, bullet_hit_bullet);
 
   // Some bullets destroy themselves on hitting an enemy
   if (data->deferred_destroy) {

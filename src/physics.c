@@ -2,8 +2,11 @@
 #include <raylib.h>
 #include <raymath.h>
 
+#include "bullet.h"
 #include "enemy.h"
+#include "enemy_bullet.h"
 #include "entity.h"
+#include "entity_list.h"
 #include "game.h"
 #include "physics.h"
 #include "types.h"
@@ -86,7 +89,8 @@ static Rectangle get_collision_bounds(Entity *entity) {
  * Check collisions with walls/enemies, optionally triggering something on hit
  */
 Collision check_collisions(Entity *self, Game game, Vector2 next_pos, f32 size,
-                           CollisionCallback on_enemy_hit) {
+                           CollisionCallback on_enemy_hit,
+                           CollisionCallback on_enemy_bullet_hit) {
   // Check for collisions with walls
   Collision collision = {
       .direction = COL_NONE,
@@ -105,6 +109,14 @@ Collision check_collisions(Entity *self, Game game, Vector2 next_pos, f32 size,
       if (c.direction != COL_NONE && entity->type == ENT_ENEMY &&
           on_enemy_hit != NULL) {
         if (on_enemy_hit(self, entity, game))
+          break;
+      }
+    } else if (entity->type == ENT_ENEMY_BULLET) {
+      EnemyBulletData *bdata = (EnemyBulletData *)entity->custom_data;
+      bool collides = CheckCollisionCircles(self->position, size,
+                                            entity->position, bdata->size);
+      if (collides && on_enemy_bullet_hit != NULL) {
+        if (on_enemy_bullet_hit(self, entity, game))
           break;
       }
     }
