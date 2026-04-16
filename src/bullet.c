@@ -85,7 +85,6 @@ static bool hit_explosive(Entity *self, Entity *enemy, Game game) {
   el_add(game->world, explosion);
 
   PlayerData *pdata = (PlayerData *)game->player->custom_data;
-  pdata->special_bullets[data->special_idx].fired = false;
   pdata->special_bullets[data->special_idx].cooldown = 3.0f;
   data->deferred_destroy = true;
 
@@ -108,7 +107,6 @@ static bool hit_shrapnel(Entity *self, Entity *enemy, Game game) {
   }
 
   PlayerData *pdata = (PlayerData *)game->player->custom_data;
-  pdata->special_bullets[data->special_idx].fired = false;
   pdata->special_bullets[data->special_idx].cooldown = 3.0f;
   data->deferred_destroy = true;
 
@@ -196,6 +194,7 @@ bool bullet_hit_bullet(Entity *self, Entity *enemy_bullet, Game game) {
  *============================================================================*/
 static void bullet_update(Entity *self, Game game) {
   BulletData *data = (BulletData *)self->custom_data;
+  PlayerData *pdata = (PlayerData *)game->player->custom_data;
 
   // Predict next position
   Vector2 delta_pos = Vector2Scale(data->velocity, game->delta_time);
@@ -207,6 +206,12 @@ static void bullet_update(Entity *self, Game game) {
 
   // Some bullets destroy themselves on hitting an enemy
   if (data->deferred_destroy) {
+    if (data->type == BULLET_NORMAL) {
+      pdata->ammo++;
+    } else if (data->type != BULLET_SECONDARY) {
+      pdata->special_bullets[data->special_idx].fired = false;
+    }
+
     el_destroy(game->world, self);
     return;
   }
@@ -222,8 +227,6 @@ static void bullet_update(Entity *self, Game game) {
 
   // Destroy the bullet when it reaches the bottom of the screen
   if (self->position.y >= FIELD_HEIGHT / 2.0f + data->size) {
-    PlayerData *pdata = (PlayerData *)game->player->custom_data;
-
     if (data->type == BULLET_NORMAL) {
       pdata->ammo++;
     } else if (data->type != BULLET_SECONDARY) {

@@ -147,7 +147,8 @@ static void game_spawn_boss(Game game) {
   }
   case 2: {
     // Final boss
-    // TODO
+    Entity *boss = boss_create();
+    el_add(game->world, boss);
     break;
   }
   }

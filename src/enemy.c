@@ -19,10 +19,12 @@
 static i32 base_health[] = {
     [ENEMY_NORMAL] = 100,
     [ENEMY_SHOOTER] = 50,
+    [ENEMY_BOSS] = 10000,
 };
 static Color enemy_colors[][2] = {
     [ENEMY_NORMAL] = {BROWN, DARKBROWN},
     [ENEMY_SHOOTER] = {BLUE, DARKBLUE},
+    [ENEMY_BOSS] = {PURPLE, DARKPURPLE},
 };
 
 static const char *level_text[] = {"I", "II", "III", "IV", "V"};
@@ -145,6 +147,23 @@ static void enemy_move(Entity *self, Game game, Vector2 direction) {
   }
 }
 
+static void enemy_fire(Entity *self, Game game, Vector2 target) {
+  EnemyData *data = (EnemyData *)self->custom_data;
+  Vector2 center = Vector2Add(self->position, Vector2Scale(data->size, 0.5f));
+
+  if (data->fire_timer <= 0) {
+    Entity *bullet = enemy_bullet_create(center, target, data->ranged_damage);
+    el_add(game->world, bullet);
+
+    data->fire_timer = data->fire_cooldown;
+
+    if (data->type == ENEMY_BOSS) {
+      data->boss_bullet_counter++;
+    }
+  }
+  data->fire_timer -= game->delta_time;
+}
+
 /*============================================================================*
  * Enemy update function                                                      *
  *============================================================================*/
@@ -176,17 +195,8 @@ static void enemy_update(Entity *self, Game game) {
 
   enemy_move(self, game, down);
 
-  // If it's a shooty enemy, shoot
   if (data->type == ENEMY_SHOOTER) {
-    if (data->fire_timer <= 0) {
-      Entity *bullet = enemy_bullet_create(center, game->player->position,
-                                           data->ranged_damage);
-      el_add(game->world, bullet);
-
-      data->fire_timer = data->fire_cooldown;
-    } else {
-      data->fire_timer -= game->delta_time;
-    }
+    enemy_fire(self, game, game->player->position);
   }
 
   // Destroy self on reaching the bottom of the screen
@@ -201,10 +211,10 @@ static void enemy_update(Entity *self, Game game) {
  * Enemy draw function                                                        *
  *============================================================================*/
 
-static void enemy_draw(Entity *enemy, Game game) {
-  EnemyData *data = (EnemyData *)enemy->custom_data;
+static void enemy_draw(Entity *self, Game game) {
+  EnemyData *data = (EnemyData *)self->custom_data;
 
-  Rectangle rect = {enemy->position.x, enemy->position.y, data->size.x,
+  Rectangle rect = {self->position.x, self->position.y, data->size.x,
                     data->size.y};
   rect = game_to_screen_rect(rect);
 
@@ -234,4 +244,171 @@ Entity *enemy_create(u32 x, u32 y, u32 w, u32 h, EnemyType type, u32 level) {
   enemy->draw = enemy_draw;
 
   return enemy;
+}
+
+/*============================================================================*
+ * Boss functions                                                             *
+ *============================================================================*/
+
+static EnemyData *boss_init_data() {
+  EnemyData *data = malloc(sizeof(EnemyData));
+
+  u32 w = 3, h = 4;
+
+  Vector2 size = {w * GRID_SIZE, h * GRID_SIZE};
+  data->size = size;
+
+  data->type = ENEMY_BOSS;
+  data->boss_state = BOSS_ENTER;
+  data->boss_bullet_counter = 0;
+  data->health = data->max_health = base_health[ENEMY_BOSS];
+
+  data->damage = 9999;
+  data->ranged_damage = 20;
+
+  data->fire_timer = data->fire_cooldown = 0.0f;
+
+  return data;
+}
+
+static void boss_next_state(EnemyData *data) {
+  if (data->boss_state == BOSS_MOVE_LEFT_2) {
+    data->boss_state = BOSS_SHOOT_ARC;
+  } else {
+    data->boss_state++;
+  }
+
+  // Set up new state
+  switch (data->boss_state) {
+  case BOSS_SHOOT_ARC:
+    data->fire_timer = data->fire_cooldown = BOSS_ARC_COOLDOWN;
+    data->boss_bullet_counter = 0;
+    break;
+  case BOSS_SHOOT_HOMING_1:
+  case BOSS_SHOOT_HOMING_2:
+    data->fire_timer = data->fire_cooldown = BOSS_HOMING_COOLDOWN;
+    data->boss_bullet_counter = 0;
+    break;
+  case BOSS_SHOOT_SPIRAL:
+    data->fire_timer = data->fire_cooldown = BOSS_SPIRAL_COOLDOWN;
+    data->boss_bullet_counter = 0;
+    break;
+  default:
+    break;
+  }
+}
+
+static void boss_update(Entity *self, Game game) {
+  EnemyData *data = (EnemyData *)self->custom_data;
+  Vector2 center = Vector2Add(self->position, Vector2Scale(data->size, 0.5f));
+
+  switch (data->boss_state) {
+  case BOSS_ENTER: {
+    enemy_move(self, game, down);
+
+    if (self->position.y >= -FIELD_HEIGHT / 2.0f + GRID_SIZE)
+      boss_next_state(data);
+
+    break;
+  }
+  case BOSS_SHOOT_ARC: {
+    u32 b = data->boss_bullet_counter;
+    f32 angle = -45 + b * (180.0f / BOSS_ARC_BULLETS);
+    if (b >= BOSS_ARC_BULLETS / 2) {
+      angle = 90 - angle;
+    }
+    angle *= PI / 180.0f;
+
+    Vector2 direction = {sinf(angle), cosf(angle)};
+    enemy_fire(self, game, Vector2Add(center, direction));
+
+    if (data->boss_bullet_counter == BOSS_ARC_BULLETS)
+      boss_next_state(data);
+    break;
+  }
+  case BOSS_MOVE_LEFT_1: {
+    enemy_move(self, game, left);
+
+    if (self->position.x <= -FIELD_WIDTH / 2.0f)
+      boss_next_state(data);
+
+    break;
+  }
+  case BOSS_SHOOT_HOMING_1:
+  case BOSS_SHOOT_HOMING_2: {
+    enemy_fire(self, game, game->player->position);
+
+    if (data->boss_bullet_counter == BOSS_HOMING_BULLETS)
+      boss_next_state(data);
+    break;
+  }
+  case BOSS_MOVE_RIGHT_1: {
+    enemy_move(self, game, right);
+
+    if (self->position.x >= -1.5f * GRID_SIZE)
+      boss_next_state(data);
+
+    break;
+  }
+  case BOSS_SHOOT_SPIRAL: {
+    u32 b = data->boss_bullet_counter;
+    f32 angle = b * (1080.0f / BOSS_SPIRAL_BULLETS);
+    angle *= PI / 180.0f;
+
+    Vector2 direction = {sinf(angle), cosf(angle)};
+    enemy_fire(self, game, Vector2Add(center, direction));
+
+    if (data->boss_bullet_counter == BOSS_SPIRAL_BULLETS)
+      boss_next_state(data);
+    break;
+  }
+  case BOSS_MOVE_RIGHT_2: {
+    enemy_move(self, game, right);
+
+    if (self->position.x >= FIELD_WIDTH / 2.0f - 3 * GRID_SIZE)
+      boss_next_state(data);
+
+    break;
+  }
+  case BOSS_MOVE_LEFT_2: {
+    enemy_move(self, game, left);
+
+    if (self->position.x <= -1.5f * GRID_SIZE)
+      boss_next_state(data);
+
+    break;
+  }
+  default:
+    break;
+  }
+}
+
+static void boss_draw(Entity *self, Game game) {
+  EnemyData *data = (EnemyData *)self->custom_data;
+
+  Rectangle rect = {self->position.x, self->position.y, data->size.x,
+                    data->size.y};
+  rect = game_to_screen_rect(rect);
+
+  Rectangle rect2 = rect;
+  rect2.height *= (float)data->health / data->max_health;
+
+  DrawRectangleRec(rect, enemy_colors[data->type][1]);
+  DrawRectangleRec(rect2, enemy_colors[data->type][0]);
+  DrawRectangleLinesEx(rect, 1.0f, BLACK);
+}
+
+Entity *boss_create() {
+  Entity *boss = ent_create(ENT_ENEMY);
+
+  boss->position = (Vector2){
+      -1.5f * GRID_SIZE,
+      -FIELD_HEIGHT / 2.0f - 4 * GRID_SIZE,
+  };
+  boss->custom_data = boss_init_data();
+
+  boss->update = boss_update;
+  boss->draw = boss_draw;
+
+  return boss;
 }
