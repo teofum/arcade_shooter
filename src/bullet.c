@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "assets.h"
 #include "bullet.h"
 #include "config.h"
 #include "dmg_number.h"
@@ -18,7 +19,8 @@
 #include "utils.h"
 
 const char *bullet_type_names[] = {
-    "Normal bullet", "Replicating", "Explosive", "Shrapnel", "Laser", "Healing",
+    "Normal bullet", ":(){:|:&};:", "Minesweeper",
+    "Recycle Bin",   "Firewall",    "Defrag",
 };
 
 Color bullet_type_colors[] = {
@@ -37,7 +39,7 @@ static BulletData *bullet_init_data(Vector2 initial_velocity, BulletType type,
                                     u32 level, i32 damage, u32 special_idx) {
   BulletData *data = malloc(sizeof(BulletData));
   data->velocity = initial_velocity;
-  data->size = type > BULLET_NORMAL ? 2.5f : 1.5f;
+  data->size = type > BULLET_NORMAL ? 2.0f : 1.0f;
 
   data->type = type;
   data->level = level;
@@ -248,9 +250,16 @@ static void bullet_draw(Entity *bullet, Game game) {
   Vector2 screen_pos = game_to_screen(bullet->position);
   f32 screen_size = game_to_screen_scale(data->size);
 
-  u32 color_type = data->type == BULLET_SECONDARY ? BULLET_NORMAL : data->type;
-  DrawCircle(screen_pos.x, screen_pos.y, screen_size,
-             bullet_type_colors[color_type]);
+  if (data->type <= BULLET_NORMAL) {
+    DrawCircle(screen_pos.x, screen_pos.y, screen_size, WHITE);
+  } else {
+    Sprite *sprite = &assets.bullets[data->type];
+    Rectangle dest = {screen_pos.x, screen_pos.y, screen_size * 2,
+                      screen_size * 2};
+
+    DrawTexturePro(sprite->texture, get_frame_rect(sprite, 0), dest,
+                   (Vector2){screen_size, screen_size}, 0, WHITE);
+  }
 }
 
 /*============================================================================*

@@ -2,6 +2,7 @@
 #include <raymath.h>
 #include <stdlib.h>
 
+#include "assets.h"
 #include "config.h"
 #include "dmg_number.h"
 #include "enemy_bullet.h"
@@ -19,7 +20,7 @@ static EnemyBulletData *enemy_bullet_init_data(Vector2 initial_velocity,
                                                i32 damage) {
   EnemyBulletData *data = malloc(sizeof(EnemyBulletData));
   data->velocity = initial_velocity;
-  data->size = 1.5f;
+  data->size = 2.0f;
 
   data->damage = damage;
   return data;
@@ -72,7 +73,12 @@ static void bullet_draw(Entity *bullet, Game game) {
   Vector2 screen_pos = game_to_screen(bullet->position);
   f32 screen_size = game_to_screen_scale(data->size);
 
-  DrawCircle(screen_pos.x, screen_pos.y, screen_size, YELLOW);
+  Sprite *sprite = &assets.enemy_bullet;
+  Rectangle dest = {screen_pos.x, screen_pos.y, screen_size * 2,
+                    screen_size * 2};
+
+  DrawTexturePro(sprite->texture, get_frame_rect(sprite, 0), dest,
+                 (Vector2){screen_size, screen_size}, 0, WHITE);
 }
 
 /*============================================================================*

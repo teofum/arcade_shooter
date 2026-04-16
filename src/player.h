@@ -65,6 +65,9 @@ typedef struct PlayerData {
   // Input
   Vector2 direction;
   bool firing;
+
+  // Rendering
+  i32 orientation;
 } PlayerData;
 
 Entity *player_create();

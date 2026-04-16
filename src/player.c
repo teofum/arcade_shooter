@@ -3,6 +3,7 @@
 #include <raymath.h>
 #include <stdlib.h>
 
+#include "assets.h"
 #include "bullet.h"
 #include "config.h"
 #include "dmg_number.h"
@@ -49,6 +50,8 @@ static PlayerData *player_init_data() {
   data->fire_cooldown = 0.1f;
   data->fire_timer = 0.0f;
   data->firing = false;
+
+  data->orientation = 1;
 
   return data;
 }
@@ -105,6 +108,12 @@ static void player_move(Entity *self, Game game) {
 
   // Update position
   self->position = next_pos;
+
+  if (data->velocity.x > 0) {
+    data->orientation = 1;
+  } else if (data->velocity.x < 0) {
+    data->orientation = -1;
+  }
 }
 
 static Entity *player_fire_special(Entity *self, Game game, i32 damage) {
@@ -286,23 +295,21 @@ static void player_update(Entity *self, Game game) {
 static void player_draw(Entity *player, Game game) {
   PlayerData *data = (PlayerData *)player->custom_data;
 
-  Vector2 screen_pos = game_to_screen(player->position);
-  Vector2 screen_crosshair = game_to_screen(data->crosshair);
-  f32 screen_size = game_to_screen_scale(data->size);
+  Sprite *sprite = &assets.player;
+
+  Rectangle source = get_frame_rect(sprite, 0);
+  source.width *= data->orientation;
+
+  Vector2 p = player->position;
+  f32 size = data->size * 3;
+  Rectangle dest = game_to_screen_rect((Rectangle){p.x, p.y, size, size});
+
+  Vector2 origin = {game_to_screen_scale(size / 2),
+                    game_to_screen_scale(size / 2)};
 
   // Draw player
-  DrawCircle(screen_pos.x, screen_pos.y, screen_size, RED);
-
-  // Draw targeting crosshairs
-  DrawRectangle(screen_crosshair.x - 5, screen_crosshair.y - 1, 11, 3, BLACK);
-  DrawRectangle(screen_crosshair.x - 1, screen_crosshair.y - 5, 3, 11, BLACK);
-
-  // Draw debug aim line
-  Vector2 aim = Vector2Subtract(screen_crosshair, screen_pos);
-  aim = Vector2Scale(Vector2Normalize(aim), 40);
-  aim = Vector2Add(aim, screen_pos);
-
-  DrawLine(screen_pos.x, screen_pos.y, aim.x, aim.y, WHITE);
+  DrawTexturePro(sprite->texture, source, dest, origin, data->velocity.x * 0.2f,
+                 WHITE);
 }
 
 /*============================================================================*
