@@ -2,3 +2,5 @@
 build/
 
 bin/
+
+.gdb_history

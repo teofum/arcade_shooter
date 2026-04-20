@@ -24,37 +24,37 @@ static PowerupData *powerup_init_data(PowerupType type) {
   return data;
 }
 
-static void powerup_update(Entity *powerup, Game game) {
-  PowerupData *data = (PowerupData *)powerup->custom_data;
+static void powerup_update(Entity *self, Game game) {
+  PowerupData *data = (PowerupData *)self->custom_data;
 
   f32 delta_y = game->delta_time * ENEMY_SPEED;
-  powerup->position.y += delta_y;
+  self->position.y += delta_y;
 
-  if (powerup->position.y > FIELD_HEIGHT / 2.0f + 10) {
-    el_destroy(game->world, powerup);
+  if (self->position.y > FIELD_HEIGHT / 2.0f + 10) {
+    el_destroy(game->world, self);
     return;
   }
 
   // Accelerate towards player and move
   Vector2 target_velocity = {0, 0};
   Vector2 player_pos = game->player->position;
-  f32 distance = Vector2Distance(player_pos, powerup->position);
+  f32 distance = Vector2Distance(player_pos, self->position);
 
   if (distance < XP_PICKUP_RANGE) {
     PlayerData *pdata = (PlayerData *)game->player->custom_data;
     pdata->active_powerup = data->type;
     pdata->powerup_timer = POWERUP_DURATION;
 
-    el_destroy(game->world, powerup);
+    el_destroy(game->world, self);
     return;
   } else if (distance < XP_MAGNET_RANGE) {
-    target_velocity = Vector2Subtract(player_pos, powerup->position);
+    target_velocity = Vector2Subtract(player_pos, self->position);
     target_velocity =
         Vector2Scale(target_velocity, XP_MAGNET_POWER / (distance * distance));
   }
 
   data->velocity = Vector2Lerp(data->velocity, target_velocity, 0.1f);
-  powerup->position = Vector2Add(powerup->position, data->velocity);
+  self->position = Vector2Add(self->position, data->velocity);
 }
 
 static void powerup_draw(Entity *powerup, Game game) {

@@ -23,6 +23,8 @@ static EnemyBulletData *enemy_bullet_init_data(Vector2 initial_velocity,
   data->size = 2.0f;
 
   data->damage = damage;
+
+  data->deferred_destroy = false;
   return data;
 }
 
@@ -50,6 +52,11 @@ static void bullet_hit_player(Entity *self, Game game) {
  *============================================================================*/
 static void bullet_update(Entity *self, Game game) {
   EnemyBulletData *data = (EnemyBulletData *)self->custom_data;
+
+  if (data->deferred_destroy) {
+    el_destroy(game->world, self);
+    return;
+  }
 
   // Update position
   Vector2 delta_pos = Vector2Scale(data->velocity, game->delta_time);

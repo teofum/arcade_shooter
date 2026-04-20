@@ -8,6 +8,7 @@
 #include "config.h"
 #include "dmg_number.h"
 #include "enemy.h"
+#include "enemy_bullet.h"
 #include "entity.h"
 #include "entity_list.h"
 #include "explosion.h"
@@ -181,8 +182,9 @@ bool bullet_hit_enemy(Entity *self, Entity *enemy, Game game) {
  */
 bool bullet_hit_bullet(Entity *self, Entity *enemy_bullet, Game game) {
   BulletData *data = (BulletData *)self->custom_data;
+  EnemyBulletData *ebdata = (EnemyBulletData *)enemy_bullet->custom_data;
 
-  el_destroy(game->world, enemy_bullet);
+  ebdata->deferred_destroy = true;
 
   if (data->type <= 0) {
     data->deferred_destroy = true;

@@ -11,6 +11,8 @@ typedef struct EnemyBulletData {
   f32 size;
 
   i32 damage;
+
+  bool deferred_destroy;
 } EnemyBulletData;
 
 Entity *enemy_bullet_create(Vector2 position, Vector2 target, i32 damage);

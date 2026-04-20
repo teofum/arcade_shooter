@@ -65,16 +65,16 @@ static PlayerData *player_init_data() {
  */
 static bool player_hit_bullet(Entity *self, Entity *enemy_bullet, Game game) {
   PlayerData *data = (PlayerData *)self->custom_data;
-  EnemyBulletData *bdata = (EnemyBulletData *)enemy_bullet->custom_data;
+  EnemyBulletData *ebdata = (EnemyBulletData *)enemy_bullet->custom_data;
 
-  i32 damage = get_damage(bdata->damage);
+  i32 damage = get_damage(ebdata->damage);
   data->health -= damage;
 
   Entity *dmg_number =
       dmg_number_create(enemy_bullet->position, damage, DMG_NUMBER_SIZE);
   el_add(game->world, dmg_number);
 
-  el_destroy(game->world, enemy_bullet);
+  ebdata->deferred_destroy = true;
   return false;
 }
 

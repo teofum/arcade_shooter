@@ -21,14 +21,14 @@ static DmgNumberData *dmg_number_init_data(i32 damage, f32 size) {
   return data;
 }
 
-static void dmg_number_update(Entity *dmg_number, Game game) {
-  DmgNumberData *data = (DmgNumberData *)dmg_number->custom_data;
+static void dmg_number_update(Entity *self, Game game) {
+  DmgNumberData *data = (DmgNumberData *)self->custom_data;
 
   if (data->timer <= 0.0f) {
-    el_destroy(game->world, dmg_number);
+    el_destroy(game->world, self);
   } else {
     data->timer -= game->delta_time;
-    dmg_number->position.y -= data->speed * game->delta_time;
+    self->position.y -= data->speed * game->delta_time;
     data->speed += DMG_NUMBER_ACCEL * game->delta_time;
   }
 }
