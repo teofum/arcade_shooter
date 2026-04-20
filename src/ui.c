@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "assets.h"
 #include "bullet.h"
 #include "config.h"
 #include "game.h"
@@ -204,6 +205,12 @@ static void ui_draw_special_ammo(PlayerData *pdata) {
       f32 angle = (1 - sb->cooldown / 3.0f) * 360;
       DrawCircleSector((Vector2){x, y}, size, 0, angle, 20,
                        bullet_type_colors[sb->type]);
+
+      Sprite *sprite = &assets.bullets[sb->type];
+      Rectangle dest = {x, y, 16, 16};
+
+      DrawTexturePro(sprite->texture, get_frame_rect(sprite, 0), dest,
+                     (Vector2){8, 8}, 0, WHITE);
     }
 
     x += size * 2 + 5;
@@ -279,8 +286,11 @@ static void ui_draw_level_up_option(Game game, LevelUpOption *option, u32 i) {
   ui_text(bullet_type_names[type], 20, BLACK, (Vector2){0, 10}, CENTER, START);
   ui_text(text, 15, BLACK, (Vector2){0, 40}, CENTER, START);
 
-  DrawRectangleRec(ui_align(0, 70, 60, 60, CENTER, START),
-                   bullet_type_colors[type]);
+  Rectangle dest = ui_align(0, 70, 64, 64, CENTER, START);
+  Sprite *sprite = &assets.bullets[type];
+
+  DrawTexturePro(sprite->texture, get_frame_rect(sprite, 0), dest,
+                 (Vector2){0, 0}, 0, WHITE);
 
   ui_text(get_bullet_description(game, type, level), 10, BLACK,
           (Vector2){0, 150}, CENTER, START);
