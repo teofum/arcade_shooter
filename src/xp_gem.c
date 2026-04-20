@@ -2,6 +2,7 @@
 #include <raymath.h>
 #include <stdlib.h>
 
+#include "assets.h"
 #include "config.h"
 #include "entity.h"
 #include "entity_list.h"
@@ -58,12 +59,21 @@ static void xp_gem_update(Entity *self, Game game) {
   self->position = Vector2Add(self->position, data->velocity);
 }
 
-static void xp_gem_draw(Entity *xp_gem, Game game) {
-  XpGemData *data = (XpGemData *)xp_gem->custom_data;
+static void xp_gem_draw(Entity *self, Game game) {
+  XpGemData *data = (XpGemData *)self->custom_data;
 
-  DrawCircle(game_to_screen_x(xp_gem->position.x),
-             game_to_screen_y(xp_gem->position.y),
-             game_to_screen_scale(1.0f + logf(data->value) / logf(5)), MAGENTA);
+  u32 sprite_idx = data->value >= 25 ? 2 : data->value >= 5 ? 1 : 0;
+  Sprite *sprite = &assets.xp_gems[sprite_idx];
+
+  Vector2 p = game_to_screen(self->position);
+  f32 size = 16;
+  Rectangle dest = (Rectangle){p.x, p.y, size, size};
+
+  Vector2 origin = {size / 2, size / 2};
+
+  // Draw XP item
+  DrawTexturePro(sprite->texture, get_frame_rect(sprite, 0), dest, origin, 0,
+                 WHITE);
 }
 
 Entity *xp_gem_create(Vector2 position, u32 value) {

@@ -25,6 +25,22 @@ void load_assets() {
 
   assets.enemy_bullet.texture = LoadTexture("assets/error.png");
   assets.enemy_bullet.frames = 1;
+
+  assets.xp_gems[0].texture = LoadTexture("assets/file.png");
+  assets.xp_gems[0].frames = 1;
+  assets.xp_gems[1].texture = LoadTexture("assets/files.png");
+  assets.xp_gems[1].frames = 1;
+  assets.xp_gems[2].texture = LoadTexture("assets/folder.png");
+  assets.xp_gems[2].frames = 1;
+
+  assets.enemies[0].texture = LoadTexture("assets/ie.png");
+  assets.enemies[0].frames = 1;
+  assets.enemies[1].texture = LoadTexture("assets/pain.png");
+  assets.enemies[1].frames = 1;
+  assets.enemies[2].texture = LoadTexture("assets/phish.png");
+  assets.enemies[2].frames = 1;
+  assets.enemies[3].texture = LoadTexture("assets/notpad.png");
+  assets.enemies[3].frames = 1;
 }
 
 Rectangle get_frame_rect(Sprite *sprite, u32 frame) {
