@@ -8,6 +8,7 @@
 #include "config.h"
 #include "game.h"
 #include "player.h"
+#include "powerup.h"
 #include "types.h"
 #include "ui.h"
 
@@ -250,6 +251,23 @@ static void ui_draw_progress(Game game) {
   ui_end_frame();
 }
 
+void ui_draw_powerup(PlayerData *pdata) {
+  if (pdata->active_powerup == POWER_NONE)
+    return;
+
+  ui_draw_bar(0, 20, 200, 15, pdata->powerup_timer / POWERUP_DURATION, "",
+              DARKGRAY, powerup_colors[pdata->active_powerup], START, START);
+
+  ui_begin_frame(ui_align(0, 0, 200, 15, START, START), BLANK);
+
+  ui_text(powerup_names[pdata->active_powerup], 15, WHITE, (Vector2){0, 0},
+          START, END);
+  ui_text(powerup_descriptions[pdata->active_powerup], 10, WHITE,
+          (Vector2){0, 0}, END, END);
+
+  ui_end_frame();
+}
+
 void ui_draw_game_ui(Game game) {
   PlayerData *pdata = (PlayerData *)game->player->custom_data;
 
@@ -263,6 +281,7 @@ void ui_draw_game_ui(Game game) {
   ui_draw_xp_bar(pdata);
   ui_draw_ammo_counter(pdata);
   ui_draw_special_ammo(pdata);
+  ui_draw_powerup(pdata);
 
   ui_draw_progress(game);
 

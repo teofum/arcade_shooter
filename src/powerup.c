@@ -12,6 +12,10 @@
 #include "types.h"
 #include "utils.h"
 
+const char *powerup_names[] = {"Overclock", "War Drum"};
+const char *powerup_descriptions[] = {"Double movement speed", "Double damage"};
+Color powerup_colors[] = {GREEN, ORANGE};
+
 static PowerupData *powerup_init_data(PowerupType type) {
   PowerupData *data = malloc(sizeof(PowerupData));
   data->type = type;
