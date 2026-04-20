@@ -37,6 +37,7 @@ static void laser_update(Entity *self, Game game) {
           if (bounds.y < self->position.y &&
               self->position.y < bounds.y + bounds.height) {
             edata->health -= data->damage;
+            edata->dmg_flash_timer = DMG_FLASH_TIME;
 
             Vector2 enemy_center =
                 Vector2Add(entity->position, Vector2Scale(edata->size, 0.5f));

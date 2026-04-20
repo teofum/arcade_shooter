@@ -3,6 +3,7 @@
 #include <raymath.h>
 #include <stdlib.h>
 
+#include "assets.h"
 #include "bullet.h"
 #include "config.h"
 #include "enemy.h"
@@ -64,6 +65,9 @@ static EnemyData *enemy_init_data(u32 w, u32 h, EnemyType type, u32 level) {
     data->fire_timer = data->fire_cooldown = 0.5f;
     data->stat_scaling *= 4; // 4x XP drop
   }
+
+  data->sprite_type = type == ENEMY_SHOOTER ? 3 : rand() % 3;
+  data->dmg_flash_timer = 0.0f;
 
   return data;
 }
@@ -205,6 +209,11 @@ static void enemy_update(Entity *self, Game game) {
     pdata->health -= data->damage;
     el_destroy(game->world, self);
   }
+
+  if (data->dmg_flash_timer > 0.0f) {
+    data->dmg_flash_timer =
+        fmaxf(data->dmg_flash_timer - game->delta_time, 0.0f);
+  }
 }
 
 /*============================================================================*
@@ -214,17 +223,16 @@ static void enemy_update(Entity *self, Game game) {
 static void enemy_draw(Entity *self, Game game) {
   EnemyData *data = (EnemyData *)self->custom_data;
 
-  Rectangle rect = {self->position.x, self->position.y, data->size.x,
+  Sprite *sprite = &assets.enemies[data->sprite_type];
+
+  Rectangle dest = {self->position.x, self->position.y, data->size.x,
                     data->size.y};
-  rect = game_to_screen_rect(rect);
+  dest = game_to_screen_rect(dest);
 
-  Rectangle rect2 = rect;
-  rect2.height *= (float)data->health / data->max_health;
-
-  DrawRectangleRec(rect, enemy_colors[data->type][1]);
-  DrawRectangleRec(rect2, enemy_colors[data->type][0]);
-  DrawRectangleLinesEx(rect, 1.0f, BLACK);
-  DrawText(level_text[data->level - 1], rect.x + 10, rect.y + 10, 10, WHITE);
+  u8 c = 255 * data->dmg_flash_timer / DMG_FLASH_TIME;
+  DrawRectangleRec(dest, (Color){255, 255, 255, c});
+  DrawTexturePro(sprite->texture, get_frame_rect(sprite, 0), dest,
+                 (Vector2){0, 0}, 0, (Color){255, 255 - c, 255 - c, 255});
 }
 
 /*============================================================================*

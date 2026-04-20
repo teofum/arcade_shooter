@@ -165,6 +165,7 @@ bool bullet_hit_enemy(Entity *self, Entity *enemy, Game game) {
 
   i32 damage = get_damage(data->damage);
   edata->health -= damage;
+  edata->dmg_flash_timer = DMG_FLASH_TIME;
 
   Entity *dmg_number =
       dmg_number_create(self->position, damage, DMG_NUMBER_SIZE);

@@ -50,4 +50,6 @@
 #define EXPLOSION_TTL 0.8f
 #define LASER_TTL 0.01f
 
+#define DMG_FLASH_TIME 0.1f
+
 #endif

@@ -45,6 +45,9 @@ typedef struct EnemyData {
 
   f32 fire_cooldown;
   f32 fire_timer;
+
+  u32 sprite_type;
+  f32 dmg_flash_timer;
 } EnemyData;
 
 Entity *enemy_create(u32 x, u32 y, u32 w, u32 h, EnemyType type, u32 level);
