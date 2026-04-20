@@ -7,6 +7,8 @@
 Assets assets;
 
 void load_assets() {
+  assets.title_bg = LoadTexture("assets/title.jpg");
+
   assets.explosion.texture = LoadTexture("assets/explosion.png");
   assets.explosion.frames = 17;
 

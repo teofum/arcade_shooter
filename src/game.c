@@ -210,20 +210,7 @@ void game_draw(Game game) {
   ClearBackground((Color){0, 128, 128, 255});
 
   if (game->state == GS_MAIN_MENU) {
-    ui_begin_frame((Rectangle){0, 0, WINDOW_WIDTH, WINDOW_HEIGHT}, WHITE);
-
-    ui_text("arcade shooter", 60, BLUE, (Vector2){0, -60}, CENTER, CENTER);
-
-    if (ui_button_ex("Start", 20, (Vector2){0, 20}, (Vector2){200, 0}, CENTER,
-                     CENTER)) {
-      game->state = GS_RUNNING;
-    }
-    if (ui_button_ex("Quit", 20, (Vector2){0, 60}, (Vector2){200, 0}, CENTER,
-                     CENTER)) {
-      game->state = GS_QUIT;
-    }
-
-    ui_end_frame();
+    ui_draw_main_menu(game);
   } else {
     EntityListIterator it = el_iter(game->world);
     Entity *e;

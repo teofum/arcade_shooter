@@ -43,6 +43,9 @@ bool ui_button_ex(const char *text, f32 font_size, Vector2 position,
 void ui_text(const char *text, f32 font_size, Color color, Vector2 position,
              Alignment align_x, Alignment align_y);
 
+// Main menu
+void ui_draw_main_menu(Game game);
+
 // Game UI
 void ui_draw_game_ui(Game game);
 

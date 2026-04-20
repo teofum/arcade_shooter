@@ -19,6 +19,8 @@ typedef struct Assets {
   Sprite xp_gems[3];
   Sprite enemies[4];
   Sprite powerups[2];
+
+  Texture2D title_bg;
 } Assets;
 
 extern Assets assets;

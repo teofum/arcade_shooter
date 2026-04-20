@@ -170,6 +170,29 @@ static void ui_draw_bar(f32 x, f32 y, f32 w, f32 h, f32 full, const char *text,
   ui_end_frame();
 }
 
+void ui_draw_main_menu(Game game) {
+  ui_begin_frame((Rectangle){0, 0, WINDOW_WIDTH, WINDOW_HEIGHT}, WHITE);
+
+  DrawTexturePro(assets.title_bg, (Rectangle){0, 0, 2160, 1440}, full_screen,
+                 (Vector2){0, 0}, 0, WHITE);
+
+  ui_text("Desktop\nDefender", 60, BLACK,
+          (Vector2){WINDOW_WIDTH / 2.0f + 100, -148}, START, CENTER);
+  ui_text("Desktop\nDefender", 60, RED,
+          (Vector2){WINDOW_WIDTH / 2.0f + 100, -150}, START, CENTER);
+
+  if (ui_button_ex("Start", 20, (Vector2){WINDOW_WIDTH / 2.0f + 100, 0},
+                   (Vector2){200, 0}, START, CENTER)) {
+    game->state = GS_RUNNING;
+  }
+  if (ui_button_ex("Quit", 20, (Vector2){WINDOW_WIDTH / 2.0f + 100, 40},
+                   (Vector2){200, 0}, START, CENTER)) {
+    game->state = GS_QUIT;
+  }
+
+  ui_end_frame();
+}
+
 static void ui_draw_health_bar(PlayerData *pdata) {
   static char health_text[10];
   sprintf(health_text, "%3d/%3d", pdata->health, pdata->max_health);
