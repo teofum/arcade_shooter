@@ -17,6 +17,7 @@ typedef struct Assets {
   Sprite enemy_bullet;
   Sprite xp_gems[3];
   Sprite enemies[4];
+  Sprite powerups[2];
 } Assets;
 
 extern Assets assets;

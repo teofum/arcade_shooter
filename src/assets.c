@@ -2,6 +2,7 @@
 
 #include "assets.h"
 #include "bullet.h"
+#include "powerup.h"
 
 Assets assets;
 
@@ -41,6 +42,11 @@ void load_assets() {
   assets.enemies[2].frames = 1;
   assets.enemies[3].texture = LoadTexture("assets/notpad.png");
   assets.enemies[3].frames = 1;
+
+  assets.powerups[POWER_FAST].texture = LoadTexture("assets/powerup_fast.png");
+  assets.powerups[POWER_FAST].frames = 1;
+  assets.powerups[POWER_DMG].texture = LoadTexture("assets/powerup_dmg.png");
+  assets.powerups[POWER_DMG].frames = 1;
 }
 
 Rectangle get_frame_rect(Sprite *sprite, u32 frame) {

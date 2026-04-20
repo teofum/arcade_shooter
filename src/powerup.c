@@ -2,6 +2,7 @@
 #include <raymath.h>
 #include <stdlib.h>
 
+#include "assets.h"
 #include "config.h"
 #include "entity.h"
 #include "entity_list.h"
@@ -57,12 +58,19 @@ static void powerup_update(Entity *self, Game game) {
   self->position = Vector2Add(self->position, data->velocity);
 }
 
-static void powerup_draw(Entity *powerup, Game game) {
-  PowerupData *data = (PowerupData *)powerup->custom_data;
+static void powerup_draw(Entity *self, Game game) {
+  PowerupData *data = (PowerupData *)self->custom_data;
 
-  DrawCircle(game_to_screen_x(powerup->position.x),
-             game_to_screen_y(powerup->position.y), game_to_screen_scale(2.0f),
-             data->type == POWER_FAST ? GREEN : ORANGE);
+  Sprite *sprite = &assets.powerups[data->type];
+
+  Vector2 p = game_to_screen(self->position);
+  f32 size = 16;
+  Rectangle dest = (Rectangle){p.x, p.y, size, size};
+
+  Vector2 origin = {size / 2, size / 2};
+
+  DrawTexturePro(sprite->texture, get_frame_rect(sprite, 0), dest, origin, 0,
+                 WHITE);
 }
 
 Entity *powerup_create(Vector2 position, PowerupType type) {
