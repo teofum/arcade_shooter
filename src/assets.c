@@ -10,6 +10,9 @@ void load_assets() {
   assets.explosion.texture = LoadTexture("assets/explosion.png");
   assets.explosion.frames = 17;
 
+  assets.fire.texture = LoadTexture("assets/fire.png");
+  assets.fire.frames = 20;
+
   assets.player.texture = LoadTexture("assets/clippy.png");
   assets.player.frames = 1;
 

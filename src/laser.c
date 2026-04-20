@@ -2,6 +2,7 @@
 #include <raymath.h>
 #include <stdlib.h>
 
+#include "assets.h"
 #include "config.h"
 #include "dmg_number.h"
 #include "enemy.h"
@@ -21,34 +22,33 @@ static LaserData *laser_init_data(i32 damage) {
 static void laser_update(Entity *self, Game game) {
   LaserData *data = (LaserData *)self->custom_data;
 
-  data->ttl -= game->delta_time;
+  if (data->ttl == LASER_TTL && data->damage > 0) {
+    EntityListIterator it = el_iter(game->world);
+    Entity *entity;
+    while ((entity = eli_next(&it))) {
+      if (entity->type == ENT_ENEMY) {
+        EnemyData *edata = (EnemyData *)entity->custom_data;
+        Rectangle bounds = {entity->position.x, entity->position.y,
+                            edata->size.x, edata->size.y};
 
-  if (data->ttl <= 0) {
-    // Damage enemies and remove from game
-    if (data->damage > 0) {
-      EntityListIterator it = el_iter(game->world);
-      Entity *entity;
-      while ((entity = eli_next(&it))) {
-        if (entity->type == ENT_ENEMY) {
-          EnemyData *edata = (EnemyData *)entity->custom_data;
-          Rectangle bounds = {entity->position.x, entity->position.y,
-                              edata->size.x, edata->size.y};
+        if (bounds.y < self->position.y &&
+            self->position.y < bounds.y + bounds.height) {
+          edata->health -= data->damage;
+          edata->dmg_flash_timer = DMG_FLASH_TIME;
 
-          if (bounds.y < self->position.y &&
-              self->position.y < bounds.y + bounds.height) {
-            edata->health -= data->damage;
-            edata->dmg_flash_timer = DMG_FLASH_TIME;
-
-            Vector2 enemy_center =
-                Vector2Add(entity->position, Vector2Scale(edata->size, 0.5f));
-            Entity *dmg_number =
-                dmg_number_create(enemy_center, data->damage, DMG_NUMBER_SIZE);
-            el_add(game->world, dmg_number);
-          }
+          Vector2 enemy_center =
+              Vector2Add(entity->position, Vector2Scale(edata->size, 0.5f));
+          Entity *dmg_number =
+              dmg_number_create(enemy_center, data->damage, DMG_NUMBER_SIZE);
+          el_add(game->world, dmg_number);
         }
       }
     }
+  }
 
+  data->ttl -= game->delta_time;
+
+  if (data->ttl <= 0) {
     el_destroy(game->world, self);
   }
 }
@@ -56,10 +56,20 @@ static void laser_update(Entity *self, Game game) {
 static void laser_draw(Entity *self, Game game) {
   LaserData *data = (LaserData *)self->custom_data;
 
-  // Draw laser
-  Vector2 screen_pos = game_to_screen(self->position);
-  DrawRectangle(game_to_screen_x(-FIELD_WIDTH / 2.0f), screen_pos.y - 3,
-                game_to_screen_scale(FIELD_WIDTH), 6, RED);
+  Sprite *sprite = &assets.fire;
+  u32 frame = sprite->frames * (1 - data->ttl / LASER_TTL);
+
+  // Draw explosion
+  f32 w = (f32)FIELD_WIDTH / FIELD_COLS;
+  u8 alpha = 255 * (data->ttl / LASER_TTL);
+  Rectangle rect = {-FIELD_WIDTH / 2.0f, self->position.y - 4, w, 8};
+  rect = game_to_screen_rect(rect);
+
+  for (u32 i = 0; i < FIELD_COLS; i++) {
+    DrawTexturePro(sprite->texture, get_frame_rect(sprite, frame), rect,
+                   (Vector2){0, 0}, 0, (Color){255, 255, 255, alpha});
+    rect.x += game_to_screen_scale(w);
+  }
 }
 
 Entity *laser_create(Vector2 position, i32 damage) {

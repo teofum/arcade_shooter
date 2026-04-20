@@ -48,7 +48,7 @@
 #define POWERUP_SPAWN_PROB 0.05f
 
 #define EXPLOSION_TTL 0.8f
-#define LASER_TTL 0.01f
+#define LASER_TTL 0.5f
 
 #define DMG_FLASH_TIME 0.1f
 

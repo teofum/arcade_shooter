@@ -12,6 +12,7 @@ typedef struct Sprite {
 
 typedef struct Assets {
   Sprite explosion;
+  Sprite fire;
   Sprite player;
   Sprite bullets[6];
   Sprite enemy_bullet;
