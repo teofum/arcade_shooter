@@ -124,10 +124,21 @@ bool ui_button_ex(const char *text, f32 font_size, Vector2 position,
   bool hovered = CheckCollisionPointRec(GetMousePosition(), rect);
   bool clicked = hovered && IsMouseButtonDown(MOUSE_BUTTON_LEFT);
 
-  Color color = ColorLerp(WHITE, BLUE, clicked ? 0.4 : hovered ? 0.2 : 0);
-  ui_begin_frame_ex(rect, color, BLACK,
-                    (Vector2){BUTTON_PADDING, BUTTON_PADDING});
+  Color color = (Color){0xc0, 0xc0, 0xc0, 255};
+  Color color2 = (Color){0xe0, 0xe0, 0xe0, 255};
+  ui_begin_frame_ex(rect, clicked ? WHITE : BLACK, BLANK, (Vector2){0, 0});
+
+  Rectangle inner_rect = ui_align_v((Vector2){0, 0}, size, START, START);
+  f32 x0 = inner_rect.x, w = inner_rect.width;
+  f32 y0 = inner_rect.y, h = inner_rect.height;
+
   Rectangle text_rect = ui_align(0, 0, text_width, font_size, CENTER, CENTER);
+
+  DrawRectangle(x0, y0, w - 1, h - 1, clicked ? BLACK : WHITE);
+  DrawRectangle(x0 + 1, y0 + 1, w - 2, h - 2, clicked ? color2 : DARKGRAY);
+  DrawRectangle(x0 + 1, y0 + 1, w - 3, h - 3, clicked ? DARKGRAY : color2);
+  DrawRectangle(x0 + 2, y0 + 2, w - 4, h - 4, color);
+
   DrawText(text, text_rect.x, text_rect.y, font_size, BLACK);
   ui_end_frame();
 
