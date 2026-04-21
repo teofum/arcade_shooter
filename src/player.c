@@ -262,7 +262,7 @@ static void player_level_up(Entity *self, Game game) {
   }
 
   // Show level up screen
-  game->state = GS_LEVEL_UP;
+  game_set_state(game, GS_LEVEL_UP);
 }
 
 /*============================================================================*
@@ -274,7 +274,7 @@ static void player_update(Entity *self, Game game) {
 
   // Die
   if (data->health <= 0) {
-    game->state = GS_GAME_OVER;
+    game_set_state(game, GS_GAME_OVER);
     return;
   }
 

@@ -35,10 +35,12 @@ Rectangle ui_align_ex_r(Rectangle rect, Alignment align_x, Alignment align_y,
                         Alignment origin_x, Alignment origin_y);
 
 // UI components
-bool ui_button(const char *text, f32 font_size, Vector2 position);
+bool ui_button(const char *text, f32 font_size, Vector2 position,
+               bool highlight);
 
 bool ui_button_ex(const char *text, f32 font_size, Vector2 position,
-                  Vector2 size, Alignment align_x, Alignment align_y);
+                  bool highlight, Vector2 size, Alignment align_x,
+                  Alignment align_y);
 
 void ui_text(const char *text, f32 font_size, Color color, Vector2 position,
              Alignment align_x, Alignment align_y);

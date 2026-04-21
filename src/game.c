@@ -22,6 +22,24 @@ Game game_init() {
   return game;
 }
 
+static void game_setup_menu(Game game, u32 n_opts, Orientation orientation) {
+  game->menu_n_options = n_opts;
+  game->menu_selected_option = 0;
+  game->menu_layout = orientation;
+}
+
+void game_set_state(Game game, GameState state) {
+  if (state == GS_MAIN_MENU || state == GS_GAME_OVER) {
+    game_setup_menu(game, 2, VERTICAL);
+  } else if (state == GS_PAUSED) {
+    game_setup_menu(game, 3, VERTICAL);
+  } else if (state == GS_LEVEL_UP) {
+    game_setup_menu(game, 3, HORIZONTAL);
+  }
+
+  game->state = state;
+}
+
 void game_reset(Game game) {
   // Destroy old world if it exists
   if (game->world) {
@@ -56,19 +74,45 @@ void game_reset(Game game) {
   game->boss_idx = 0;
   game->boss_timer = BOSS_TIME;
 
-  game->state = GS_MAIN_MENU;
+  game_set_state(game, GS_MAIN_MENU);
   game->score = 0;
 }
 
 void game_process_input(Game game) {
+  if (IsGamepadAvailable(0) && game->state != GS_RUNNING) {
+    if (game->menu_layout == VERTICAL) {
+      if (IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN)) {
+        game->menu_selected_option =
+            (game->menu_selected_option + 1) % game->menu_n_options;
+      }
+      if (IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_UP)) {
+        game->menu_selected_option = game->menu_selected_option == 0
+                                         ? game->menu_n_options - 1
+                                         : game->menu_selected_option - 1;
+      }
+    } else {
+      if (IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT)) {
+        game->menu_selected_option =
+            (game->menu_selected_option + 1) % game->menu_n_options;
+      }
+      if (IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT)) {
+        game->menu_selected_option = game->menu_selected_option == 0
+                                         ? game->menu_n_options - 1
+                                         : game->menu_selected_option - 1;
+      }
+    }
+  }
+
   if (game->state == GS_GAME_OVER)
     return;
 
-  if (IsKeyPressed(KEY_ESCAPE)) {
+  if (IsKeyPressed(KEY_ESCAPE) ||
+      IsGamepadAvailable(0) &&
+          IsGamepadButtonPressed(0, GAMEPAD_BUTTON_MIDDLE_RIGHT)) {
     if (game->state == GS_PAUSED) {
-      game->state = GS_RUNNING;
-    } else {
-      game->state = GS_PAUSED;
+      game_set_state(game, GS_RUNNING);
+    } else if (game->state == GS_RUNNING) {
+      game_set_state(game, GS_PAUSED);
     }
   }
 
@@ -95,6 +139,14 @@ void game_process_input(Game game) {
     };
     if (Vector2Length(aim_movement) >= INPUT_GAMEPAD_DEADZONE) {
       pdata->crosshair = Vector2Add(pdata->crosshair, aim_movement);
+      if (pdata->crosshair.x < -FIELD_WIDTH / 2.0f)
+        pdata->crosshair.x = -FIELD_WIDTH / 2.0f;
+      if (pdata->crosshair.x > FIELD_WIDTH / 2.0f)
+        pdata->crosshair.x = FIELD_WIDTH / 2.0f;
+      if (pdata->crosshair.y < -FIELD_HEIGHT / 2.0f)
+        pdata->crosshair.y = -FIELD_HEIGHT / 2.0f;
+      if (pdata->crosshair.y > FIELD_HEIGHT / 2.0f)
+        pdata->crosshair.y = FIELD_HEIGHT / 2.0f;
     }
 
     pdata->firing = IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_TRIGGER_1);
@@ -256,7 +308,7 @@ void game_draw(Game game) {
   }
 
   // TODO better mouse cursor
-  if (!IsGamepadAvailable(0) || game->state != GS_RUNNING) {
+  if (!IsGamepadAvailable(0)) {
     DrawCircleV(GetMousePosition(), 5, BLACK);
   }
 

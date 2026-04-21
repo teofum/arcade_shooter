@@ -14,6 +14,11 @@ typedef enum {
   GS_QUIT,
 } GameState;
 
+typedef enum {
+  VERTICAL,
+  HORIZONTAL,
+} Orientation;
+
 typedef struct Game {
   EntityList world;
   Entity *player;
@@ -30,9 +35,15 @@ typedef struct Game {
 
   GameState state;
   u32 score;
+
+  u32 menu_selected_option;
+  u32 menu_n_options;
+  Orientation menu_layout;
 } *Game;
 
 Game game_init();
+
+void game_set_state(Game game, GameState state);
 
 void game_reset(Game game);
 
