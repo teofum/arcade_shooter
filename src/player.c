@@ -274,6 +274,7 @@ static void player_update(Entity *self, Game game) {
 
   // Die
   if (data->health <= 0) {
+    PlaySound(assets.sfx_oof);
     game_set_state(game, GS_GAME_OVER);
     return;
   }

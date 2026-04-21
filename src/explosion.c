@@ -24,6 +24,10 @@ static void explosion_update(Entity *self, Game game) {
   ExplosionData *data = (ExplosionData *)self->custom_data;
 
   if (data->ttl == EXPLOSION_TTL) {
+    Sound sfx = LoadSoundAlias(assets.sfx_explosion);
+    SetSoundPitch(sfx, 45.0f / data->radius);
+    PlaySound(sfx);
+
     // Damage enemies and remove from game
     if (data->damage > 0) {
       EntityListIterator it = el_iter(game->world);

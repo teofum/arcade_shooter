@@ -21,6 +21,10 @@ typedef struct Assets {
   Sprite powerups[2];
 
   Texture2D title_bg;
+
+  Sound sfx_hit;
+  Sound sfx_explosion;
+  Sound sfx_oof;
 } Assets;
 
 extern Assets assets;

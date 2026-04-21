@@ -52,6 +52,10 @@ void load_assets() {
   assets.powerups[POWER_FAST].frames = 1;
   assets.powerups[POWER_DMG].texture = LoadTexture("assets/powerup_dmg.png");
   assets.powerups[POWER_DMG].frames = 1;
+
+  assets.sfx_hit = LoadSound("assets/sfx_hit.wav");
+  assets.sfx_explosion = LoadSound("assets/sfx_explosion.wav");
+  assets.sfx_oof = LoadSound("assets/sfx_oof.wav");
 }
 
 Rectangle get_frame_rect(Sprite *sprite, u32 frame) {
