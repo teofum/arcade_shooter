@@ -18,9 +18,8 @@
 #include "xp_gem.h"
 
 static i32 base_health[] = {
-    [ENEMY_NORMAL] = 100,
-    [ENEMY_SHOOTER] = 50,
-    [ENEMY_BOSS] = 10000,
+    [ENEMY_NORMAL] = 100,     [ENEMY_SHOOTER] = 50,     [ENEMY_BOSS] = 10000,
+    [ENEMY_MINIBOSS_1] = 100, [ENEMY_MINIBOSS_2] = 120,
 };
 static Color enemy_colors[][2] = {
     [ENEMY_NORMAL] = {BROWN, DARKBROWN},
@@ -199,7 +198,7 @@ static void enemy_update(Entity *self, Game game) {
 
   enemy_move(self, game, down);
 
-  if (data->type == ENEMY_SHOOTER) {
+  if (data->type == ENEMY_SHOOTER || data->type == ENEMY_MINIBOSS_2) {
     enemy_fire(self, game, game->player->position);
   }
 
@@ -223,16 +222,40 @@ static void enemy_update(Entity *self, Game game) {
 static void enemy_draw(Entity *self, Game game) {
   EnemyData *data = (EnemyData *)self->custom_data;
 
-  Sprite *sprite = &assets.enemies[data->sprite_type];
-
   Rectangle dest = {self->position.x, self->position.y, data->size.x,
                     data->size.y};
   dest = game_to_screen_rect(dest);
 
   u8 c = 255 * data->dmg_flash_timer / DMG_FLASH_TIME;
   DrawRectangleRec(dest, (Color){255, 255, 255, c});
+
+  Sprite *sprite;
+  if (data->type == ENEMY_MINIBOSS_1) {
+    u32 dmg_state = data->health > data->max_health / 2 ? 0 : 1;
+    sprite = &assets.boss_chungus[dmg_state];
+  } else if (data->type == ENEMY_MINIBOSS_2) {
+    u32 dmg_state = data->health > data->max_health / 2 ? 0 : 1;
+    sprite = &assets.boss_tank[dmg_state];
+  } else {
+    sprite = &assets.enemies[data->sprite_type];
+  }
+
   DrawTexturePro(sprite->texture, get_frame_rect(sprite, 0), dest,
                  (Vector2){0, 0}, 0, (Color){255, 255 - c, 255 - c, 255});
+
+  // Tank gun
+  if (data->type == ENEMY_MINIBOSS_2) {
+    Vector2 center = Vector2Add(self->position, Vector2Scale(data->size, 0.5f));
+    Vector2 delta = Vector2Subtract(game->player->position, center);
+
+    sprite = &assets.boss_tank_gun;
+    dest.x += dest.width / 2;
+    dest.y += dest.height / 2;
+    DrawTexturePro(sprite->texture, get_frame_rect(sprite, 0), dest,
+                   (Vector2){dest.width / 2, dest.height / 2},
+                   atan2f(delta.x, -delta.y) * 180.0f / PI + 180.0f,
+                   (Color){255, 255 - c, 255 - c, 255});
+  }
 }
 
 /*============================================================================*

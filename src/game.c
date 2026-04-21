@@ -200,13 +200,15 @@ static void game_spawn_boss(Game game) {
   switch (game->boss_idx) {
   case 0: {
     // Miniboss 1: Big Chungus
-    Entity *enemy = enemy_create(FIELD_COLS / 2 - 2, 0, 4, 4, ENEMY_NORMAL, 2);
+    Entity *enemy =
+        enemy_create(FIELD_COLS / 2 - 2, 0, 4, 4, ENEMY_MINIBOSS_1, 2);
     el_add(game->world, enemy);
     break;
   }
   case 1: {
     // Miniboss 2: Big Iron
-    Entity *enemy = enemy_create(FIELD_COLS / 2 - 1, 0, 2, 2, ENEMY_SHOOTER, 5);
+    Entity *enemy =
+        enemy_create(FIELD_COLS / 2 - 1, 0, 2, 2, ENEMY_MINIBOSS_2, 5);
     el_add(game->world, enemy);
 
     for (u32 j = FIELD_COLS / 2 - 2; j <= FIELD_COLS / 2 + 1; j++) {

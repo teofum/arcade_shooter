@@ -10,6 +10,8 @@ typedef enum {
   ENEMY_NORMAL,
   ENEMY_SHOOTER,
   ENEMY_BOSS,
+  ENEMY_MINIBOSS_1,
+  ENEMY_MINIBOSS_2,
 } EnemyType;
 
 typedef enum {

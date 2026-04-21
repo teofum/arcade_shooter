@@ -20,6 +20,10 @@ typedef struct Assets {
   Sprite enemies[4];
   Sprite powerups[2];
 
+  Sprite boss_chungus[2];
+  Sprite boss_tank[2];
+  Sprite boss_tank_gun;
+
   Texture2D title_bg;
 
   Sound sfx_hit;
