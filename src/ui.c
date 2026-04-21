@@ -11,6 +11,7 @@
 #include "powerup.h"
 #include "types.h"
 #include "ui.h"
+#include "utils.h"
 
 #define BUTTON_PADDING 5
 
@@ -291,6 +292,13 @@ void ui_draw_powerup(PlayerData *pdata) {
   ui_end_frame();
 }
 
+static void ui_draw_player_crosshair(PlayerData *pdata) {
+  Vector2 pos = game_to_screen(pdata->crosshair);
+
+  DrawRectangle(pos.x - 7, pos.y, 15, 1, WHITE);
+  DrawRectangle(pos.x, pos.y - 7, 1, 15, WHITE);
+}
+
 void ui_draw_game_ui(Game game) {
   PlayerData *pdata = (PlayerData *)game->player->custom_data;
 
@@ -307,6 +315,8 @@ void ui_draw_game_ui(Game game) {
   ui_draw_powerup(pdata);
 
   ui_draw_progress(game);
+
+  ui_draw_player_crosshair(pdata);
 
   ui_end_frame();
 }

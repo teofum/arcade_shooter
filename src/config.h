@@ -11,6 +11,8 @@
 
 #define TARGET_FPS 120
 
+#define INPUT_GAMEPAD_DEADZONE 0.1f
+
 #define PLAYER_SPEED 50.0f
 #define PLAYER_ACCEL 0.1f
 

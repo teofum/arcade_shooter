@@ -75,26 +75,50 @@ void game_process_input(Game game) {
   if (game->state != GS_RUNNING)
     return;
 
+  PlayerData *pdata = (PlayerData *)game->player->custom_data;
+
   // Player movement
   Vector2 v_target = {0, 0};
 
-  if (IsKeyDown(KEY_W))
-    v_target.y--;
-  if (IsKeyDown(KEY_S))
-    v_target.y++;
-  if (IsKeyDown(KEY_A))
-    v_target.x--;
-  if (IsKeyDown(KEY_D))
-    v_target.x++;
+  if (IsGamepadAvailable(0)) {
+    // Controller input
+    v_target.x = GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_X);
+    v_target.y = GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_Y);
 
-  PlayerData *pdata = (PlayerData *)game->player->custom_data;
-  pdata->direction = Vector2Normalize(v_target);
+    if (Vector2Length(v_target) < INPUT_GAMEPAD_DEADZONE) {
+      v_target = (Vector2){0, 0};
+    }
 
-  // Aiming
-  pdata->crosshair = screen_to_game(GetMousePosition());
+    Vector2 aim_movement = {
+        GetGamepadAxisMovement(0, GAMEPAD_AXIS_RIGHT_X),
+        GetGamepadAxisMovement(0, GAMEPAD_AXIS_RIGHT_Y),
+    };
+    if (Vector2Length(aim_movement) >= INPUT_GAMEPAD_DEADZONE) {
+      pdata->crosshair = Vector2Add(pdata->crosshair, aim_movement);
+    }
 
-  // Fire!
-  pdata->firing = IsKeyDown(KEY_SPACE);
+    pdata->firing = IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_TRIGGER_1);
+  } else {
+    // Keyboard input
+    if (IsKeyDown(KEY_W))
+      v_target.y--;
+    if (IsKeyDown(KEY_S))
+      v_target.y++;
+    if (IsKeyDown(KEY_A))
+      v_target.x--;
+    if (IsKeyDown(KEY_D))
+      v_target.x++;
+
+    v_target = Vector2Normalize(v_target);
+
+    // Aiming
+    pdata->crosshair = screen_to_game(GetMousePosition());
+
+    // Fire!
+    pdata->firing = IsKeyDown(KEY_SPACE);
+  }
+
+  pdata->direction = v_target;
 }
 
 static void game_spawn_wave(Game game) {
@@ -232,7 +256,9 @@ void game_draw(Game game) {
   }
 
   // TODO better mouse cursor
-  DrawCircleV(GetMousePosition(), 5, BLACK);
+  if (!IsGamepadAvailable(0) || game->state != GS_RUNNING) {
+    DrawCircleV(GetMousePosition(), 5, BLACK);
+  }
 
   EndDrawing();
 }
