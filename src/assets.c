@@ -61,6 +61,52 @@ void load_assets() {
   assets.bgm_boss = LoadMusicStream("assets/bgm_boss.wav");
 }
 
+void unload_assets() {
+  UnloadTexture(assets.title_bg);
+
+  UnloadTexture(assets.explosion.texture);
+  UnloadTexture(assets.fire.texture);
+
+  UnloadTexture(assets.player.texture);
+
+  UnloadTexture(assets.bullets[BULLET_REPLICATE].texture);
+  UnloadTexture(assets.bullets[BULLET_EXPLOSIVE].texture);
+  UnloadTexture(assets.bullets[BULLET_SHRAPNEL].texture);
+  UnloadTexture(assets.bullets[BULLET_LASER].texture);
+  UnloadTexture(assets.bullets[BULLET_HEALING].texture);
+
+  UnloadTexture(assets.enemy_bullet.texture);
+
+  UnloadTexture(assets.xp_gems[0].texture);
+  UnloadTexture(assets.xp_gems[1].texture);
+  UnloadTexture(assets.xp_gems[2].texture);
+
+  UnloadTexture(assets.enemies[0].texture);
+  UnloadTexture(assets.enemies[1].texture);
+  UnloadTexture(assets.enemies[2].texture);
+  UnloadTexture(assets.enemies[3].texture);
+
+  UnloadTexture(assets.boss_chungus[0].texture);
+  UnloadTexture(assets.boss_chungus[1].texture);
+  UnloadTexture(assets.boss_tank[0].texture);
+  UnloadTexture(assets.boss_tank[1].texture);
+  UnloadTexture(assets.boss_tank_gun.texture);
+
+  UnloadTexture(assets.boss_final[0].texture);
+  UnloadTexture(assets.boss_final[1].texture);
+  UnloadTexture(assets.boss_final[2].texture);
+
+  UnloadTexture(assets.powerups[POWER_FAST].texture);
+  UnloadTexture(assets.powerups[POWER_DMG].texture);
+
+  UnloadSound(assets.sfx_hit);
+  UnloadSound(assets.sfx_explosion);
+  UnloadSound(assets.sfx_oof);
+
+  UnloadMusicStream(assets.bgm);
+  UnloadMusicStream(assets.bgm_boss);
+}
+
 Rectangle get_frame_rect(Sprite *sprite, u32 frame) {
   return (Rectangle){frame * (f32)sprite->texture.width / sprite->frames, 0,
                      (f32)sprite->texture.width / sprite->frames,

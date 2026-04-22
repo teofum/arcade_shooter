@@ -38,6 +38,7 @@ typedef struct Assets {
 extern Assets assets;
 
 void load_assets();
+void unload_assets();
 
 Rectangle get_frame_rect(Sprite *sprite, u32 frame);
 

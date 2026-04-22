@@ -39,6 +39,8 @@ void init() {
 }
 
 void cleanup() {
+  unload_assets();
+
   CloseAudioDevice();
   CloseWindow();
 }
