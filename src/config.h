@@ -4,6 +4,8 @@
 #define WINDOW_WIDTH 1200
 #define WINDOW_HEIGHT 800
 
+#define ENABLE_BGM true
+
 #define FIELD_HEIGHT 200
 #define FIELD_WIDTH 120
 #define FIELD_COLS 8

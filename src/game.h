@@ -3,6 +3,7 @@
 
 #include "entity.h"
 #include "entity_list.h"
+#include "raylib.h"
 #include "types.h"
 
 typedef enum {
@@ -40,6 +41,8 @@ typedef struct Game {
   u32 menu_selected_option;
   u32 menu_n_options;
   Orientation menu_layout;
+
+  Music bgm;
 } *Game;
 
 Game game_init();

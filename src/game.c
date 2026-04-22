@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "assets.h"
 #include "config.h"
 #include "enemy.h"
 #include "entity.h"
@@ -35,6 +36,16 @@ void game_set_state(Game game, GameState state) {
     game_setup_menu(game, 3, VERTICAL);
   } else if (state == GS_LEVEL_UP) {
     game_setup_menu(game, 3, HORIZONTAL);
+  }
+
+  if (ENABLE_BGM) {
+    if (state == GS_MAIN_MENU || state == GS_PAUSED || state == GS_GAME_OVER) {
+      StopMusicStream(game->bgm);
+    } else if (state == GS_RUNNING) {
+      if (!IsMusicStreamPlaying(game->bgm)) {
+        PlayMusicStream(game->bgm);
+      }
+    }
   }
 
   game->state = state;
@@ -76,6 +87,8 @@ void game_reset(Game game) {
 
   game_set_state(game, GS_MAIN_MENU);
   game->score = 0;
+
+  game->bgm = assets.bgm;
 }
 
 void game_process_input(Game game) {
@@ -227,6 +240,12 @@ static void game_spawn_boss(Game game) {
     // Final boss
     Entity *boss = boss_create();
     el_add(game->world, boss);
+
+    // Boss music
+    StopMusicStream(game->bgm);
+    game->bgm = assets.bgm_boss;
+    PlayMusicStream(game->bgm);
+
     break;
   }
   }
@@ -262,6 +281,9 @@ static void game_spawn_enemies(Game game) {
 }
 
 void game_update(Game game) {
+  // Update BGM stream
+  UpdateMusicStream(game->bgm);
+
   // Update timers
   f32 now = GetTime();
   game->delta_time = now - game->total_time;

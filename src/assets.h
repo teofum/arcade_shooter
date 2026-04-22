@@ -30,6 +30,9 @@ typedef struct Assets {
   Sound sfx_hit;
   Sound sfx_explosion;
   Sound sfx_oof;
+
+  Music bgm;
+  Music bgm_boss;
 } Assets;
 
 extern Assets assets;

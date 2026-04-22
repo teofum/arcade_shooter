@@ -56,6 +56,9 @@ void load_assets() {
   assets.sfx_hit = LoadSound("assets/sfx_hit.wav");
   assets.sfx_explosion = LoadSound("assets/sfx_explosion.wav");
   assets.sfx_oof = LoadSound("assets/sfx_oof.wav");
+
+  assets.bgm = LoadMusicStream("assets/bgm.wav");
+  assets.bgm_boss = LoadMusicStream("assets/bgm_boss.wav");
 }
 
 Rectangle get_frame_rect(Sprite *sprite, u32 frame) {
