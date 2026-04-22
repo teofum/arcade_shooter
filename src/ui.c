@@ -508,3 +508,28 @@ void ui_draw_game_over_screen(Game game) {
 
   ui_end_frame();
 }
+
+void ui_draw_win_screen(Game game) {
+  static char score_str[30];
+  sprintf(score_str, "Score: %u", game->score);
+
+  bool gp = IsGamepadAvailable(0);
+  u32 m = game->menu_selected_option;
+
+  ui_begin_frame(full_screen, overlay_bg);
+
+  ui_text("Victory!", 60, WHITE, (Vector2){0, -60}, CENTER, CENTER);
+  ui_text("Malware Vanquished", 20, WHITE, (Vector2){0, -15}, CENTER, CENTER);
+  ui_text(score_str, 20, WHITE, (Vector2){0, 15}, CENTER, CENTER);
+
+  if (ui_button_ex("Main menu", 20, (Vector2){0, 45}, gp && m == 0,
+                   (Vector2){200, 0}, CENTER, CENTER)) {
+    game_reset(game);
+  }
+  if (ui_button_ex("Quit", 20, (Vector2){0, 85}, gp && m == 1,
+                   (Vector2){200, 0}, CENTER, CENTER)) {
+    game->state = GS_QUIT;
+  }
+
+  ui_end_frame();
+}

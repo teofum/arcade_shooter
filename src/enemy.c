@@ -333,6 +333,13 @@ static void boss_update(Entity *self, Game game) {
   EnemyData *data = (EnemyData *)self->custom_data;
   Vector2 center = Vector2Add(self->position, Vector2Scale(data->size, 0.5f));
 
+  // Die
+  if (data->health <= 0 && data->boss_state != BOSS_DEAD) {
+    data->boss_state = BOSS_DEAD;
+    data->fire_timer = data->fire_cooldown = 0.25;
+    data->boss_bullet_counter = 15;
+  }
+
   switch (data->boss_state) {
   case BOSS_ENTER: {
     enemy_move(self, game, down);
@@ -409,24 +416,55 @@ static void boss_update(Entity *self, Game game) {
 
     break;
   }
-  default:
+  case BOSS_DEAD: {
+    if (data->fire_timer <= 0.0f) {
+      if (data->boss_bullet_counter == 0) {
+        Entity *explosion = explosion_create(center, data->size.y, 0);
+        el_add(game->world, explosion);
+
+        el_destroy(game->world, self);
+        game_set_state(game, GS_WIN);
+      } else {
+        Vector2 pos = self->position;
+        pos.x += frand() * data->size.x;
+        pos.y += frand() * data->size.y;
+
+        f32 radius = frand() * 10 + 5;
+        Entity *explosion = explosion_create(pos, radius, 0);
+        el_add(game->world, explosion);
+
+        data->fire_timer = data->fire_cooldown;
+        data->boss_bullet_counter--;
+      }
+    }
+
+    data->fire_timer -= game->delta_time;
     break;
+  }
+  }
+
+  if (data->dmg_flash_timer > 0.0f) {
+    data->dmg_flash_timer =
+        fmaxf(data->dmg_flash_timer - game->delta_time, 0.0f);
   }
 }
 
 static void boss_draw(Entity *self, Game game) {
   EnemyData *data = (EnemyData *)self->custom_data;
 
-  Rectangle rect = {self->position.x, self->position.y, data->size.x,
+  Rectangle dest = {self->position.x, self->position.y, data->size.x,
                     data->size.y};
-  rect = game_to_screen_rect(rect);
+  dest = game_to_screen_rect(dest);
 
-  Rectangle rect2 = rect;
-  rect2.height *= (float)data->health / data->max_health;
+  u8 c = 255 * data->dmg_flash_timer / DMG_FLASH_TIME;
+  DrawRectangleRec(dest, (Color){255, 255, 255, c});
 
-  DrawRectangleRec(rect, enemy_colors[data->type][1]);
-  DrawRectangleRec(rect2, enemy_colors[data->type][0]);
-  DrawRectangleLinesEx(rect, 1.0f, BLACK);
+  f32 rh = (f32)data->health / data->max_health;
+  u32 dmg_state = rh > 0.5f ? 0 : rh > 0.25f ? 1 : 2;
+  Sprite *sprite = &assets.boss_final[dmg_state];
+
+  DrawTexturePro(sprite->texture, get_frame_rect(sprite, 0), dest,
+                 (Vector2){0, 0}, 0, (Color){255, 255 - c, 255 - c, 255});
 }
 
 Entity *boss_create() {

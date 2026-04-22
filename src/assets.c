@@ -46,6 +46,10 @@ void load_assets() {
   assets.boss_tank[1] = load_sprite("assets/tank_dmg.png", 1);
   assets.boss_tank_gun = load_sprite("assets/tank_gun.png", 1);
 
+  assets.boss_final[0] = load_sprite("assets/boss.png", 1);
+  assets.boss_final[1] = load_sprite("assets/boss_dmg_1.png", 1);
+  assets.boss_final[2] = load_sprite("assets/boss_dmg_2.png", 1);
+
   assets.powerups[POWER_FAST] = load_sprite("assets/powerup_fast.png", 1);
   assets.powerups[POWER_DMG] = load_sprite("assets/powerup_dmg.png", 1);
 

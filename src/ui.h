@@ -55,5 +55,6 @@ void ui_draw_game_ui(Game game);
 void ui_draw_level_up_screen(Game game);
 void ui_draw_pause_screen(Game game);
 void ui_draw_game_over_screen(Game game);
+void ui_draw_win_screen(Game game);
 
 #endif

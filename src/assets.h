@@ -23,6 +23,7 @@ typedef struct Assets {
   Sprite boss_chungus[2];
   Sprite boss_tank[2];
   Sprite boss_tank_gun;
+  Sprite boss_final[3];
 
   Texture2D title_bg;
 

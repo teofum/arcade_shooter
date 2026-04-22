@@ -11,6 +11,7 @@ typedef enum {
   GS_LEVEL_UP,
   GS_PAUSED,
   GS_GAME_OVER,
+  GS_WIN,
   GS_QUIT,
 } GameState;
 

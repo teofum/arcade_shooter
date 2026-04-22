@@ -15,6 +15,7 @@ typedef enum {
 } EnemyType;
 
 typedef enum {
+  BOSS_DEAD,
   BOSS_ENTER,
   BOSS_SHOOT_ARC,
   BOSS_MOVE_LEFT_1,

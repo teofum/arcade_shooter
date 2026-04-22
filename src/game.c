@@ -267,7 +267,8 @@ void game_update(Game game) {
   game->delta_time = now - game->total_time;
   game->total_time = now;
 
-  if (game->state != GS_RUNNING)
+  if (game->state == GS_PAUSED || game->state == GS_MAIN_MENU ||
+      game->state == GS_LEVEL_UP)
     return;
 
   // Update entities
@@ -306,6 +307,8 @@ void game_draw(Game game) {
       ui_draw_pause_screen(game);
     } else if (game->state == GS_GAME_OVER) {
       ui_draw_game_over_screen(game);
+    } else if (game->state == GS_WIN) {
+      ui_draw_win_screen(game);
     }
   }
 
