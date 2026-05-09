@@ -39,8 +39,8 @@ static void dmg_number_draw(Entity *dmg_number, Game game) {
   // Draw number
   f32 w = MeasureText(data->string, data->size);
   f32 h = data->size;
-  DrawText(data->string, game_to_screen_x(dmg_number->position.x) - w / 2,
-           game_to_screen_y(dmg_number->position.y) - h / 2, data->size,
+  DrawText(data->string, dmg_number->position.x - w / 2,
+           dmg_number->position.y - h / 2, data->size,
            data->damage > 0 ? RED : GREEN);
 }
 

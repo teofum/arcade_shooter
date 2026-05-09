@@ -63,12 +63,11 @@ static void laser_draw(Entity *self, Game game) {
   f32 w = (f32)FIELD_WIDTH / FIELD_COLS;
   u8 alpha = 255 * (data->ttl / LASER_TTL);
   Rectangle rect = {-FIELD_WIDTH / 2.0f, self->position.y - 4, w, 8};
-  rect = game_to_screen_rect(rect);
 
   for (u32 i = 0; i < FIELD_COLS; i++) {
     DrawTexturePro(sprite->texture, get_frame_rect(sprite, frame), rect,
                    (Vector2){0, 0}, 0, (Color){255, 255, 255, alpha});
-    rect.x += game_to_screen_scale(w);
+    rect.x += w;
   }
 }
 

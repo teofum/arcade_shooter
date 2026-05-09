@@ -71,7 +71,6 @@ static void explosion_draw(Entity *self, Game game) {
   Rectangle rect = {self->position.x - data->radius,
                     self->position.y - data->radius, data->radius * 2,
                     data->radius * 2};
-  rect = game_to_screen_rect(rect);
   DrawTexturePro(sprite->texture, get_frame_rect(sprite, frame), rect,
                  (Vector2){0, 0}, 0, WHITE);
 }

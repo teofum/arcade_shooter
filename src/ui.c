@@ -309,7 +309,7 @@ void ui_draw_powerup(PlayerData *pdata) {
 }
 
 static void ui_draw_player_crosshair(PlayerData *pdata) {
-  Vector2 pos = game_to_screen(pdata->crosshair);
+  Vector2 pos = pdata->crosshair;
 
   DrawRectangle(pos.x - 7, pos.y, 15, 1, WHITE);
   DrawRectangle(pos.x, pos.y - 7, 1, 15, WHITE);

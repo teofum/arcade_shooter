@@ -224,7 +224,6 @@ static void enemy_draw(Entity *self, Game game) {
 
   Rectangle dest = {self->position.x, self->position.y, data->size.x,
                     data->size.y};
-  dest = game_to_screen_rect(dest);
 
   u8 c = 255 * data->dmg_flash_timer / DMG_FLASH_TIME;
   DrawRectangleRec(dest, (Color){255, 255, 255, c});
@@ -454,7 +453,6 @@ static void boss_draw(Entity *self, Game game) {
 
   Rectangle dest = {self->position.x, self->position.y, data->size.x,
                     data->size.y};
-  dest = game_to_screen_rect(dest);
 
   u8 c = 255 * data->dmg_flash_timer / DMG_FLASH_TIME;
   DrawRectangleRec(dest, (Color){255, 255, 255, c});

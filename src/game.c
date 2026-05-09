@@ -17,6 +17,9 @@
 Game game_init() {
   Game game = malloc(sizeof(struct Game));
   game->world = NULL;
+  game->camera = (Camera2D){0};
+  game->camera.offset = (Vector2){WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f};
+  game->camera.zoom = (f32)WINDOW_HEIGHT / FIELD_HEIGHT;
 
   game_reset(game);
 
@@ -177,7 +180,9 @@ void game_process_input(Game game) {
     v_target = Vector2Normalize(v_target);
 
     // Aiming
-    pdata->crosshair = screen_to_game(GetMousePosition());
+    Matrix m = GetCameraMatrix2D(game->camera);
+    m = MatrixInvert(m);
+    pdata->crosshair = Vector2Transform(GetMousePosition(), m);
 
     // Fire!
     pdata->firing = IsKeyDown(KEY_SPACE);
@@ -313,13 +318,17 @@ void game_draw(Game game) {
   if (game->state == GS_MAIN_MENU) {
     ui_draw_main_menu(game);
   } else {
-    EntityListIterator it = el_iter(game->world);
-    Entity *e;
-    while ((e = eli_next(&it))) {
-      if (e->draw != NULL) {
-        e->draw(e, game);
+    BeginMode2D(game->camera);
+    {
+      EntityListIterator it = el_iter(game->world);
+      Entity *e;
+      while ((e = eli_next(&it))) {
+        if (e->draw != NULL) {
+          e->draw(e, game);
+        }
       }
     }
+    EndMode2D();
 
     ui_draw_game_ui(game);
 

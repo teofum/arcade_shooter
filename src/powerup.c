@@ -67,7 +67,7 @@ static void powerup_draw(Entity *self, Game game) {
 
   Sprite *sprite = &assets.powerups[data->type];
 
-  Vector2 p = game_to_screen(self->position);
+  Vector2 p = self->position;
   f32 size = 16;
   Rectangle dest = (Rectangle){p.x, p.y, size, size};
 

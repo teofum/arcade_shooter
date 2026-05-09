@@ -65,7 +65,7 @@ static void xp_gem_draw(Entity *self, Game game) {
   u32 sprite_idx = data->value >= 25 ? 2 : data->value >= 5 ? 1 : 0;
   Sprite *sprite = &assets.xp_gems[sprite_idx];
 
-  Vector2 p = game_to_screen(self->position);
+  Vector2 p = self->position;
   f32 size = 16;
   Rectangle dest = (Rectangle){p.x, p.y, size, size};
 

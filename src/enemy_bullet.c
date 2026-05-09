@@ -77,8 +77,8 @@ static void bullet_draw(Entity *bullet, Game game) {
   EnemyBulletData *data = (EnemyBulletData *)bullet->custom_data;
 
   // Draw bullet
-  Vector2 screen_pos = game_to_screen(bullet->position);
-  f32 screen_size = game_to_screen_scale(data->size);
+  Vector2 screen_pos = bullet->position;
+  f32 screen_size = data->size;
 
   Sprite *sprite = &assets.enemy_bullet;
   Rectangle dest = {screen_pos.x, screen_pos.y, screen_size * 2,

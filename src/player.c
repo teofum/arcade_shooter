@@ -303,10 +303,9 @@ static void player_draw(Entity *player, Game game) {
 
   Vector2 p = player->position;
   f32 size = data->size * 3;
-  Rectangle dest = game_to_screen_rect((Rectangle){p.x, p.y, size, size});
+  Rectangle dest = (Rectangle){p.x, p.y, size, size};
 
-  Vector2 origin = {game_to_screen_scale(size / 2),
-                    game_to_screen_scale(size / 2)};
+  Vector2 origin = {size / 2, size / 2};
 
   // Draw player
   DrawTexturePro(sprite->texture, source, dest, origin, data->velocity.x * 0.2f,
