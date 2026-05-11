@@ -24,7 +24,9 @@ typedef enum {
 typedef struct Game {
   EntityList world;
   Entity *player;
+
   Camera2D camera;
+  f32 camera_shake;
 
   f32 total_time;
   f32 delta_time;

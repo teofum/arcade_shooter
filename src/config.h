@@ -56,4 +56,7 @@
 
 #define DMG_FLASH_TIME 0.1f
 
+#define CAMERA_SHAKE_DECAY 80
+#define EXPLOSION_CAMERA_SHAKE 0.7
+
 #endif

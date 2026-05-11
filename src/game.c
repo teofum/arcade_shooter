@@ -1,3 +1,4 @@
+#include <math.h>
 #include <raylib.h>
 #include <raymath.h>
 #include <stdio.h>
@@ -14,11 +15,13 @@
 #include "utils.h"
 #include "wall.h"
 
+#define BASE_OFFSET (Vector2){WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f}
+
 Game game_init() {
   Game game = malloc(sizeof(struct Game));
   game->world = NULL;
   game->camera = (Camera2D){0};
-  game->camera.offset = (Vector2){WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f};
+  game->camera.offset = BASE_OFFSET;
   game->camera.zoom = (f32)WINDOW_HEIGHT / FIELD_HEIGHT;
 
   game_reset(game);
@@ -285,6 +288,30 @@ static void game_spawn_enemies(Game game) {
   game->boss_timer -= game->delta_time;
 }
 
+void game_update_camera(Game game) {
+  static f32 frequencies[] = {50, 50, 80, 80, 120, 120};
+  static f32 phases[] = {0, 0.3, 0.7, 0.1, 0.9, 0.5};
+
+  if (game->camera_shake > 0.0f) {
+    game->camera.offset = BASE_OFFSET;
+    for (u32 i = 0; i < 3; i++) {
+      game->camera.offset = Vector2Add(
+          game->camera.offset,
+          (Vector2){game->camera_shake / (i + 1) *
+                        sinf(game->total_time * frequencies[i / 2] +
+                             2 * PI * phases[i / 2]),
+                    game->camera_shake / (i + 1) *
+                        cosf(game->total_time * frequencies[i / 2 + 1] +
+                             2 * PI * phases[i / 2 + 1])});
+    }
+
+    game->camera_shake -= game->delta_time * CAMERA_SHAKE_DECAY;
+    if (game->camera_shake <= 0.0f) {
+      game->camera.offset = BASE_OFFSET;
+    }
+  }
+}
+
 void game_update(Game game) {
   // Update BGM stream
   UpdateMusicStream(game->bgm);
@@ -309,6 +336,8 @@ void game_update(Game game) {
 
   if (game->boss_idx < N_BOSSES)
     game_spawn_enemies(game);
+
+  game_update_camera(game);
 }
 
 void game_draw(Game game) {
