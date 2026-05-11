@@ -66,7 +66,7 @@ static void xp_gem_draw(Entity *self, Game game) {
   Sprite *sprite = &assets.xp_gems[sprite_idx];
 
   Vector2 p = self->position;
-  f32 size = 16;
+  f32 size = 16 / game->camera.zoom;
   Rectangle dest = (Rectangle){p.x, p.y, size, size};
 
   Vector2 origin = {size / 2, size / 2};
