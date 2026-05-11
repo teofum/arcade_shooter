@@ -76,10 +76,10 @@ Collision collide_particle_rect(Vector2 p_last, Vector2 p, f32 size,
  */
 static Rectangle get_collision_bounds(Entity *entity) {
   if (entity->type == ENT_WALL) {
-    WallData *wdata = (WallData *)entity->custom_data;
+    WallData *wdata = &entity->wall;
     return wdata->bounds;
   } else {
-    EnemyData *edata = (EnemyData *)entity->custom_data;
+    EnemyData *edata = &entity->enemy;
     return (Rectangle){entity->position.x, entity->position.y, edata->size.x,
                        edata->size.y};
   }
@@ -112,7 +112,7 @@ Collision check_collisions(Entity *self, Game game, Vector2 next_pos, f32 size,
           break;
       }
     } else if (entity->type == ENT_ENEMY_BULLET) {
-      EnemyBulletData *bdata = (EnemyBulletData *)entity->custom_data;
+      EnemyBulletData *bdata = &entity->enemy_bullet;
       bool collides = CheckCollisionCircles(self->position, size,
                                             entity->position, bdata->size);
       if (collides && on_enemy_bullet_hit != NULL) {

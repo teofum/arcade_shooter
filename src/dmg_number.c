@@ -9,8 +9,8 @@
 #include "entity_list.h"
 #include "game.h"
 
-static DmgNumberData *dmg_number_init_data(i32 damage, f32 size) {
-  DmgNumberData *data = malloc(sizeof(DmgNumberData));
+static DmgNumberData *dmg_number_init_data(Entity *self, i32 damage, f32 size) {
+  DmgNumberData *data = &self->dmg_number;
 
   sprintf(data->string, damage < 0 ? "+%d" : "%d", abs(damage));
   data->size = size;
@@ -22,7 +22,7 @@ static DmgNumberData *dmg_number_init_data(i32 damage, f32 size) {
 }
 
 static void dmg_number_update(Entity *self, Game game) {
-  DmgNumberData *data = (DmgNumberData *)self->custom_data;
+  DmgNumberData *data = &self->dmg_number;
 
   if (data->timer <= 0.0f) {
     el_destroy(game->world, self);
@@ -34,7 +34,7 @@ static void dmg_number_update(Entity *self, Game game) {
 }
 
 static void dmg_number_draw(Entity *self, Game game) {
-  DmgNumberData *data = (DmgNumberData *)self->custom_data;
+  DmgNumberData *data = &self->dmg_number;
 
   // Draw number
   // Temporarily disable the camera and manually scale the text coords,
@@ -56,7 +56,7 @@ Entity *dmg_number_create(Vector2 position, i32 dmg, f32 size) {
   Entity *dmg_number = ent_create(ENT_DMG_NUMBER);
 
   dmg_number->position = position;
-  dmg_number->custom_data = dmg_number_init_data(dmg, size);
+  dmg_number_init_data(dmg_number, dmg, size);
   dmg_number->update = dmg_number_update;
   dmg_number->draw = dmg_number_draw;
 

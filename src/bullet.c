@@ -36,9 +36,10 @@ static i32 get_bullet_damage(BulletType type, u32 level, i32 base_damage) {
 /*============================================================================*
  * Bullet initialization                                                      *
  *============================================================================*/
-static BulletData *bullet_init_data(Vector2 initial_velocity, BulletType type,
-                                    u32 level, i32 damage, u32 special_idx) {
-  BulletData *data = malloc(sizeof(BulletData));
+static BulletData *bullet_init_data(Entity *self, Vector2 initial_velocity,
+                                    BulletType type, u32 level, i32 damage,
+                                    u32 special_idx) {
+  BulletData *data = &self->bullet;
   data->velocity = initial_velocity;
   data->size = type > BULLET_NORMAL ? 2.0f : 1.0f;
 
@@ -60,7 +61,7 @@ static BulletData *bullet_init_data(Vector2 initial_velocity, BulletType type,
  * Special bullet hit functions
  */
 static bool hit_replicate(Entity *self, Entity *enemy, Game game) {
-  BulletData *data = (BulletData *)self->custom_data;
+  BulletData *data = &self->bullet;
 
   f32 spawn_p = 0.25f + 0.1f * data->level;
   if (frand() < spawn_p) {
@@ -79,14 +80,14 @@ static bool hit_replicate(Entity *self, Entity *enemy, Game game) {
 }
 
 static bool hit_explosive(Entity *self, Entity *enemy, Game game) {
-  BulletData *data = (BulletData *)self->custom_data;
+  BulletData *data = &self->bullet;
 
   f32 radius = 25 + data->level * 5;
   f32 damage = data->damage * 2;
   Entity *explosion = explosion_create(self->position, radius, damage);
   el_add(game->world, explosion);
 
-  PlayerData *pdata = (PlayerData *)game->player->custom_data;
+  PlayerData *pdata = (PlayerData *)&game->player->player;
   pdata->special_bullets[data->special_idx].cooldown = 3.0f;
   pdata->special_bullets[data->special_idx].fired = false;
   data->deferred_destroy = true;
@@ -95,7 +96,7 @@ static bool hit_explosive(Entity *self, Entity *enemy, Game game) {
 }
 
 static bool hit_shrapnel(Entity *self, Entity *enemy, Game game) {
-  BulletData *data = (BulletData *)self->custom_data;
+  BulletData *data = &self->bullet;
 
   for (u32 i = 0; i < data->level + 2; i++) {
     f32 vx = frand() * 2.0f - 1.0f;
@@ -109,7 +110,7 @@ static bool hit_shrapnel(Entity *self, Entity *enemy, Game game) {
     el_add(game->world, new_bullet);
   }
 
-  PlayerData *pdata = (PlayerData *)game->player->custom_data;
+  PlayerData *pdata = (PlayerData *)&game->player->player;
   pdata->special_bullets[data->special_idx].cooldown = 3.0f;
   pdata->special_bullets[data->special_idx].fired = false;
   data->deferred_destroy = true;
@@ -118,7 +119,7 @@ static bool hit_shrapnel(Entity *self, Entity *enemy, Game game) {
 }
 
 static bool hit_laser(Entity *self, Entity *enemy, Game game) {
-  BulletData *data = (BulletData *)self->custom_data;
+  BulletData *data = &self->bullet;
 
   f32 damage = data->damage * 0.5f;
   Entity *laser = laser_create(self->position, damage);
@@ -128,8 +129,8 @@ static bool hit_laser(Entity *self, Entity *enemy, Game game) {
 }
 
 static bool hit_healing(Entity *self, Entity *enemy, Game game) {
-  BulletData *data = (BulletData *)self->custom_data;
-  PlayerData *pdata = (PlayerData *)game->player->custom_data;
+  BulletData *data = &self->bullet;
+  PlayerData *pdata = &game->player->player;
 
   f32 heal_p = 0.04 + 0.02f * data->level;
   if (frand() < heal_p && pdata->health < pdata->max_health) {
@@ -160,8 +161,8 @@ static CollisionCallback special_bullet_hit[6] = {
  * Hit callback for enemies
  */
 bool bullet_hit_enemy(Entity *self, Entity *enemy, Game game) {
-  BulletData *data = (BulletData *)self->custom_data;
-  EnemyData *edata = (EnemyData *)enemy->custom_data;
+  BulletData *data = &self->bullet;
+  EnemyData *edata = &enemy->enemy;
 
   Sound sfx = LoadSoundAlias(assets.sfx_hit);
   PlaySound(sfx);
@@ -185,8 +186,8 @@ bool bullet_hit_enemy(Entity *self, Entity *enemy, Game game) {
  * Hit callback for enemy projectiles
  */
 bool bullet_hit_bullet(Entity *self, Entity *enemy_bullet, Game game) {
-  BulletData *data = (BulletData *)self->custom_data;
-  EnemyBulletData *ebdata = (EnemyBulletData *)enemy_bullet->custom_data;
+  BulletData *data = &self->bullet;
+  EnemyBulletData *ebdata = &enemy_bullet->enemy_bullet;
 
   ebdata->deferred_destroy = true;
 
@@ -202,8 +203,8 @@ bool bullet_hit_bullet(Entity *self, Entity *enemy_bullet, Game game) {
  * Bullet update function                                                     *
  *============================================================================*/
 static void bullet_update(Entity *self, Game game) {
-  BulletData *data = (BulletData *)self->custom_data;
-  PlayerData *pdata = (PlayerData *)game->player->custom_data;
+  BulletData *data = &self->bullet;
+  PlayerData *pdata = &game->player->player;
 
   // Predict next position
   Vector2 delta_pos = Vector2Scale(data->velocity, game->delta_time);
@@ -249,11 +250,11 @@ static void bullet_update(Entity *self, Game game) {
 /*============================================================================*
  * Bullet draw function                                                       *
  *============================================================================*/
-static void bullet_draw(Entity *bullet, Game game) {
-  BulletData *data = (BulletData *)bullet->custom_data;
+static void bullet_draw(Entity *self, Game game) {
+  BulletData *data = &self->bullet;
 
   // Draw bullet
-  Vector2 screen_pos = bullet->position;
+  Vector2 screen_pos = self->position;
   f32 screen_size = data->size;
 
   if (data->type <= BULLET_NORMAL) {
@@ -279,8 +280,7 @@ Entity *bullet_create(Vector2 position, Vector2 target, BulletType type,
 
   Vector2 aim = Vector2Subtract(target, position);
   Vector2 velocity = Vector2Scale(Vector2Normalize(aim), BULLET_SPEED);
-  bullet->custom_data =
-      bullet_init_data(velocity, type, level, damage, special_idx);
+  bullet_init_data(bullet, velocity, type, level, damage, special_idx);
 
   bullet->update = bullet_update;
   bullet->draw = bullet_draw;
@@ -292,7 +292,7 @@ Entity *bullet_create(Vector2 position, Vector2 target, BulletType type,
  * Misc functions                                                             *
  *============================================================================*/
 const char *get_bullet_description(Game game, BulletType type, u32 level) {
-  PlayerData *pdata = (PlayerData *)game->player->custom_data;
+  PlayerData *pdata = &game->player->player;
   static char text[200];
 
   i32 damage = get_bullet_damage(type, level, pdata->base_damage);

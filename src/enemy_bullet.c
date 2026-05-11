@@ -9,16 +9,15 @@
 #include "entity.h"
 #include "entity_list.h"
 #include "game.h"
-#include "player.h"
 #include "types.h"
 #include "utils.h"
 
 /*============================================================================*
  * Enemy bullet initialization                                                *
  *============================================================================*/
-static EnemyBulletData *enemy_bullet_init_data(Vector2 initial_velocity,
-                                               i32 damage) {
-  EnemyBulletData *data = malloc(sizeof(EnemyBulletData));
+static EnemyBulletData *
+enemy_bullet_init_data(Entity *self, Vector2 initial_velocity, i32 damage) {
+  EnemyBulletData *data = &self->enemy_bullet;
   data->velocity = initial_velocity;
   data->size = 2.0f;
 
@@ -36,8 +35,8 @@ static EnemyBulletData *enemy_bullet_init_data(Vector2 initial_velocity,
  * Hit callback
  */
 static void bullet_hit_player(Entity *self, Game game) {
-  EnemyBulletData *data = (EnemyBulletData *)self->custom_data;
-  PlayerData *pdata = (PlayerData *)game->player->custom_data;
+  EnemyBulletData *data = &self->enemy_bullet;
+  PlayerData *pdata = &game->player->player;
 
   i32 damage = get_damage(data->damage);
   pdata->health -= damage;
@@ -51,7 +50,7 @@ static void bullet_hit_player(Entity *self, Game game) {
  * Enemy bullet update function                                               *
  *============================================================================*/
 static void bullet_update(Entity *self, Game game) {
-  EnemyBulletData *data = (EnemyBulletData *)self->custom_data;
+  EnemyBulletData *data = &self->enemy_bullet;
 
   if (data->deferred_destroy) {
     el_destroy(game->world, self);
@@ -73,11 +72,11 @@ static void bullet_update(Entity *self, Game game) {
 /*============================================================================*
  * Enemy bullet draw function                                                 *
  *============================================================================*/
-static void bullet_draw(Entity *bullet, Game game) {
-  EnemyBulletData *data = (EnemyBulletData *)bullet->custom_data;
+static void bullet_draw(Entity *self, Game game) {
+  EnemyBulletData *data = &self->enemy_bullet;
 
   // Draw bullet
-  Vector2 screen_pos = bullet->position;
+  Vector2 screen_pos = self->position;
   f32 screen_size = data->size;
 
   Sprite *sprite = &assets.enemy_bullet;
@@ -98,7 +97,7 @@ Entity *enemy_bullet_create(Vector2 position, Vector2 target, i32 damage) {
 
   Vector2 aim = Vector2Subtract(target, position);
   Vector2 velocity = Vector2Scale(Vector2Normalize(aim), ENEMY_BULLET_SPEED);
-  bullet->custom_data = enemy_bullet_init_data(velocity, damage);
+  enemy_bullet_init_data(bullet, velocity, damage);
 
   bullet->update = bullet_update;
   bullet->draw = bullet_draw;

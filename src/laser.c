@@ -5,14 +5,13 @@
 #include "assets.h"
 #include "config.h"
 #include "dmg_number.h"
-#include "enemy.h"
+#include "entity.h"
 #include "entity_list.h"
 #include "game.h"
 #include "laser.h"
-#include "utils.h"
 
-static LaserData *laser_init_data(i32 damage) {
-  LaserData *data = malloc(sizeof(LaserData));
+static LaserData *laser_init_data(Entity *laser, i32 damage) {
+  LaserData *data = &laser->laser;
   data->damage = damage;
   data->ttl = LASER_TTL;
 
@@ -20,14 +19,14 @@ static LaserData *laser_init_data(i32 damage) {
 }
 
 static void laser_update(Entity *self, Game game) {
-  LaserData *data = (LaserData *)self->custom_data;
+  LaserData *data = &self->laser;
 
   if (data->ttl == LASER_TTL && data->damage > 0) {
     EntityListIterator it = el_iter(game->world);
     Entity *entity;
     while ((entity = eli_next(&it))) {
       if (entity->type == ENT_ENEMY) {
-        EnemyData *edata = (EnemyData *)entity->custom_data;
+        EnemyData *edata = &entity->enemy;
         Rectangle bounds = {entity->position.x, entity->position.y,
                             edata->size.x, edata->size.y};
 
@@ -54,7 +53,7 @@ static void laser_update(Entity *self, Game game) {
 }
 
 static void laser_draw(Entity *self, Game game) {
-  LaserData *data = (LaserData *)self->custom_data;
+  LaserData *data = &self->laser;
 
   Sprite *sprite = &assets.fire;
   u32 frame = sprite->frames * (1 - data->ttl / LASER_TTL);
@@ -75,7 +74,7 @@ Entity *laser_create(Vector2 position, i32 damage) {
   Entity *laser = ent_create(ENT_LASER);
 
   laser->position = position;
-  laser->custom_data = laser_init_data(damage);
+  laser_init_data(laser, damage);
 
   laser->update = laser_update;
   laser->draw = laser_draw;

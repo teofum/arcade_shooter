@@ -16,8 +16,8 @@ const char *powerup_names[] = {"Overclock", "War Drum"};
 const char *powerup_descriptions[] = {"Double movement speed", "Double damage"};
 Color powerup_colors[] = {GREEN, ORANGE};
 
-static PowerupData *powerup_init_data(PowerupType type) {
-  PowerupData *data = malloc(sizeof(PowerupData));
+static PowerupData *powerup_init_data(Entity *self, PowerupType type) {
+  PowerupData *data = &self->powerup;
   data->type = type;
 
   f32 vx = frand() * 2.0f - 1.0f;
@@ -30,7 +30,7 @@ static PowerupData *powerup_init_data(PowerupType type) {
 }
 
 static void powerup_update(Entity *self, Game game) {
-  PowerupData *data = (PowerupData *)self->custom_data;
+  PowerupData *data = &self->powerup;
 
   f32 delta_y = game->delta_time * ENEMY_SPEED;
   self->position.y += delta_y;
@@ -46,7 +46,7 @@ static void powerup_update(Entity *self, Game game) {
   f32 distance = Vector2Distance(player_pos, self->position);
 
   if (distance < XP_PICKUP_RANGE) {
-    PlayerData *pdata = (PlayerData *)game->player->custom_data;
+    PlayerData *pdata = &game->player->player;
     pdata->active_powerup = data->type;
     pdata->powerup_timer = POWERUP_DURATION;
 
@@ -63,7 +63,7 @@ static void powerup_update(Entity *self, Game game) {
 }
 
 static void powerup_draw(Entity *self, Game game) {
-  PowerupData *data = (PowerupData *)self->custom_data;
+  PowerupData *data = &self->powerup;
 
   Sprite *sprite = &assets.powerups[data->type];
 
@@ -81,7 +81,7 @@ Entity *powerup_create(Vector2 position, PowerupType type) {
   Entity *powerup = ent_create(ENT_POWERUP);
 
   powerup->position = position;
-  powerup->custom_data = powerup_init_data(type);
+  powerup_init_data(powerup, type);
 
   powerup->update = powerup_update;
   powerup->draw = powerup_draw;

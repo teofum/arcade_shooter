@@ -5,18 +5,6 @@
 
 #include "entity.h"
 
-typedef enum {
-  POWER_FAST,
-  POWER_DMG,
-  POWER_NONE = -1,
-} PowerupType;
-
-typedef struct PowerupData {
-  PowerupType type;
-
-  Vector2 velocity;
-} PowerupData;
-
 extern const char *powerup_names[2];
 extern const char *powerup_descriptions[2];
 extern Color powerup_colors[2];

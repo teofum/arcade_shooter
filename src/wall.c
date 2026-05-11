@@ -3,11 +3,10 @@
 
 #include "entity.h"
 #include "game.h"
-#include "utils.h"
 #include "wall.h"
 
-static WallData *wall_init_data(Rectangle bounds) {
-  WallData *data = malloc(sizeof(WallData));
+static WallData *wall_init_data(Entity *self, Rectangle bounds) {
+  WallData *data = &self->wall;
   data->bounds = bounds;
 
   return data;
@@ -17,17 +16,17 @@ static void wall_update(Entity *wall, Game game) {
   // Do nothing. It's a wall.
 }
 
-static void wall_draw(Entity *wall, Game game) {
-  WallData *data = (WallData *)wall->custom_data;
+static void wall_draw(Entity *self, Game game) {
+  WallData *data = &self->wall;
 
-  // Draw player
+  // Draw wall
   DrawRectangleRec(data->bounds, (Color){0, 64, 64, 255});
 }
 
 Entity *wall_create(Rectangle bounds) {
   Entity *wall = ent_create(ENT_WALL);
 
-  wall->custom_data = wall_init_data(bounds);
+  wall_init_data(wall, bounds);
 
   wall->update = wall_update;
   wall->draw = wall_draw;

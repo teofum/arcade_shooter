@@ -24,8 +24,8 @@ static Rectangle bottom_wall = {-FIELD_WIDTH / 2.0f, 100, FIELD_WIDTH, 100};
  * Player initialization                                                      *
  *============================================================================*/
 
-static PlayerData *player_init_data() {
-  PlayerData *data = malloc(sizeof(PlayerData));
+static PlayerData *player_init_data(Entity *self) {
+  PlayerData *data = &self->player;
 
   data->size = 5.0f;
 
@@ -64,8 +64,8 @@ static PlayerData *player_init_data() {
  * Hit callback for enemy projectiles
  */
 static bool player_hit_bullet(Entity *self, Entity *enemy_bullet, Game game) {
-  PlayerData *data = (PlayerData *)self->custom_data;
-  EnemyBulletData *ebdata = (EnemyBulletData *)enemy_bullet->custom_data;
+  PlayerData *data = &self->player;
+  EnemyBulletData *ebdata = &enemy_bullet->enemy_bullet;
 
   i32 damage = get_damage(ebdata->damage);
   data->health -= damage;
@@ -79,7 +79,7 @@ static bool player_hit_bullet(Entity *self, Entity *enemy_bullet, Game game) {
 }
 
 static void player_move(Entity *self, Game game) {
-  PlayerData *data = (PlayerData *)self->custom_data;
+  PlayerData *data = &self->player;
 
   // Update velocity
   f32 speed = data->move_speed * (data->active_powerup == POWER_FAST ? 2 : 1);
@@ -117,7 +117,7 @@ static void player_move(Entity *self, Game game) {
 }
 
 static Entity *player_fire_special(Entity *self, Game game, i32 damage) {
-  PlayerData *data = (PlayerData *)self->custom_data;
+  PlayerData *data = &self->player;
 
   for (u32 i = 0; i < data->special_bullet_count; i++) {
     SpecialBulletSlot *sb = &data->special_bullets[i];
@@ -134,7 +134,7 @@ static Entity *player_fire_special(Entity *self, Game game, i32 damage) {
 }
 
 static void player_fire(Entity *self, Game game) {
-  PlayerData *data = (PlayerData *)self->custom_data;
+  PlayerData *data = &self->player;
 
   if (!data->firing)
     return;
@@ -161,7 +161,7 @@ static void player_fire(Entity *self, Game game) {
 }
 
 static void player_update_timers(Entity *self, Game game) {
-  PlayerData *data = (PlayerData *)self->custom_data;
+  PlayerData *data = &self->player;
 
   // Update firing timer
   data->fire_timer = fmaxf(data->fire_timer - game->delta_time, 0.0f);
@@ -185,7 +185,7 @@ static void player_update_timers(Entity *self, Game game) {
 }
 
 static void player_level_up(Entity *self, Game game) {
-  PlayerData *data = (PlayerData *)self->custom_data;
+  PlayerData *data = &self->player;
 
   // Level up
   data->level++;
@@ -270,7 +270,7 @@ static void player_level_up(Entity *self, Game game) {
  *============================================================================*/
 
 static void player_update(Entity *self, Game game) {
-  PlayerData *data = (PlayerData *)self->custom_data;
+  PlayerData *data = &self->player;
 
   // Die
   if (data->health <= 0) {
@@ -293,15 +293,15 @@ static void player_update(Entity *self, Game game) {
  * Player draw function                                                       *
  *============================================================================*/
 
-static void player_draw(Entity *player, Game game) {
-  PlayerData *data = (PlayerData *)player->custom_data;
+static void player_draw(Entity *self, Game game) {
+  PlayerData *data = &self->player;
 
   Sprite *sprite = &assets.player;
 
   Rectangle source = get_frame_rect(sprite, 0);
   source.width *= data->orientation;
 
-  Vector2 p = player->position;
+  Vector2 p = self->position;
   f32 size = data->size * 3;
   Rectangle dest = (Rectangle){p.x, p.y, size, size};
 
@@ -320,7 +320,7 @@ Entity *player_create() {
   Entity *player = ent_create(ENT_PLAYER);
 
   player->position = (Vector2){0, 0};
-  player->custom_data = player_init_data();
+  player_init_data(player);
   player->update = player_update;
   player->draw = player_draw;
 

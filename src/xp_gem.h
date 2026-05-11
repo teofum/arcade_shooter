@@ -10,12 +10,6 @@
 
 extern u32 xp_gem_values[XP_GEM_TIERS];
 
-typedef struct XpGemData {
-  u32 value;
-
-  Vector2 velocity;
-} XpGemData;
-
 Entity *xp_gem_create(Vector2 position, u32 value);
 
 #endif

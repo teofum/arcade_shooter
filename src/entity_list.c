@@ -46,7 +46,6 @@ EntityListEntry el_destroy_impl(EntityList el, EntityListEntry entry,
   } else if (entry->entity == entity) {
     EntityListEntry next = entry->next;
 
-    free(entity->custom_data);
     free(entity);
     free(entry);
 
@@ -83,7 +82,6 @@ Entity *eli_next(EntityListIterator *eli) {
 void el_free(EntityList el) {
   while (el->first) {
     EntityListEntry next = el->first->next;
-    free(el->first->entity->custom_data);
     free(el->first->entity);
     free(el->first);
     el->first = next;

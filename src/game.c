@@ -138,7 +138,7 @@ void game_process_input(Game game) {
   if (game->state != GS_RUNNING)
     return;
 
-  PlayerData *pdata = (PlayerData *)game->player->custom_data;
+  PlayerData *pdata = &game->player->player;
 
   // Player movement
   Vector2 v_target = {0, 0};

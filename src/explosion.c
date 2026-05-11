@@ -4,15 +4,16 @@
 #include "assets.h"
 #include "config.h"
 #include "dmg_number.h"
-#include "enemy.h"
+#include "entity.h"
 #include "entity_list.h"
 #include "explosion.h"
 #include "game.h"
 #include "raymath.h"
 #include "utils.h"
 
-static ExplosionData *explosion_init_data(f32 radius, i32 damage) {
-  ExplosionData *data = malloc(sizeof(ExplosionData));
+static ExplosionData *explosion_init_data(Entity *self, f32 radius,
+                                          i32 damage) {
+  ExplosionData *data = &self->explosion;
   data->radius = radius;
   data->damage = damage;
   data->ttl = EXPLOSION_TTL;
@@ -21,7 +22,7 @@ static ExplosionData *explosion_init_data(f32 radius, i32 damage) {
 }
 
 static void explosion_update(Entity *self, Game game) {
-  ExplosionData *data = (ExplosionData *)self->custom_data;
+  ExplosionData *data = &self->explosion;
 
   if (data->ttl == EXPLOSION_TTL) {
     // Play explosion sound
@@ -38,7 +39,7 @@ static void explosion_update(Entity *self, Game game) {
       Entity *entity;
       while ((entity = eli_next(&it))) {
         if (entity->type == ENT_ENEMY) {
-          EnemyData *edata = (EnemyData *)entity->custom_data;
+          EnemyData *edata = &entity->enemy;
           Rectangle bounds = {entity->position.x, entity->position.y,
                               edata->size.x, edata->size.y};
 
@@ -66,7 +67,7 @@ static void explosion_update(Entity *self, Game game) {
 }
 
 static void explosion_draw(Entity *self, Game game) {
-  ExplosionData *data = (ExplosionData *)self->custom_data;
+  ExplosionData *data = &self->explosion;
 
   Sprite *sprite = &assets.explosion;
   u32 frame = sprite->frames * (1 - data->ttl / EXPLOSION_TTL);
@@ -83,7 +84,7 @@ Entity *explosion_create(Vector2 position, f32 radius, i32 damage) {
   Entity *explosion = ent_create(ENT_EXPLOSION);
 
   explosion->position = position;
-  explosion->custom_data = explosion_init_data(radius, damage);
+  explosion_init_data(explosion, radius, damage);
 
   explosion->update = explosion_update;
   explosion->draw = explosion_draw;

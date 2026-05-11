@@ -319,7 +319,7 @@ static void ui_draw_player_crosshair(PlayerData *pdata) {
 }
 
 void ui_draw_game_ui(Game game) {
-  PlayerData *pdata = (PlayerData *)game->player->custom_data;
+  PlayerData *pdata = &game->player->player;
 
   ui_begin_frame_ex(full_screen, BLANK, BLANK, (Vector2){20, 20});
   {
@@ -341,7 +341,7 @@ void ui_draw_game_ui(Game game) {
 }
 
 static void ui_draw_level_up_option(Game game, LevelUpOption *option, u32 i) {
-  PlayerData *pdata = (PlayerData *)game->player->custom_data;
+  PlayerData *pdata = &game->player->player;
   static char text[30];
 
   f32 button_x = (i + 1) * 220;
@@ -404,7 +404,7 @@ static void ui_draw_level_up_option(Game game, LevelUpOption *option, u32 i) {
 }
 
 void ui_draw_level_up_screen(Game game) {
-  PlayerData *pdata = (PlayerData *)game->player->custom_data;
+  PlayerData *pdata = &game->player->player;
 
   static char level_up_str[30];
   sprintf(level_up_str, "Lv. %d -> %d", pdata->level - 1, pdata->level);
