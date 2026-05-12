@@ -19,10 +19,14 @@
 
 Game game_init() {
   Game game = malloc(sizeof(struct Game));
-  game->world = NULL;
-  game->camera = (Camera2D){0};
-  game->camera.offset = BASE_OFFSET;
-  game->camera.zoom = (f32)WINDOW_HEIGHT / FIELD_HEIGHT;
+  *game = (struct Game){
+      .world = NULL,
+      .camera =
+          (Camera2D){
+              .offset = BASE_OFFSET,
+              .zoom = (f32)WINDOW_HEIGHT / FIELD_HEIGHT,
+          },
+  };
 
   game_reset(game);
 

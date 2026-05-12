@@ -11,14 +11,12 @@
 #include "raymath.h"
 #include "utils.h"
 
-static ExplosionData *explosion_init_data(Entity *self, f32 radius,
-                                          i32 damage) {
-  ExplosionData *data = &self->explosion;
-  data->radius = radius;
-  data->damage = damage;
-  data->ttl = EXPLOSION_TTL;
-
-  return data;
+static ExplosionData explosion_init_data(f32 radius, i32 damage) {
+  return (ExplosionData){
+      .radius = radius,
+      .damage = damage,
+      .ttl = EXPLOSION_TTL,
+  };
 }
 
 static bool explosion_update(Entity *self, Game game) {
@@ -82,7 +80,7 @@ Entity *explosion_create(Vector2 position, f32 radius, i32 damage) {
   Entity *explosion = ent_create(ENT_EXPLOSION);
 
   explosion->position = position;
-  explosion_init_data(explosion, radius, damage);
+  explosion->explosion = explosion_init_data(radius, damage);
 
   explosion->update = explosion_update;
   explosion->draw = explosion_draw;

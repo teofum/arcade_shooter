@@ -22,36 +22,36 @@ static Rectangle bottom_wall = {-FIELD_WIDTH / 2.0f, 100, FIELD_WIDTH, 100};
  * Player initialization                                                      *
  *============================================================================*/
 
-static PlayerData *player_init_data(Entity *self) {
-  PlayerData *data = &self->player;
+static PlayerData player_init_data() {
+  return (PlayerData){
+      .size = 5.0f,
 
-  data->size = 5.0f;
+      .velocity = (Vector2){0, 0},
+      .direction = (Vector2){0, 0},
+      .crosshair = (Vector2){0, 0},
 
-  data->velocity = (Vector2){0, 0};
-  data->direction = (Vector2){0, 0};
-  data->crosshair = (Vector2){0, 0};
+      .health = 100,
+      .max_health = 100,
+      .base_damage = 5,
+      .move_speed = PLAYER_SPEED,
 
-  data->health = data->max_health = 100;
-  data->base_damage = 5;
-  data->move_speed = PLAYER_SPEED;
+      .level = 1,
+      .xp = 0,
+      .to_next_level = 5,
 
-  data->level = 1;
-  data->xp = 0;
-  data->to_next_level = 5;
+      .ammo = 5,
+      .max_ammo = 5,
+      .special_bullet_count = 0,
 
-  data->ammo = data->max_ammo = 5;
-  data->special_bullet_count = 0;
+      .active_powerup = POWER_NONE,
+      .powerup_timer = 0.0f,
 
-  data->active_powerup = POWER_NONE;
-  data->powerup_timer = 0.0f;
+      .fire_cooldown = 0.1f,
+      .fire_timer = 0.0f,
+      .firing = false,
 
-  data->fire_cooldown = 0.1f;
-  data->fire_timer = 0.0f;
-  data->firing = false;
-
-  data->orientation = 1;
-
-  return data;
+      .orientation = 1,
+  };
 }
 
 /*============================================================================*
@@ -320,7 +320,7 @@ Entity *player_create() {
   Entity *player = ent_create(ENT_PLAYER);
 
   player->position = (Vector2){0, 0};
-  player_init_data(player);
+  player->player = player_init_data();
   player->update = player_update;
   player->draw = player_draw;
 

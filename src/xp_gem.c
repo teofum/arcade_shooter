@@ -12,17 +12,15 @@
 
 u32 xp_gem_values[XP_GEM_TIERS] = {25, 5, 1};
 
-static XpGemData *xp_gem_init_data(Entity *self, u32 value) {
-  XpGemData *data = &self->xp_gem;
-  data->value = value;
-
+static XpGemData xp_gem_init_data(u32 value) {
   f32 vx = frand() * 2.0f - 1.0f;
   f32 vy = frand() * 2.0f - 1.0f;
   f32 speed = frand() * 0.6f + 0.7f;
 
-  data->velocity = Vector2Scale(Vector2Normalize((Vector2){vx, vy}), speed);
-
-  return data;
+  return (XpGemData){
+      .value = value,
+      .velocity = Vector2Scale(Vector2Normalize((Vector2){vx, vy}), speed),
+  };
 }
 
 static bool xp_gem_update(Entity *self, Game game) {
@@ -78,7 +76,7 @@ Entity *xp_gem_create(Vector2 position, u32 value) {
   Entity *xp_gem = ent_create(ENT_XP_GEM);
 
   xp_gem->position = position;
-  xp_gem_init_data(xp_gem, value);
+  xp_gem->xp_gem = xp_gem_init_data(value);
 
   xp_gem->update = xp_gem_update;
   xp_gem->draw = xp_gem_draw;

@@ -10,12 +10,11 @@
 #include "game.h"
 #include "laser.h"
 
-static LaserData *laser_init_data(Entity *laser, i32 damage) {
-  LaserData *data = &laser->laser;
-  data->damage = damage;
-  data->ttl = LASER_TTL;
-
-  return data;
+static LaserData laser_init_data(i32 damage) {
+  return (LaserData){
+      .damage = damage,
+      .ttl = LASER_TTL,
+  };
 }
 
 static bool laser_update(Entity *self, Game game) {
@@ -72,7 +71,7 @@ Entity *laser_create(Vector2 position, i32 damage) {
   Entity *laser = ent_create(ENT_LASER);
 
   laser->position = position;
-  laser_init_data(laser, damage);
+  laser->laser = laser_init_data(damage);
 
   laser->update = laser_update;
   laser->draw = laser_draw;

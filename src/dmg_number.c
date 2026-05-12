@@ -8,14 +8,14 @@
 #include "entity.h"
 #include "game.h"
 
-static DmgNumberData *dmg_number_init_data(Entity *self, i32 damage, f32 size) {
-  DmgNumberData *data = &self->dmg_number;
-
-  sprintf(data->string, damage < 0 ? "+%d" : "%d", abs(damage));
-  data->size = size;
-  data->damage = damage;
-  data->timer = DMG_NUMBER_TTL;
-  data->speed = DMG_NUMBER_SPEED;
+static DmgNumberData dmg_number_init_data(i32 damage, f32 size) {
+  DmgNumberData data = {
+      .size = size,
+      .damage = damage,
+      .timer = DMG_NUMBER_TTL,
+      .speed = DMG_NUMBER_SPEED,
+  };
+  sprintf(data.string, damage < 0 ? "+%d" : "%d", abs(damage));
 
   return data;
 }
@@ -57,7 +57,7 @@ Entity *dmg_number_create(Vector2 position, i32 dmg, f32 size) {
   Entity *dmg_number = ent_create(ENT_DMG_NUMBER);
 
   dmg_number->position = position;
-  dmg_number_init_data(dmg_number, dmg, size);
+  dmg_number->dmg_number = dmg_number_init_data(dmg, size);
   dmg_number->update = dmg_number_update;
   dmg_number->draw = dmg_number_draw;
 

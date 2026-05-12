@@ -7,15 +7,12 @@
 #include "bullet.h"
 #include "config.h"
 #include "dmg_number.h"
-#include "enemy.h"
-#include "enemy_bullet.h"
 #include "entity.h"
 #include "entity_list.h"
 #include "explosion.h"
 #include "game.h"
 #include "laser.h"
 #include "physics.h"
-#include "player.h"
 #include "types.h"
 #include "utils.h"
 
@@ -36,21 +33,19 @@ static i32 get_bullet_damage(BulletType type, u32 level, i32 base_damage) {
 /*============================================================================*
  * Bullet initialization                                                      *
  *============================================================================*/
-static BulletData *bullet_init_data(Entity *self, Vector2 initial_velocity,
-                                    BulletType type, u32 level, i32 damage,
-                                    u32 special_idx) {
-  BulletData *data = &self->bullet;
-  data->velocity = initial_velocity;
-  data->size = type > BULLET_NORMAL ? 2.0f : 1.0f;
+static BulletData bullet_init_data(Vector2 initial_velocity, BulletType type,
+                                   u32 level, i32 damage, u32 special_idx) {
+  return (BulletData){
+      .velocity = initial_velocity,
+      .size = type > BULLET_NORMAL ? 2.0f : 1.0f,
 
-  data->type = type;
-  data->level = level;
-  data->damage = get_bullet_damage(type, level, damage);
-  data->special_idx = special_idx;
+      .type = type,
+      .level = level,
+      .damage = get_bullet_damage(type, level, damage),
+      .special_idx = special_idx,
 
-  data->deferred_destroy = false;
-
-  return data;
+      .deferred_destroy = false,
+  };
 }
 
 /*============================================================================*
@@ -281,7 +276,7 @@ Entity *bullet_create(Vector2 position, Vector2 target, BulletType type,
 
   Vector2 aim = Vector2Subtract(target, position);
   Vector2 velocity = Vector2Scale(Vector2Normalize(aim), BULLET_SPEED);
-  bullet_init_data(bullet, velocity, type, level, damage, special_idx);
+  bullet->bullet = bullet_init_data(velocity, type, level, damage, special_idx);
 
   bullet->update = bullet_update;
   bullet->draw = bullet_draw;

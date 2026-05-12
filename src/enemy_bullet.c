@@ -15,16 +15,14 @@
 /*============================================================================*
  * Enemy bullet initialization                                                *
  *============================================================================*/
-static EnemyBulletData *
-enemy_bullet_init_data(Entity *self, Vector2 initial_velocity, i32 damage) {
-  EnemyBulletData *data = &self->enemy_bullet;
-  data->velocity = initial_velocity;
-  data->size = 2.0f;
-
-  data->damage = damage;
-
-  data->deferred_destroy = false;
-  return data;
+static EnemyBulletData enemy_bullet_init_data(Vector2 initial_velocity,
+                                              i32 damage) {
+  return (EnemyBulletData){
+      .velocity = initial_velocity,
+      .size = 2.0f,
+      .damage = damage,
+      .deferred_destroy = false,
+  };
 }
 
 /*============================================================================*
@@ -98,7 +96,7 @@ Entity *enemy_bullet_create(Vector2 position, Vector2 target, i32 damage) {
 
   Vector2 aim = Vector2Subtract(target, position);
   Vector2 velocity = Vector2Scale(Vector2Normalize(aim), ENEMY_BULLET_SPEED);
-  enemy_bullet_init_data(bullet, velocity, damage);
+  bullet->enemy_bullet = enemy_bullet_init_data(velocity, damage);
 
   bullet->update = bullet_update;
   bullet->draw = bullet_draw;

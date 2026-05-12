@@ -16,17 +16,15 @@ const char *powerup_names[] = {"Overclock", "War Drum"};
 const char *powerup_descriptions[] = {"Double movement speed", "Double damage"};
 Color powerup_colors[] = {GREEN, ORANGE};
 
-static PowerupData *powerup_init_data(Entity *self, PowerupType type) {
-  PowerupData *data = &self->powerup;
-  data->type = type;
-
+static PowerupData powerup_init_data(PowerupType type) {
   f32 vx = frand() * 2.0f - 1.0f;
   f32 vy = frand() * 2.0f - 1.0f;
   f32 speed = frand() * 0.6f + 0.7f;
 
-  data->velocity = Vector2Scale(Vector2Normalize((Vector2){vx, vy}), speed);
-
-  return data;
+  return (PowerupData){
+      .type = type,
+      .velocity = Vector2Scale(Vector2Normalize((Vector2){vx, vy}), speed),
+  };
 }
 
 static bool powerup_update(Entity *self, Game game) {
@@ -81,7 +79,7 @@ Entity *powerup_create(Vector2 position, PowerupType type) {
   Entity *powerup = ent_create(ENT_POWERUP);
 
   powerup->position = position;
-  powerup_init_data(powerup, type);
+  powerup->powerup = powerup_init_data(type);
 
   powerup->update = powerup_update;
   powerup->draw = powerup_draw;
