@@ -98,7 +98,7 @@ Collision check_collisions(Entity *self, Game game, Vector2 next_pos, f32 size,
   };
   EntityListIterator it = el_iter(game->world);
   Entity *entity;
-  while ((entity = eli_next(&it))) {
+  while ((entity = eli_next(it))) {
     if (entity->type == ENT_WALL || entity->type == ENT_ENEMY) {
       Rectangle rect = get_collision_bounds(entity);
 

@@ -4,88 +4,70 @@
 #include "entity.h"
 #include "entity_list.h"
 
-typedef struct EntityListEntry {
-  Entity *entity;
-  struct EntityListEntry *next;
-} *EntityListEntry;
-
-EntityListEntry el_new_entry(Entity *entity) {
-  EntityListEntry entry = malloc(sizeof(struct EntityListEntry));
-  entry->entity = entity;
-  entry->next = NULL;
-  return entry;
-}
+#define INITIAL_CAPACITY 1024
 
 struct EntityList {
-  EntityListEntry first;
-  EntityListEntry last;
+  u32 size;
+  u32 capacity;
+  Entity *entities;
+};
+
+struct EntityListIterator {
+  EntityList list;
+  u32 i;
 };
 
 EntityList el_create() {
   EntityList el = malloc(sizeof(struct EntityList));
-  el->first = NULL;
-  el->last = NULL;
+  *el = (struct EntityList){
+      .size = 0,
+      .capacity = INITIAL_CAPACITY,
+      .entities = malloc(sizeof(Entity) * INITIAL_CAPACITY),
+  };
+
   return el;
 }
 
-void el_add(EntityList el, Entity *entity) {
-  EntityListEntry entry = el_new_entry(entity);
+static void el_resize(EntityList el) {
+  el->size *= 2;
+  Entity *new_list = realloc(el->entities, el->size);
+  el->entities = new_list;
+}
 
-  if (el->last == NULL) {
-    el->first = el->last = entry;
-  } else {
-    el->last->next = entry;
-    el->last = entry;
+Entity *el_add(EntityList el, Entity *entity) {
+  if (el->size == el->capacity) {
+    el_resize(el);
   }
+
+  el->entities[el->size] = *entity;
+  return &el->entities[el->size++];
 }
 
-EntityListEntry el_destroy_impl(EntityList el, EntityListEntry entry,
-                                Entity *entity) {
-  if (entry == NULL) {
-    return entry;
-  } else if (entry->entity == entity) {
-    EntityListEntry next = entry->next;
+EntityListIterator el_iter(EntityList el) {
+  EntityListIterator eli = malloc(sizeof(struct EntityListIterator));
+  *eli = (struct EntityListIterator){
+      .list = el,
+      .i = 0,
+  };
 
-    free(entity);
-    free(entry);
-
-    return next;
-  } else {
-    entry->next = el_destroy_impl(el, entry->next, entity);
-
-    // Update last pointer if the last element changed
-    if (entry->next == NULL) {
-      el->last = entry;
-    }
-
-    return entry;
-  }
+  return eli;
 }
 
-void el_destroy(EntityList el, Entity *entity) {
-  el->first = el_destroy_impl(el, el->first, entity);
-}
-
-EntityListIterator el_iter(EntityList el) { return el->first; }
-
-Entity *eli_next(EntityListIterator *eli) {
+Entity *eli_next(EntityListIterator eli) {
   Entity *entity = NULL;
 
-  if (*eli != NULL) {
-    entity = (*eli)->entity;
-    *eli = (*eli)->next;
+  if (eli->i < eli->list->size) {
+    entity = &eli->list->entities[eli->i++];
   }
 
   return entity;
 }
 
-void el_free(EntityList el) {
-  while (el->first) {
-    EntityListEntry next = el->first->next;
-    free(el->first->entity);
-    free(el->first);
-    el->first = next;
-  }
+void eli_destroy_current(EntityListIterator eli) {
+  eli->list->entities[--eli->i] = eli->list->entities[--eli->list->size];
+}
 
+void el_free(EntityList el) {
+  free(el->entities);
   free(el);
 }

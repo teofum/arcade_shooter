@@ -49,12 +49,11 @@ static void bullet_hit_player(Entity *self, Game game) {
 /*============================================================================*
  * Enemy bullet update function                                               *
  *============================================================================*/
-static void bullet_update(Entity *self, Game game) {
+static bool bullet_update(Entity *self, Game game) {
   EnemyBulletData *data = &self->enemy_bullet;
 
   if (data->deferred_destroy) {
-    el_destroy(game->world, self);
-    return;
+    return true;
   }
 
   // Update position
@@ -65,8 +64,10 @@ static void bullet_update(Entity *self, Game game) {
   static Rectangle screen_bounds = {-FIELD_WIDTH / 2.0f, -FIELD_HEIGHT / 2.0f,
                                     FIELD_WIDTH, FIELD_HEIGHT};
   if (!CheckCollisionCircleRec(self->position, data->size, screen_bounds)) {
-    el_destroy(game->world, self);
+    return true;
   }
+
+  return false;
 }
 
 /*============================================================================*

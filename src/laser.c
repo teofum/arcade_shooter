@@ -18,13 +18,13 @@ static LaserData *laser_init_data(Entity *laser, i32 damage) {
   return data;
 }
 
-static void laser_update(Entity *self, Game game) {
+static bool laser_update(Entity *self, Game game) {
   LaserData *data = &self->laser;
 
   if (data->ttl == LASER_TTL && data->damage > 0) {
     EntityListIterator it = el_iter(game->world);
     Entity *entity;
-    while ((entity = eli_next(&it))) {
+    while ((entity = eli_next(it))) {
       if (entity->type == ENT_ENEMY) {
         EnemyData *edata = &entity->enemy;
         Rectangle bounds = {entity->position.x, entity->position.y,
@@ -47,9 +47,7 @@ static void laser_update(Entity *self, Game game) {
 
   data->ttl -= game->delta_time;
 
-  if (data->ttl <= 0) {
-    el_destroy(game->world, self);
-  }
+  return data->ttl <= 0;
 }
 
 static void laser_draw(Entity *self, Game game) {

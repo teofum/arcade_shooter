@@ -7,13 +7,11 @@
 #include "bullet.h"
 #include "config.h"
 #include "dmg_number.h"
-#include "enemy_bullet.h"
 #include "entity.h"
 #include "entity_list.h"
 #include "game.h"
 #include "physics.h"
 #include "player.h"
-#include "powerup.h"
 #include "types.h"
 #include "utils.h"
 
@@ -269,14 +267,14 @@ static void player_level_up(Entity *self, Game game) {
  * Player update function                                                     *
  *============================================================================*/
 
-static void player_update(Entity *self, Game game) {
+static bool player_update(Entity *self, Game game) {
   PlayerData *data = &self->player;
 
   // Die
   if (data->health <= 0) {
     PlaySound(assets.sfx_oof);
     game_set_state(game, GS_GAME_OVER);
-    return;
+    return false;
   }
 
   player_move(self, game);
@@ -287,6 +285,8 @@ static void player_update(Entity *self, Game game) {
   }
 
   player_update_timers(self, game);
+
+  return false;
 }
 
 /*============================================================================*

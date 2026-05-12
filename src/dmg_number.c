@@ -6,7 +6,6 @@
 #include "config.h"
 #include "dmg_number.h"
 #include "entity.h"
-#include "entity_list.h"
 #include "game.h"
 
 static DmgNumberData *dmg_number_init_data(Entity *self, i32 damage, f32 size) {
@@ -21,16 +20,18 @@ static DmgNumberData *dmg_number_init_data(Entity *self, i32 damage, f32 size) {
   return data;
 }
 
-static void dmg_number_update(Entity *self, Game game) {
+static bool dmg_number_update(Entity *self, Game game) {
   DmgNumberData *data = &self->dmg_number;
 
   if (data->timer <= 0.0f) {
-    el_destroy(game->world, self);
+    return true;
   } else {
     data->timer -= game->delta_time;
     self->position.y -= data->speed * game->delta_time;
     data->speed += DMG_NUMBER_ACCEL * game->delta_time;
   }
+
+  return false;
 }
 
 static void dmg_number_draw(Entity *self, Game game) {

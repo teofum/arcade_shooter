@@ -21,7 +21,7 @@ static ExplosionData *explosion_init_data(Entity *self, f32 radius,
   return data;
 }
 
-static void explosion_update(Entity *self, Game game) {
+static bool explosion_update(Entity *self, Game game) {
   ExplosionData *data = &self->explosion;
 
   if (data->ttl == EXPLOSION_TTL) {
@@ -37,7 +37,7 @@ static void explosion_update(Entity *self, Game game) {
     if (data->damage > 0) {
       EntityListIterator it = el_iter(game->world);
       Entity *entity;
-      while ((entity = eli_next(&it))) {
+      while ((entity = eli_next(it))) {
         if (entity->type == ENT_ENEMY) {
           EnemyData *edata = &entity->enemy;
           Rectangle bounds = {entity->position.x, entity->position.y,
@@ -61,9 +61,7 @@ static void explosion_update(Entity *self, Game game) {
 
   data->ttl -= game->delta_time;
 
-  if (data->ttl <= 0) {
-    el_destroy(game->world, self);
-  }
+  return data->ttl <= 0;
 }
 
 static void explosion_draw(Entity *self, Game game) {

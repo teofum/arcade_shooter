@@ -5,9 +5,7 @@
 #include "assets.h"
 #include "config.h"
 #include "entity.h"
-#include "entity_list.h"
 #include "game.h"
-#include "player.h"
 #include "types.h"
 #include "utils.h"
 #include "xp_gem.h"
@@ -27,15 +25,14 @@ static XpGemData *xp_gem_init_data(Entity *self, u32 value) {
   return data;
 }
 
-static void xp_gem_update(Entity *self, Game game) {
+static bool xp_gem_update(Entity *self, Game game) {
   XpGemData *data = &self->xp_gem;
 
   f32 delta_y = game->delta_time * ENEMY_SPEED;
   self->position.y += delta_y;
 
   if (self->position.y > FIELD_HEIGHT / 2.0f + 10) {
-    el_destroy(game->world, self);
-    return;
+    return true;
   }
 
   // Accelerate towards player and move
@@ -47,8 +44,7 @@ static void xp_gem_update(Entity *self, Game game) {
     PlayerData *pdata = &game->player->player;
     pdata->xp += data->value;
 
-    el_destroy(game->world, self);
-    return;
+    return true;
   } else if (distance < XP_MAGNET_RANGE) {
     target_velocity = Vector2Subtract(player_pos, self->position);
     target_velocity =
@@ -57,6 +53,8 @@ static void xp_gem_update(Entity *self, Game game) {
 
   data->velocity = Vector2Lerp(data->velocity, target_velocity, 0.1f);
   self->position = Vector2Add(self->position, data->velocity);
+
+  return false;
 }
 
 static void xp_gem_draw(Entity *self, Game game) {

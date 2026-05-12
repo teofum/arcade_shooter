@@ -66,8 +66,8 @@ void game_reset(Game game) {
   // Create world
   game->world = el_create();
 
-  game->player = player_create();
-  el_add(game->world, game->player);
+  Entity *player = player_create();
+  game->player = el_add(game->world, player);
 
   Entity *left_wall =
       wall_create((Rectangle){-1000 - FIELD_WIDTH / 2.0f, -100, 1000, 200});
@@ -328,9 +328,11 @@ void game_update(Game game) {
   // Update entities
   EntityListIterator it = el_iter(game->world);
   Entity *e;
-  while ((e = eli_next(&it))) {
+  while ((e = eli_next(it))) {
     if (e->update != NULL) {
-      e->update(e, game);
+      if (e->update(e, game)) {
+        eli_destroy_current(it);
+      }
     }
   }
 
@@ -351,7 +353,7 @@ void game_draw(Game game) {
     {
       EntityListIterator it = el_iter(game->world);
       Entity *e;
-      while ((e = eli_next(&it))) {
+      while ((e = eli_next(it))) {
         if (e->draw != NULL) {
           e->draw(e, game);
         }

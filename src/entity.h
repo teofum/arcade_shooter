@@ -207,7 +207,7 @@ typedef struct EnemyBulletData {
 struct Entity;
 struct Game;
 
-typedef void (*EntityUpdateFunction)(struct Entity *entity, struct Game *game);
+typedef bool (*EntityUpdateFunction)(struct Entity *entity, struct Game *game);
 typedef void (*EntityDrawFunction)(struct Entity *entity, struct Game *game);
 
 typedef struct Entity {

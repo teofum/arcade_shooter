@@ -29,15 +29,14 @@ static PowerupData *powerup_init_data(Entity *self, PowerupType type) {
   return data;
 }
 
-static void powerup_update(Entity *self, Game game) {
+static bool powerup_update(Entity *self, Game game) {
   PowerupData *data = &self->powerup;
 
   f32 delta_y = game->delta_time * ENEMY_SPEED;
   self->position.y += delta_y;
 
   if (self->position.y > FIELD_HEIGHT / 2.0f + 10) {
-    el_destroy(game->world, self);
-    return;
+    return true;
   }
 
   // Accelerate towards player and move
@@ -50,8 +49,7 @@ static void powerup_update(Entity *self, Game game) {
     pdata->active_powerup = data->type;
     pdata->powerup_timer = POWERUP_DURATION;
 
-    el_destroy(game->world, self);
-    return;
+    return true;
   } else if (distance < XP_MAGNET_RANGE) {
     target_velocity = Vector2Subtract(player_pos, self->position);
     target_velocity =
@@ -60,6 +58,8 @@ static void powerup_update(Entity *self, Game game) {
 
   data->velocity = Vector2Lerp(data->velocity, target_velocity, 0.1f);
   self->position = Vector2Add(self->position, data->velocity);
+
+  return false;
 }
 
 static void powerup_draw(Entity *self, Game game) {

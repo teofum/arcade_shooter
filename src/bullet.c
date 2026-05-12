@@ -202,7 +202,7 @@ bool bullet_hit_bullet(Entity *self, Entity *enemy_bullet, Game game) {
 /*============================================================================*
  * Bullet update function                                                     *
  *============================================================================*/
-static void bullet_update(Entity *self, Game game) {
+static bool bullet_update(Entity *self, Game game) {
   BulletData *data = &self->bullet;
   PlayerData *pdata = &game->player->player;
 
@@ -222,8 +222,7 @@ static void bullet_update(Entity *self, Game game) {
       pdata->special_bullets[data->special_idx].fired = false;
     }
 
-    el_destroy(game->world, self);
-    return;
+    return true;
   }
 
   // If there was a collision change the trajectory
@@ -243,8 +242,10 @@ static void bullet_update(Entity *self, Game game) {
       pdata->special_bullets[data->special_idx].fired = false;
     }
 
-    el_destroy(game->world, self);
+    return true;
   }
+
+  return false;
 }
 
 /*============================================================================*

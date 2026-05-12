@@ -5,17 +5,17 @@
 
 typedef struct EntityList *EntityList;
 
-typedef struct EntityListEntry *EntityListIterator;
+typedef struct EntityListIterator *EntityListIterator;
 
 EntityList el_create();
 
-void el_add(EntityList el, Entity *entity);
-
-void el_destroy(EntityList el, Entity *entity);
+Entity *el_add(EntityList el, Entity *entity);
 
 EntityListIterator el_iter(EntityList el);
 
-Entity *eli_next(EntityListIterator *eli);
+Entity *eli_next(EntityListIterator eli);
+
+void eli_destroy_current(EntityListIterator eli);
 
 void el_free(EntityList el);
 

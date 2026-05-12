@@ -12,8 +12,9 @@ static WallData *wall_init_data(Entity *self, Rectangle bounds) {
   return data;
 }
 
-static void wall_update(Entity *wall, Game game) {
+static bool wall_update(Entity *wall, Game game) {
   // Do nothing. It's a wall.
+  return false;
 }
 
 static void wall_draw(Entity *self, Game game) {

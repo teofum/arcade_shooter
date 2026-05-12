@@ -129,16 +129,14 @@ static void enemy_move(Entity *self, Game game, Vector2 direction) {
 
   EntityListIterator it = el_iter(game->world);
   Entity *entity;
-  while ((entity = eli_next(&it))) {
+  while ((entity = eli_next(it))) {
     if (entity->type == ENT_BULLET) {
       BulletData *bdata = &entity->bullet;
 
       if (CheckCollisionCircleRec(entity->position, bdata->size, bounds)) {
         bullet_hit_enemy(entity, self, game);
 
-        if (bdata->deferred_destroy) {
-          el_destroy(game->world, entity);
-        } else {
+        if (!bdata->deferred_destroy) {
           push_entity(entity, bounds, bdata->size, direction);
           if (direction.y != 0)
             bdata->velocity.y = fabsf(bdata->velocity.y) * direction.y;
@@ -171,7 +169,7 @@ static void enemy_fire(Entity *self, Game game, Vector2 target) {
  * Enemy update function                                                      *
  *============================================================================*/
 
-static void enemy_update(Entity *self, Game game) {
+static bool enemy_update(Entity *self, Game game) {
   EnemyData *data = &self->enemy;
   PlayerData *pdata = &game->player->player;
   Vector2 center = Vector2Add(self->position, Vector2Scale(data->size, 0.5f));
@@ -192,8 +190,7 @@ static void enemy_update(Entity *self, Game game) {
 
     game->score += 10 * data->level * data->stat_scaling;
 
-    el_destroy(game->world, self);
-    return;
+    return true;
   }
 
   enemy_move(self, game, down);
@@ -206,13 +203,15 @@ static void enemy_update(Entity *self, Game game) {
   if (self->position.y >
       FIELD_HEIGHT / 2.0f - data->size.y - ((f32)FIELD_WIDTH / FIELD_COLS)) {
     pdata->health -= data->damage;
-    el_destroy(game->world, self);
+    return true;
   }
 
   if (data->dmg_flash_timer > 0.0f) {
     data->dmg_flash_timer =
         fmaxf(data->dmg_flash_timer - game->delta_time, 0.0f);
   }
+
+  return false;
 }
 
 /*============================================================================*
@@ -328,7 +327,7 @@ static void boss_next_state(EnemyData *data) {
   }
 }
 
-static void boss_update(Entity *self, Game game) {
+static bool boss_update(Entity *self, Game game) {
   EnemyData *data = &self->enemy;
   Vector2 center = Vector2Add(self->position, Vector2Scale(data->size, 0.5f));
 
@@ -421,8 +420,8 @@ static void boss_update(Entity *self, Game game) {
         Entity *explosion = explosion_create(center, data->size.y, 0);
         el_add(game->world, explosion);
 
-        el_destroy(game->world, self);
         game_set_state(game, GS_WIN);
+        return true;
       } else {
         Vector2 pos = self->position;
         pos.x += frand() * data->size.x;
@@ -446,6 +445,8 @@ static void boss_update(Entity *self, Game game) {
     data->dmg_flash_timer =
         fmaxf(data->dmg_flash_timer - game->delta_time, 0.0f);
   }
+
+  return false;
 }
 
 static void boss_draw(Entity *self, Game game) {
