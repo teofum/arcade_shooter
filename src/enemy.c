@@ -169,8 +169,13 @@ static void enemy_fire(Entity *self, Game game, Vector2 target) {
  * Enemy update function                                                      *
  *============================================================================*/
 
+bool boss_update(Entity *self, Game game);
+
 bool enemy_update(Entity *self, Game game) {
   Enemy *data = &self->enemy;
+  if (data->type == ENEMY_BOSS)
+    return boss_update(self, game);
+
   Player *pdata = &game->player->player;
   Vector2 center = Vector2Add(self->position, Vector2Scale(data->size, 0.5f));
 
@@ -218,8 +223,14 @@ bool enemy_update(Entity *self, Game game) {
  * Enemy draw function                                                        *
  *============================================================================*/
 
+void boss_draw(Entity *self, Game game);
+
 void enemy_draw(Entity *self, Game game) {
   Enemy *data = &self->enemy;
+  if (data->type == ENEMY_BOSS) {
+    boss_draw(self, game);
+    return;
+  }
 
   Rectangle dest = {self->position.x, self->position.y, data->size.x,
                     data->size.y};
