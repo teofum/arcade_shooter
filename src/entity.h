@@ -30,7 +30,7 @@ typedef enum {
   BULLET_SECONDARY = -1,
 } BulletType;
 
-typedef struct BulletData {
+typedef struct Bullet {
   Vector2 velocity;
   f32 size;
 
@@ -40,7 +40,7 @@ typedef struct BulletData {
   u32 special_idx;
 
   bool deferred_destroy;
-} BulletData;
+} Bullet;
 
 typedef enum {
   POWER_FAST,
@@ -48,11 +48,11 @@ typedef enum {
   POWER_NONE = -1,
 } PowerupType;
 
-typedef struct PowerupData {
+typedef struct Powerup {
   PowerupType type;
 
   Vector2 velocity;
-} PowerupData;
+} Powerup;
 
 typedef struct SpecialBulletSlot {
   BulletType type;
@@ -81,7 +81,7 @@ typedef enum {
   STAT_MOVEMENT,
 } PlayerStats;
 
-typedef struct PlayerData {
+typedef struct Player {
   f32 size;
 
   Vector2 velocity;
@@ -115,11 +115,11 @@ typedef struct PlayerData {
 
   // Rendering
   i32 orientation;
-} PlayerData;
+} Player;
 
-typedef struct WallData {
+typedef struct Wall {
   Rectangle bounds;
-} WallData;
+} Wall;
 
 typedef enum {
   ENEMY_NORMAL,
@@ -142,7 +142,7 @@ typedef enum {
   BOSS_MOVE_LEFT_2,
 } BossState;
 
-typedef struct EnemyData {
+typedef struct Enemy {
   EnemyType type;
   Vector2 size;
 
@@ -166,43 +166,43 @@ typedef struct EnemyData {
 
   u32 sprite_type;
   f32 dmg_flash_timer;
-} EnemyData;
+} Enemy;
 
-typedef struct DmgNumberData {
+typedef struct DmgNumber {
   char string[10];
   f32 size;
   i32 damage;
   f32 timer;
   f32 speed;
-} DmgNumberData;
+} DmgNumber;
 
-typedef struct XpGemData {
+typedef struct XpGem {
   u32 value;
 
   Vector2 velocity;
-} XpGemData;
+} XpGem;
 
-typedef struct ExplosionData {
+typedef struct Explosion {
   f32 radius;
   i32 damage;
 
   f32 ttl;
-} ExplosionData;
+} Explosion;
 
-typedef struct LaserData {
+typedef struct Laser {
   i32 damage;
 
   f32 ttl;
-} LaserData;
+} Laser;
 
-typedef struct EnemyBulletData {
+typedef struct EnemyBullet {
   Vector2 velocity;
   f32 size;
 
   i32 damage;
 
   bool deferred_destroy;
-} EnemyBulletData;
+} EnemyBullet;
 
 struct Entity;
 struct Game;
@@ -213,25 +213,26 @@ typedef void (*EntityDrawFunction)(struct Entity *entity, struct Game *game);
 typedef struct Entity {
   EntityType type;
 
+  // Common fields
   Vector2 position;
 
-  EntityUpdateFunction update;
-  EntityDrawFunction draw;
-
   union {
-    PlayerData player;
-    BulletData bullet;
-    WallData wall;
-    EnemyData enemy;
-    DmgNumberData dmg_number;
-    XpGemData xp_gem;
-    PowerupData powerup;
-    ExplosionData explosion;
-    LaserData laser;
-    EnemyBulletData enemy_bullet;
+    Player player;
+    Bullet bullet;
+    Wall wall;
+    Enemy enemy;
+    DmgNumber dmg_number;
+    XpGem xp_gem;
+    Powerup powerup;
+    Explosion explosion;
+    Laser laser;
+    EnemyBullet enemy_bullet;
   };
 } Entity;
 
 Entity *ent_create(EntityType type);
+
+bool ent_update(Entity *entity, struct Game *game);
+void ent_draw(Entity *entity, struct Game *game);
 
 #endif

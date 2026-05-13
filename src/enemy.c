@@ -40,9 +40,9 @@ static Vector2 right = {1, 0};
  * Enemy initialization                                                       *
  *============================================================================*/
 
-static EnemyData *enemy_init_data(Entity *self, u32 w, u32 h, EnemyType type,
-                                  u32 level) {
-  EnemyData *data = &self->enemy;
+static Enemy *enemy_init_data(Entity *self, u32 w, u32 h, EnemyType type,
+                              u32 level) {
+  Enemy *data = &self->enemy;
 
   Vector2 size = {w * GRID_SIZE, h * GRID_SIZE};
   data->size = size;
@@ -76,7 +76,7 @@ static EnemyData *enemy_init_data(Entity *self, u32 w, u32 h, EnemyType type,
  *============================================================================*/
 
 static void enemy_drop_xp(Entity *self, Game game, Vector2 position) {
-  EnemyData *data = &self->enemy;
+  Enemy *data = &self->enemy;
 
   f32 xp_drop_p = 1 - 1 / (avg_xp_drop[data->level - 1] * data->stat_scaling);
   u32 xp_drop = 0;
@@ -113,8 +113,8 @@ static void push_entity(Entity *entity, Rectangle bounds, f32 size,
 }
 
 static void enemy_move(Entity *self, Game game, Vector2 direction) {
-  EnemyData *data = &self->enemy;
-  PlayerData *pdata = &game->player->player;
+  Enemy *data = &self->enemy;
+  Player *pdata = &game->player->player;
 
   // Move, pushing the player and bullets if it collides
   Vector2 delta = Vector2Scale(direction, game->delta_time * ENEMY_SPEED);
@@ -131,7 +131,7 @@ static void enemy_move(Entity *self, Game game, Vector2 direction) {
   Entity *entity;
   while ((entity = eli_next(it))) {
     if (entity->type == ENT_BULLET) {
-      BulletData *bdata = &entity->bullet;
+      Bullet *bdata = &entity->bullet;
 
       if (CheckCollisionCircleRec(entity->position, bdata->size, bounds)) {
         bullet_hit_enemy(entity, self, game);
@@ -149,7 +149,7 @@ static void enemy_move(Entity *self, Game game, Vector2 direction) {
 }
 
 static void enemy_fire(Entity *self, Game game, Vector2 target) {
-  EnemyData *data = &self->enemy;
+  Enemy *data = &self->enemy;
   Vector2 center = Vector2Add(self->position, Vector2Scale(data->size, 0.5f));
 
   if (data->fire_timer <= 0) {
@@ -169,9 +169,9 @@ static void enemy_fire(Entity *self, Game game, Vector2 target) {
  * Enemy update function                                                      *
  *============================================================================*/
 
-static bool enemy_update(Entity *self, Game game) {
-  EnemyData *data = &self->enemy;
-  PlayerData *pdata = &game->player->player;
+bool enemy_update(Entity *self, Game game) {
+  Enemy *data = &self->enemy;
+  Player *pdata = &game->player->player;
   Vector2 center = Vector2Add(self->position, Vector2Scale(data->size, 0.5f));
 
   // Die
@@ -218,8 +218,8 @@ static bool enemy_update(Entity *self, Game game) {
  * Enemy draw function                                                        *
  *============================================================================*/
 
-static void enemy_draw(Entity *self, Game game) {
-  EnemyData *data = &self->enemy;
+void enemy_draw(Entity *self, Game game) {
+  Enemy *data = &self->enemy;
 
   Rectangle dest = {self->position.x, self->position.y, data->size.x,
                     data->size.y};
@@ -269,9 +269,6 @@ Entity *enemy_create(u32 x, u32 y, u32 w, u32 h, EnemyType type, u32 level) {
   };
   enemy_init_data(enemy, w, h, type, level);
 
-  enemy->update = enemy_update;
-  enemy->draw = enemy_draw;
-
   return enemy;
 }
 
@@ -279,8 +276,8 @@ Entity *enemy_create(u32 x, u32 y, u32 w, u32 h, EnemyType type, u32 level) {
  * Boss functions                                                             *
  *============================================================================*/
 
-static EnemyData *boss_init_data(Entity *self) {
-  EnemyData *data = &self->enemy;
+static Enemy *boss_init_data(Entity *self) {
+  Enemy *data = &self->enemy;
 
   u32 w = 3, h = 4;
 
@@ -300,7 +297,7 @@ static EnemyData *boss_init_data(Entity *self) {
   return data;
 }
 
-static void boss_next_state(EnemyData *data) {
+static void boss_next_state(Enemy *data) {
   if (data->boss_state == BOSS_MOVE_LEFT_2) {
     data->boss_state = BOSS_SHOOT_ARC;
   } else {
@@ -327,8 +324,8 @@ static void boss_next_state(EnemyData *data) {
   }
 }
 
-static bool boss_update(Entity *self, Game game) {
-  EnemyData *data = &self->enemy;
+bool boss_update(Entity *self, Game game) {
+  Enemy *data = &self->enemy;
   Vector2 center = Vector2Add(self->position, Vector2Scale(data->size, 0.5f));
 
   // Die
@@ -449,8 +446,8 @@ static bool boss_update(Entity *self, Game game) {
   return false;
 }
 
-static void boss_draw(Entity *self, Game game) {
-  EnemyData *data = &self->enemy;
+void boss_draw(Entity *self, Game game) {
+  Enemy *data = &self->enemy;
 
   Rectangle dest = {self->position.x, self->position.y, data->size.x,
                     data->size.y};
@@ -474,9 +471,6 @@ Entity *boss_create() {
       -FIELD_HEIGHT / 2.0f - 4 * GRID_SIZE,
   };
   boss_init_data(boss);
-
-  boss->update = boss_update;
-  boss->draw = boss_draw;
 
   return boss;
 }

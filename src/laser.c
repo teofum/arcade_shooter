@@ -10,22 +10,22 @@
 #include "game.h"
 #include "laser.h"
 
-static LaserData laser_init_data(i32 damage) {
-  return (LaserData){
+static Laser laser_init_data(i32 damage) {
+  return (Laser){
       .damage = damage,
       .ttl = LASER_TTL,
   };
 }
 
-static bool laser_update(Entity *self, Game game) {
-  LaserData *data = &self->laser;
+bool laser_update(Entity *self, Game game) {
+  Laser *data = &self->laser;
 
   if (data->ttl == LASER_TTL && data->damage > 0) {
     EntityListIterator it = el_iter(game->world);
     Entity *entity;
     while ((entity = eli_next(it))) {
       if (entity->type == ENT_ENEMY) {
-        EnemyData *edata = &entity->enemy;
+        Enemy *edata = &entity->enemy;
         Rectangle bounds = {entity->position.x, entity->position.y,
                             edata->size.x, edata->size.y};
 
@@ -49,8 +49,8 @@ static bool laser_update(Entity *self, Game game) {
   return data->ttl <= 0;
 }
 
-static void laser_draw(Entity *self, Game game) {
-  LaserData *data = &self->laser;
+void laser_draw(Entity *self, Game game) {
+  Laser *data = &self->laser;
 
   Sprite *sprite = &assets.fire;
   u32 frame = sprite->frames * (1 - data->ttl / LASER_TTL);
@@ -72,9 +72,6 @@ Entity *laser_create(Vector2 position, i32 damage) {
 
   laser->position = position;
   laser->laser = laser_init_data(damage);
-
-  laser->update = laser_update;
-  laser->draw = laser_draw;
 
   return laser;
 }

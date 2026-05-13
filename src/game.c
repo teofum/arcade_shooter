@@ -142,7 +142,7 @@ void game_process_input(Game game) {
   if (game->state != GS_RUNNING)
     return;
 
-  PlayerData *pdata = &game->player->player;
+  Player *pdata = &game->player->player;
 
   // Player movement
   Vector2 v_target = {0, 0};
@@ -333,10 +333,8 @@ void game_update(Game game) {
   EntityListIterator it = el_iter(game->world);
   Entity *e;
   while ((e = eli_next(it))) {
-    if (e->update != NULL) {
-      if (e->update(e, game)) {
-        eli_destroy_current(it);
-      }
+    if (ent_update(e, game)) {
+      eli_destroy_current(it);
     }
   }
 
@@ -358,9 +356,7 @@ void game_draw(Game game) {
       EntityListIterator it = el_iter(game->world);
       Entity *e;
       while ((e = eli_next(it))) {
-        if (e->draw != NULL) {
-          e->draw(e, game);
-        }
+        ent_draw(e, game);
       }
     }
     EndMode2D();

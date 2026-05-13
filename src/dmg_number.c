@@ -8,8 +8,8 @@
 #include "entity.h"
 #include "game.h"
 
-static DmgNumberData dmg_number_init_data(i32 damage, f32 size) {
-  DmgNumberData data = {
+static DmgNumber dmg_number_init_data(i32 damage, f32 size) {
+  DmgNumber data = {
       .size = size,
       .damage = damage,
       .timer = DMG_NUMBER_TTL,
@@ -20,8 +20,8 @@ static DmgNumberData dmg_number_init_data(i32 damage, f32 size) {
   return data;
 }
 
-static bool dmg_number_update(Entity *self, Game game) {
-  DmgNumberData *data = &self->dmg_number;
+bool dmg_number_update(Entity *self, Game game) {
+  DmgNumber *data = &self->dmg_number;
 
   if (data->timer <= 0.0f) {
     return true;
@@ -34,8 +34,8 @@ static bool dmg_number_update(Entity *self, Game game) {
   return false;
 }
 
-static void dmg_number_draw(Entity *self, Game game) {
-  DmgNumberData *data = &self->dmg_number;
+void dmg_number_draw(Entity *self, Game game) {
+  DmgNumber *data = &self->dmg_number;
 
   // Draw number
   // Temporarily disable the camera and manually scale the text coords,
@@ -58,8 +58,6 @@ Entity *dmg_number_create(Vector2 position, i32 dmg, f32 size) {
 
   dmg_number->position = position;
   dmg_number->dmg_number = dmg_number_init_data(dmg, size);
-  dmg_number->update = dmg_number_update;
-  dmg_number->draw = dmg_number_draw;
 
   return dmg_number;
 }

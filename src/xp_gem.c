@@ -12,19 +12,19 @@
 
 u32 xp_gem_values[XP_GEM_TIERS] = {25, 5, 1};
 
-static XpGemData xp_gem_init_data(u32 value) {
+static XpGem xp_gem_init_data(u32 value) {
   f32 vx = frand() * 2.0f - 1.0f;
   f32 vy = frand() * 2.0f - 1.0f;
   f32 speed = frand() * 0.6f + 0.7f;
 
-  return (XpGemData){
+  return (XpGem){
       .value = value,
       .velocity = Vector2Scale(Vector2Normalize((Vector2){vx, vy}), speed),
   };
 }
 
-static bool xp_gem_update(Entity *self, Game game) {
-  XpGemData *data = &self->xp_gem;
+bool xp_gem_update(Entity *self, Game game) {
+  XpGem *data = &self->xp_gem;
 
   f32 delta_y = game->delta_time * ENEMY_SPEED;
   self->position.y += delta_y;
@@ -39,7 +39,7 @@ static bool xp_gem_update(Entity *self, Game game) {
   f32 distance = Vector2Distance(player_pos, self->position);
 
   if (distance < XP_PICKUP_RANGE) {
-    PlayerData *pdata = &game->player->player;
+    Player *pdata = &game->player->player;
     pdata->xp += data->value;
 
     return true;
@@ -55,8 +55,8 @@ static bool xp_gem_update(Entity *self, Game game) {
   return false;
 }
 
-static void xp_gem_draw(Entity *self, Game game) {
-  XpGemData *data = &self->xp_gem;
+void xp_gem_draw(Entity *self, Game game) {
+  XpGem *data = &self->xp_gem;
 
   u32 sprite_idx = data->value >= 25 ? 2 : data->value >= 5 ? 1 : 0;
   Sprite *sprite = &assets.xp_gems[sprite_idx];
@@ -77,9 +77,6 @@ Entity *xp_gem_create(Vector2 position, u32 value) {
 
   xp_gem->position = position;
   xp_gem->xp_gem = xp_gem_init_data(value);
-
-  xp_gem->update = xp_gem_update;
-  xp_gem->draw = xp_gem_draw;
 
   return xp_gem;
 }

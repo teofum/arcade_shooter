@@ -213,7 +213,7 @@ void ui_draw_main_menu(Game game) {
   ui_end_frame();
 }
 
-static void ui_draw_health_bar(PlayerData *pdata) {
+static void ui_draw_health_bar(Player *pdata) {
   static char health_text[10];
   sprintf(health_text, "%3d/%3d", pdata->health, pdata->max_health);
 
@@ -221,7 +221,7 @@ static void ui_draw_health_bar(PlayerData *pdata) {
               health_text, DARKGRAY, RED, START, END);
 }
 
-static void ui_draw_xp_bar(PlayerData *pdata) {
+static void ui_draw_xp_bar(Player *pdata) {
   static char level_text[10];
   sprintf(level_text, "Lv. %d", pdata->level);
 
@@ -229,7 +229,7 @@ static void ui_draw_xp_bar(PlayerData *pdata) {
               DARKGRAY, MAGENTA, START, END);
 }
 
-static void ui_draw_ammo_counter(PlayerData *pdata) {
+static void ui_draw_ammo_counter(Player *pdata) {
   f32 size = 5;
   f32 x0 = 20 + size;
   f32 x = x0;
@@ -246,7 +246,7 @@ static void ui_draw_ammo_counter(PlayerData *pdata) {
   }
 }
 
-static void ui_draw_special_ammo(PlayerData *pdata) {
+static void ui_draw_special_ammo(Player *pdata) {
   f32 size = 10;
   f32 x0 = 150 + size;
   f32 x = x0;
@@ -294,7 +294,7 @@ static void ui_draw_progress(Game game) {
   ui_end_frame();
 }
 
-void ui_draw_powerup(PlayerData *pdata) {
+void ui_draw_powerup(Player *pdata) {
   if (pdata->active_powerup == POWER_NONE)
     return;
 
@@ -311,7 +311,7 @@ void ui_draw_powerup(PlayerData *pdata) {
   ui_end_frame();
 }
 
-static void ui_draw_player_crosshair(PlayerData *pdata) {
+static void ui_draw_player_crosshair(Player *pdata) {
   Vector2 pos = pdata->crosshair;
 
   DrawRectangle(pos.x - 7, pos.y, 15, 1, WHITE);
@@ -319,7 +319,7 @@ static void ui_draw_player_crosshair(PlayerData *pdata) {
 }
 
 void ui_draw_game_ui(Game game) {
-  PlayerData *pdata = &game->player->player;
+  Player *pdata = &game->player->player;
 
   ui_begin_frame_ex(full_screen, BLANK, BLANK, (Vector2){20, 20});
   {
@@ -341,7 +341,7 @@ void ui_draw_game_ui(Game game) {
 }
 
 static void ui_draw_level_up_option(Game game, LevelUpOption *option, u32 i) {
-  PlayerData *pdata = &game->player->player;
+  Player *pdata = &game->player->player;
   static char text[30];
 
   f32 button_x = (i + 1) * 220;
@@ -404,7 +404,7 @@ static void ui_draw_level_up_option(Game game, LevelUpOption *option, u32 i) {
 }
 
 void ui_draw_level_up_screen(Game game) {
-  PlayerData *pdata = &game->player->player;
+  Player *pdata = &game->player->player;
 
   static char level_up_str[30];
   sprintf(level_up_str, "Lv. %d -> %d", pdata->level - 1, pdata->level);

@@ -5,13 +5,8 @@
 #include "game.h"
 #include "wall.h"
 
-static bool wall_update(Entity *wall, Game game) {
-  // Do nothing. It's a wall.
-  return false;
-}
-
-static void wall_draw(Entity *self, Game game) {
-  WallData *data = &self->wall;
+void wall_draw(Entity *self, Game game) {
+  Wall *data = &self->wall;
 
   // Draw wall
   DrawRectangleRec(data->bounds, (Color){0, 64, 64, 255});
@@ -19,10 +14,7 @@ static void wall_draw(Entity *self, Game game) {
 
 Entity *wall_create(Rectangle bounds) {
   Entity *wall = ent_create(ENT_WALL);
-
-  wall->wall = (WallData){.bounds = bounds};
-  wall->update = wall_update;
-  wall->draw = wall_draw;
+  wall->wall = (Wall){.bounds = bounds};
 
   return wall;
 }

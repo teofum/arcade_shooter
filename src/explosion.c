@@ -11,16 +11,16 @@
 #include "raymath.h"
 #include "utils.h"
 
-static ExplosionData explosion_init_data(f32 radius, i32 damage) {
-  return (ExplosionData){
+static Explosion explosion_init_data(f32 radius, i32 damage) {
+  return (Explosion){
       .radius = radius,
       .damage = damage,
       .ttl = EXPLOSION_TTL,
   };
 }
 
-static bool explosion_update(Entity *self, Game game) {
-  ExplosionData *data = &self->explosion;
+bool explosion_update(Entity *self, Game game) {
+  Explosion *data = &self->explosion;
 
   if (data->ttl == EXPLOSION_TTL) {
     // Play explosion sound
@@ -37,7 +37,7 @@ static bool explosion_update(Entity *self, Game game) {
       Entity *entity;
       while ((entity = eli_next(it))) {
         if (entity->type == ENT_ENEMY) {
-          EnemyData *edata = &entity->enemy;
+          Enemy *edata = &entity->enemy;
           Rectangle bounds = {entity->position.x, entity->position.y,
                               edata->size.x, edata->size.y};
 
@@ -62,8 +62,8 @@ static bool explosion_update(Entity *self, Game game) {
   return data->ttl <= 0;
 }
 
-static void explosion_draw(Entity *self, Game game) {
-  ExplosionData *data = &self->explosion;
+void explosion_draw(Entity *self, Game game) {
+  Explosion *data = &self->explosion;
 
   Sprite *sprite = &assets.explosion;
   u32 frame = sprite->frames * (1 - data->ttl / EXPLOSION_TTL);
@@ -81,9 +81,6 @@ Entity *explosion_create(Vector2 position, f32 radius, i32 damage) {
 
   explosion->position = position;
   explosion->explosion = explosion_init_data(radius, damage);
-
-  explosion->update = explosion_update;
-  explosion->draw = explosion_draw;
 
   return explosion;
 }
