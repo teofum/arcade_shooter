@@ -239,13 +239,19 @@ void enemy_draw(Entity *self, Game game) {
   DrawRectangleRec(dest, (Color){255, 255, 255, c});
 
   Sprite *sprite;
-  if (data->type == ENEMY_MINIBOSS_1) {
+  switch (data->type) {
+  case ENEMY_MINIBOSS_1: {
+
     u32 dmg_state = data->health > data->max_health / 2 ? 0 : 1;
     sprite = &assets.boss_chungus[dmg_state];
-  } else if (data->type == ENEMY_MINIBOSS_2) {
+    break;
+  }
+  case ENEMY_MINIBOSS_2: {
     u32 dmg_state = data->health > data->max_health / 2 ? 0 : 1;
     sprite = &assets.boss_tank[dmg_state];
-  } else {
+    break;
+  }
+  default:
     sprite = &assets.enemies[data->sprite_type];
   }
 
