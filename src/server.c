@@ -1,0 +1,211 @@
+#include <fcntl.h>
+#include <netinet/in.h>
+#include <raylib.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <unistd.h>
+
+#include "network_shared.h"
+#include "server.h"
+#include "utils.h"
+
+typedef struct Client {
+  struct sockaddr_in addr;
+
+  u64 last_seen; // Timestamp, 0 if disconnected
+} Client;
+
+static bool is_connected(Client *c) { return c->last_seen > 0; }
+
+typedef struct ServerState {
+  i32 sock;
+  u64 last_heartbeat_sent;
+  u32 seq;
+
+  Client clients[MAX_CLIENTS];
+
+  Message recvd_msg;
+  struct sockaddr_in sender_addr;
+} ServerState;
+
+static ServerState server = {0};
+
+i32 server_init() {
+  printf("Starting server...\n");
+
+  // Initialize socket
+  i32 sock = socket(PF_INET, SOCK_DGRAM, 0);
+  if (sock < 0) {
+    perror("Failed to create socket");
+    return -1;
+  }
+
+  // Bind socket
+  struct sockaddr_in serv_addr = {
+      .sin_family = AF_INET,
+      .sin_port = htons(SERVER_PORT),
+  };
+  inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr);
+  if (bind(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+    perror("Failed to bind socket");
+    return -1;
+  }
+
+  // Make reads from socket nonblocking
+  fcntl(sock, F_SETFL, fcntl(sock, F_GETFL) | O_NONBLOCK);
+
+  server = (ServerState){
+      .sock = sock,
+      .last_heartbeat_sent = now(),
+      .clients = {0},
+      .recvd_msg = {0},
+  };
+
+  printf("Server listening on 127.0.0.1:%d\n", SERVER_PORT);
+  return 0;
+}
+
+void server_start_game(Game game) {}
+
+static void send_message(Message *msg, Client *cli) {
+  sendto(server.sock, msg, sizeof(Message), 0, (struct sockaddr *)&cli->addr,
+         sizeof(cli->addr));
+}
+
+static void broadcast_message(Message *msg) {
+  for (u32 i = 0; i < MAX_CLIENTS; i++) {
+    Client *cli = &server.clients[i];
+    if (is_connected(cli))
+      send_message(msg, cli);
+  }
+}
+
+static bool cmp_addr(struct sockaddr_in *a, struct sockaddr_in *b) {
+  return memcmp(a, b, sizeof(struct sockaddr_in)) == 0;
+}
+
+static Client *find_client(struct sockaddr_in *addr) {
+  for (u32 i = 0; i < MAX_CLIENTS; i++) {
+    Client *cli = &server.clients[i];
+    if (is_connected(cli) && cmp_addr(&cli->addr, addr))
+      return cli;
+  }
+
+  return NULL;
+}
+
+static bool connect_client(struct sockaddr_in *addr) {
+  for (u32 i = 0; i < MAX_CLIENTS; i++) {
+    if (!is_connected(&server.clients[i])) {
+      server.clients[i] = (Client){
+          .addr = *addr,
+          .last_seen = now(),
+      };
+      return true;
+    }
+  }
+
+  return false;
+}
+
+static bool disconnect_client(struct sockaddr_in *addr) {
+  for (u32 i = 0; i < MAX_CLIENTS; i++) {
+    Client *cli = &server.clients[i];
+    if (is_connected(cli) && cmp_addr(&cli->addr, addr)) {
+      cli->last_seen = 0;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+static void cleanup_clients(u64 frame_time) {
+  for (u32 i = 0; i < MAX_CLIENTS; i++) {
+    Client *cli = &server.clients[i];
+    if (is_connected(cli) && frame_time - cli->last_seen > SERVER_TIMEOUT) {
+      printf("Disconnect client %d\n", i);
+      cli->last_seen = 0;
+    }
+  }
+}
+
+static bool recv_message() {
+  u32 size = sizeof(struct sockaddr);
+  i32 recvd_bytes = recvfrom(server.sock, &server.recvd_msg, sizeof(Message), 0,
+                             (struct sockaddr *)&server.sender_addr, &size);
+  return recvd_bytes > 0;
+}
+
+void server_update(Game game) {
+  u64 frame_time = now();
+
+  // Server heartbeat
+  if (frame_time - server.last_heartbeat_sent > SERVER_HB_INTERVAL) {
+    Message heartbeat = {.type = MSG_HEARTBEAT, .seq = server.seq++};
+    broadcast_message(&heartbeat);
+    server.last_heartbeat_sent = frame_time;
+  }
+
+  // Send updates
+  Message game_state = {
+      .type = MSG_GAME_STATE,
+      .seq = server.seq++,
+      .game_state = game->state,
+  };
+  broadcast_message(&game_state);
+
+  Message player_move = {
+      .type = MSG_MOVE,
+      .seq = server.seq++,
+      .move = (MoveData){.entities = {0}, .count = 1},
+  };
+  player_move.move.entities[0] = (EntityMoveData){
+      .idx = 0,
+      .position = game->player->position,
+  };
+  broadcast_message(&player_move);
+
+  // Receive messages
+  while (recv_message()) {
+    Client *sender = find_client(&server.sender_addr);
+    if (sender) {
+      sender->last_seen = frame_time;
+    } else if (server.recvd_msg.type != MSG_HELLO) {
+      continue;
+    }
+
+    printf("Received: ");
+    switch (server.recvd_msg.type) {
+    case MSG_HELLO:
+      printf("client\n");
+      connect_client(&server.sender_addr);
+      break;
+    case MSG_GOODBYE:
+      printf("bye\n");
+      disconnect_client(&server.sender_addr);
+      break;
+    case MSG_HEARTBEAT:
+      printf("heartbeat\n");
+      break;
+    default:
+      printf("\n");
+      // TODO
+      break;
+    }
+  }
+
+  // Timeout clients
+  cleanup_clients(frame_time);
+}
+
+void server_end_game(Game game) {}
+
+void server_shutdown() {
+  Message goodbye = {.type = MSG_GOODBYE, .seq = server.seq++};
+  broadcast_message(&goodbye);
+
+  close(server.sock);
+}

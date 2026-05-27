@@ -5,9 +5,9 @@
 #include "assets.h"
 #include "config.h"
 #include "game.h"
+#include "server.h"
 
 void init();
-void frame();
 void cleanup();
 
 int main() {
@@ -17,6 +17,7 @@ int main() {
   while (!WindowShouldClose() && game->state != GS_QUIT) {
     game_process_input(game);
     game_update(game);
+    server_update(game);
     game_draw(game);
   }
   game_end(game);
@@ -36,9 +37,12 @@ void init() {
   InitAudioDevice();
 
   load_assets();
+
+  server_init();
 }
 
 void cleanup() {
+  server_shutdown();
   unload_assets();
 
   CloseAudioDevice();

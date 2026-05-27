@@ -48,12 +48,45 @@ add_executable(${PROJECT_NAME}
   src/ui.h src/ui.c
   src/utils.h src/utils.c
   src/assets.h src/assets.c
+  src/server.h src/server.c
+  src/network_shared.h
 )
 target_link_libraries(${PROJECT_NAME} raylib)
 
-# Checks if OSX and links appropriate frameworks (Only required on MacOS)
 if (APPLE)
   target_link_libraries(${PROJECT_NAME} "-framework IOKit")
   target_link_libraries(${PROJECT_NAME} "-framework Cocoa")
   target_link_libraries(${PROJECT_NAME} "-framework OpenGL")
+endif()
+
+add_executable(${PROJECT_NAME}_client
+  src/client_main.c
+  src/types.h
+  src/config.h
+  src/entity.h src/entity.c
+  src/entity_list.h src/entity_list.c
+  src/player.h src/player.c
+  src/bullet.h src/bullet.c
+  src/wall.h src/wall.c
+  src/enemy.h src/enemy.c
+  src/enemy_bullet.h src/enemy_bullet.c
+  src/dmg_number.h src/dmg_number.c
+  src/xp_gem.h src/xp_gem.c
+  src/powerup.h src/powerup.c
+  src/explosion.h src/explosion.c
+  src/laser.h src/laser.c
+  src/physics.h src/physics.c
+  src/game.h src/game.c
+  src/ui.h src/ui.c
+  src/utils.h src/utils.c
+  src/assets.h src/assets.c
+  src/client.h src/client.c
+  src/network_shared.h
+)
+target_link_libraries(${PROJECT_NAME}_client raylib)
+
+if (APPLE)
+  target_link_libraries(${PROJECT_NAME}_client "-framework IOKit")
+  target_link_libraries(${PROJECT_NAME}_client "-framework Cocoa")
+  target_link_libraries(${PROJECT_NAME}_client "-framework OpenGL")
 endif()

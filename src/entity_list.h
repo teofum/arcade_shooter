@@ -11,6 +11,8 @@ EntityList el_create();
 
 Entity *el_add(EntityList el, Entity *entity);
 
+Entity *el_get(EntityList el, u32 idx);
+
 EntityListIterator el_iter(EntityList el);
 
 Entity *eli_next(EntityListIterator eli);

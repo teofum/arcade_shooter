@@ -7,6 +7,22 @@
 #define OFFSET_X ((float)WINDOW_WIDTH / 2)
 #define OFFSET_Y ((float)WINDOW_HEIGHT / 2)
 
+/*
+ * Time
+ */
+u64 timeval_to_ms(struct timeval *tv) {
+  return tv->tv_sec * 1000 + tv->tv_usec / 1000;
+}
+
+u64 now() {
+  static struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return timeval_to_ms(&tv);
+}
+
+/*
+ * RNG
+ */
 f32 frand() { return (f32)rand() / RAND_MAX; }
 
 /*

@@ -43,6 +43,8 @@ Entity *el_add(EntityList el, Entity *entity) {
   return &el->entities[el->size++];
 }
 
+Entity *el_get(EntityList el, u32 idx) { return &el->entities[idx]; }
+
 EntityListIterator el_iter(EntityList el) {
   EntityListIterator eli = malloc(sizeof(struct EntityListIterator));
   *eli = (struct EntityListIterator){
