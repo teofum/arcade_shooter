@@ -230,9 +230,50 @@ typedef struct Entity {
   };
 } Entity;
 
+typedef struct BulletCreateData {
+  Vector2 target;
+  BulletType type;
+  u32 level;
+  i32 damage;
+  u32 special_idx;
+} BulletCreateData;
+
+typedef struct EnemyCreateData {
+  EnemyType type;
+  u32 w;
+  u32 h;
+  u32 level;
+} EnemyCreateData;
+
+typedef struct ExplosionCreateData {
+  f32 radius;
+  i32 damage;
+} ExplosionCreateData;
+
+typedef struct DmgNumberCreateData {
+  f32 size;
+  i32 damage;
+} DmgNumberCreateData;
+
+typedef struct EntityCreateData {
+  Vector2 position;
+
+  union {
+    BulletCreateData bullet;
+    EnemyCreateData enemy;
+    u32 xp_value;
+    PowerupType powerup_type;
+    ExplosionCreateData explosion;
+    i32 laser_damage;
+    DmgNumberCreateData dmg_number;
+  };
+} EntityCreateData;
+
 Entity *ent_create(EntityType type);
 
 bool ent_update(Entity *entity, struct Game *game);
 void ent_draw(Entity *entity, struct Game *game);
+
+EntityCreateData ent_get_create_data(Entity *entity);
 
 #endif

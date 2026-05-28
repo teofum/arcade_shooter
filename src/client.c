@@ -85,8 +85,6 @@ i32 client_update(Game game) {
   }
 
   while (recv_message()) {
-    printf("Received: ");
-
     if (client.recvd_msg.seq <= client.last_seq) {
       printf("old data; ignored\n");
       continue;
@@ -105,8 +103,6 @@ i32 client_update(Game game) {
     case MSG_MOVE:
       for (u32 i = 0; i < client.recvd_msg.move.count; i++) {
         EntityMoveData ent = client.recvd_msg.move.entities[i];
-        printf("move [%u] x=%f, y=%f\n", ent.idx, ent.position.x,
-               ent.position.y);
         el_get(game->world, ent.idx)->position = ent.position;
       }
       break;
@@ -123,32 +119,43 @@ i32 client_update(Game game) {
           case ENT_PLAYER:
             break;
           case ENT_BULLET:
-            e = bullet_create(game->player->position,
-                              game->player->player.crosshair, BULLET_NORMAL, 1,
-                              1, 0);
+            e = bullet_create(
+                game->player->position, c.create_data.bullet.target,
+                c.create_data.bullet.type, c.create_data.bullet.damage,
+                c.create_data.bullet.level, c.create_data.bullet.special_idx);
             break;
           case ENT_WALL:
             break;
           case ENT_ENEMY:
-            e = enemy_create(0, 0, 1, 1, ENEMY_NORMAL, 1);
+            e = enemy_create(0, 0, c.create_data.enemy.w, c.create_data.enemy.h,
+                             c.create_data.enemy.type,
+                             c.create_data.enemy.level);
             break;
           case ENT_DMG_NUMBER:
-            e = dmg_number_create((Vector2){0, 0}, 1, 10);
+            e = dmg_number_create(c.create_data.position,
+                                  c.create_data.dmg_number.damage,
+                                  c.create_data.dmg_number.size);
             break;
           case ENT_XP_GEM:
-            e = xp_gem_create((Vector2){0, 0}, 1);
+            e = xp_gem_create(c.create_data.position, c.create_data.xp_value);
             break;
           case ENT_POWERUP:
-            e = powerup_create((Vector2){0, 0}, POWER_DMG);
+            e = powerup_create(c.create_data.position,
+                               c.create_data.powerup_type);
             break;
           case ENT_EXPLOSION:
-            e = explosion_create((Vector2){0, 0}, 10, 0);
+            e = explosion_create(c.create_data.position,
+                                 c.create_data.explosion.radius,
+                                 c.create_data.explosion.damage);
             break;
           case ENT_LASER:
-            e = laser_create((Vector2){0, 0}, 1);
+            e = laser_create(c.create_data.position,
+                             c.create_data.laser_damage);
             break;
           case ENT_ENEMY_BULLET:
-            e = enemy_bullet_create((Vector2){0, 0}, (Vector2){0, 0}, 1);
+            e = enemy_bullet_create(c.create_data.position,
+                                    c.create_data.bullet.target,
+                                    c.create_data.bullet.damage);
             break;
           }
 
@@ -161,7 +168,6 @@ i32 client_update(Game game) {
       printf("Goodbye!\n");
       return -1;
     default:
-      printf("\n");
       break;
     }
   }

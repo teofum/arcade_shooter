@@ -54,6 +54,7 @@ Entity *el_add(EntityList el, Entity *entity) {
   el->changes[el->changes_size++] = (EntityListChange){
       .idx = el->size,
       .type = entity->type,
+      .create_data = ent_get_create_data(entity),
   };
 
   return &el->entities[el->size++];

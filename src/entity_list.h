@@ -6,6 +6,7 @@
 typedef struct EntityListChange {
   u32 idx;
   EntityType type;
+  EntityCreateData create_data;
 } EntityListChange;
 
 typedef struct EntityList *EntityList;

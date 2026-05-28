@@ -1,3 +1,5 @@
+#include <raylib.h>
+#include <raymath.h>
 #include <stdlib.h>
 
 #include "bullet.h"
@@ -58,4 +60,59 @@ void ent_draw(Entity *entity, struct Game *game) {
     return;
 
   f(entity, game);
+}
+
+EntityCreateData ent_get_create_data(Entity *entity) {
+  EntityCreateData cd = {.position = entity->position};
+
+  switch (entity->type) {
+  case ENT_BULLET:
+    cd.bullet = (BulletCreateData){
+        .type = entity->bullet.type,
+        .target = Vector2Add(entity->position, entity->bullet.velocity),
+        .damage = entity->bullet.damage,
+        .level = entity->bullet.level,
+        .special_idx = entity->bullet.special_idx,
+    };
+    break;
+  case ENT_ENEMY:
+    cd.enemy = (EnemyCreateData){
+        .w = 1,
+        .h = 1,
+        .level = entity->enemy.level,
+        .type = entity->enemy.type,
+    };
+    break;
+  case ENT_ENEMY_BULLET:
+    cd.bullet = (BulletCreateData){
+        .target = Vector2Add(entity->position, entity->enemy_bullet.velocity),
+        .damage = entity->enemy_bullet.damage,
+    };
+    break;
+  case ENT_EXPLOSION:
+    cd.explosion = (ExplosionCreateData){
+        .damage = entity->explosion.damage,
+        .radius = entity->explosion.radius,
+    };
+    break;
+  case ENT_LASER:
+    cd.laser_damage = entity->laser.damage;
+    break;
+  case ENT_XP_GEM:
+    cd.xp_value = entity->xp_gem.value;
+    break;
+  case ENT_POWERUP:
+    cd.powerup_type = entity->powerup.type;
+    break;
+  case ENT_DMG_NUMBER:
+    cd.dmg_number = (DmgNumberCreateData){
+        .damage = entity->dmg_number.damage,
+        .size = entity->dmg_number.size,
+    };
+    break;
+  default:
+    break;
+  }
+
+  return cd;
 }

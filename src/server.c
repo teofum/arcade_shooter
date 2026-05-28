@@ -163,6 +163,7 @@ void server_update(Game game) {
     u32 change_count;
     EntityListChange *changes = el_get_changes(game->world, &change_count);
     el_flush_changes(game->world);
+
     for (u32 i = 0; i < change_count; i += CHANGE_ENT_COUNT) {
       u32 local_count = min(change_count - i, CHANGE_ENT_COUNT);
       Message change = {

@@ -6,7 +6,7 @@
 
 #define SERVER_PORT 2112
 #define MOVE_ENT_COUNT 40
-#define CHANGE_ENT_COUNT 60
+#define CHANGE_ENT_COUNT 12
 
 typedef enum {
   MSG_HELLO,
