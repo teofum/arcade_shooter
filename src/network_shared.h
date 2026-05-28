@@ -1,9 +1,12 @@
 #include <raylib.h>
 
+#include "entity_list.h"
 #include "game.h"
 #include "types.h"
 
 #define SERVER_PORT 2112
+#define MOVE_ENT_COUNT 40
+#define CHANGE_ENT_COUNT 60
 
 typedef enum {
   MSG_HELLO,
@@ -12,6 +15,7 @@ typedef enum {
 
   MSG_GAME_STATE,
   MSG_MOVE,
+  MSG_CHANGES,
 } MessageType;
 
 typedef struct EntityMoveData {
@@ -20,9 +24,14 @@ typedef struct EntityMoveData {
 } EntityMoveData;
 
 typedef struct MoveData {
-  EntityMoveData entities[40];
+  EntityMoveData entities[MOVE_ENT_COUNT];
   u8 count;
 } MoveData;
+
+typedef struct ChangeData {
+  EntityListChange changes[CHANGE_ENT_COUNT];
+  u8 count;
+} ChangeData;
 
 typedef struct Message {
   MessageType type;
@@ -30,6 +39,7 @@ typedef struct Message {
 
   union {
     MoveData move;
+    ChangeData changes;
     GameState game_state;
   };
 } Message;

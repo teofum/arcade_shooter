@@ -84,6 +84,9 @@ void game_reset(Game game) {
   el_add(game->world, right_wall);
   el_add(game->world, top_wall);
 
+  // Ensure server doesn't send creation of player and walls
+  el_flush_changes(game->world);
+
   // Init timers
   game->total_time = GetTime();
   game->delta_time = 0.0f;

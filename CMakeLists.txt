@@ -90,3 +90,17 @@ if (APPLE)
   target_link_libraries(${PROJECT_NAME}_client "-framework Cocoa")
   target_link_libraries(${PROJECT_NAME}_client "-framework OpenGL")
 endif()
+
+# Enable ASan for debug builds
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
+  set(
+    CMAKE_C_FLAGS
+    "${CMAKE_C_FLAGS} -fsanitize=undefined -fsanitize=address"
+  )
+  target_link_options(${PROJECT_NAME}
+    BEFORE PUBLIC -fsanitize=undefined PUBLIC -fsanitize=address
+  )
+  target_link_options(${PROJECT_NAME}_client
+    BEFORE PUBLIC -fsanitize=undefined PUBLIC -fsanitize=address
+  )
+endif()

@@ -2,7 +2,7 @@ all: build
 	cmake --build build
 
 build: CMakeLists.txt
-	cmake -B build
+	cmake -B build -DCMAKE_BUILD_TYPE="Debug"
 
 clean:
 	rm -rf build bin

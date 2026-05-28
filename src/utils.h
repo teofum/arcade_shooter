@@ -6,6 +6,8 @@
 
 #include "types.h"
 
+#define min(a, b) ((a) < (b) ? (a) : (b))
+
 typedef struct Range {
   i32 min;
   i32 max;

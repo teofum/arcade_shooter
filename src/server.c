@@ -7,6 +7,8 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include "entity_list.h"
+#include "game.h"
 #include "network_shared.h"
 #include "server.h"
 #include "utils.h"
@@ -157,16 +159,40 @@ void server_update(Game game) {
   };
   broadcast_message(&game_state);
 
-  Message player_move = {
-      .type = MSG_MOVE,
-      .seq = server.seq++,
-      .move = (MoveData){.entities = {0}, .count = 1},
-  };
-  player_move.move.entities[0] = (EntityMoveData){
-      .idx = 0,
-      .position = game->player->position,
-  };
-  broadcast_message(&player_move);
+  if (game->state == GS_RUNNING) {
+    u32 change_count;
+    EntityListChange *changes = el_get_changes(game->world, &change_count);
+    el_flush_changes(game->world);
+    for (u32 i = 0; i < change_count; i += CHANGE_ENT_COUNT) {
+      u32 local_count = min(change_count - i, CHANGE_ENT_COUNT);
+      Message change = {
+          .type = MSG_CHANGES,
+          .seq = server.seq++,
+          .changes = (ChangeData){.changes = {0}, .count = local_count},
+      };
+      for (u32 j = 0; j < local_count; j++) {
+        change.changes.changes[j] = changes[i + j];
+      }
+      broadcast_message(&change);
+    }
+
+    u32 count = el_size(game->world);
+    for (u32 i = 0; i < count; i += MOVE_ENT_COUNT) {
+      u32 local_count = min(count - i, MOVE_ENT_COUNT);
+      Message move = {
+          .type = MSG_MOVE,
+          .seq = server.seq++,
+          .move = (MoveData){.entities = {0}, .count = local_count},
+      };
+      for (u32 j = 0; j < local_count; j++) {
+        move.move.entities[j] = (EntityMoveData){
+            .idx = i + j,
+            .position = el_get(game->world, i + j)->position,
+        };
+      }
+      broadcast_message(&move);
+    }
+  }
 
   // Receive messages
   while (recv_message()) {
