@@ -347,6 +347,24 @@ void game_update(Game game) {
   game_update_camera(game);
 }
 
+void game_update_client(Game game) {
+  // Update BGM stream
+  UpdateMusicStream(game->bgm);
+
+  if (game->state == GS_PAUSED || game->state == GS_MAIN_MENU ||
+      game->state == GS_LEVEL_UP)
+    return;
+
+  // Update entities
+  EntityListIterator it = el_iter(game->world);
+  Entity *e;
+  while ((e = eli_next(it))) {
+    ent_update_client(e, game);
+  }
+
+  game_update_camera(game);
+}
+
 void game_draw(Game game) {
   BeginDrawing();
   ClearBackground((Color){0, 128, 128, 255});

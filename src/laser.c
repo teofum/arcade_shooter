@@ -49,6 +49,13 @@ bool laser_update(Entity *self, Game game) {
   return data->ttl <= 0;
 }
 
+bool laser_update_client(Entity *self, Game game) {
+  Laser *data = &self->laser;
+  data->ttl -= game->delta_time;
+
+  return false;
+}
+
 void laser_draw(Entity *self, Game game) {
   Laser *data = &self->laser;
 

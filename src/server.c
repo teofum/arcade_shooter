@@ -155,7 +155,15 @@ void server_update(Game game) {
   Message game_state = {
       .type = MSG_GAME_STATE,
       .seq = server.seq++,
-      .game_state = game->state,
+      .game =
+          (GameStateData){
+              .state = game->state,
+              .total_time = game->total_time,
+              .delta_time = game->delta_time,
+              .boss_idx = game->boss_idx,
+              .boss_timer = game->boss_timer,
+              .score = game->score,
+          },
   };
   broadcast_message(&game_state);
 

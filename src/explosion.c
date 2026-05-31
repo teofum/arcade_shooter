@@ -1,4 +1,5 @@
 #include <raylib.h>
+#include <raymath.h>
 #include <stdlib.h>
 
 #include "assets.h"
@@ -8,7 +9,6 @@
 #include "entity_list.h"
 #include "explosion.h"
 #include "game.h"
-#include "raymath.h"
 #include "utils.h"
 
 static Explosion explosion_init_data(f32 radius, i32 damage) {
@@ -60,6 +60,13 @@ bool explosion_update(Entity *self, Game game) {
   data->ttl -= game->delta_time;
 
   return data->ttl <= 0;
+}
+
+bool explosion_update_client(Entity *self, Game game) {
+  Explosion *data = &self->explosion;
+  data->ttl -= game->delta_time;
+
+  return false;
 }
 
 void explosion_draw(Entity *self, Game game) {

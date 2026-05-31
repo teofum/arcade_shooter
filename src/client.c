@@ -97,8 +97,14 @@ i32 client_update(Game game) {
       printf("heartbeat\n");
       break;
     case MSG_GAME_STATE:
-      printf("game state %d\n", client.recvd_msg.game_state);
-      game->state = client.recvd_msg.game_state;
+      printf("game state %d; t=%f\n", client.recvd_msg.game.state,
+             client.recvd_msg.game.total_time);
+      game->state = client.recvd_msg.game.state;
+      game->total_time = client.recvd_msg.game.total_time;
+      game->delta_time = client.recvd_msg.game.delta_time;
+      game->boss_timer = client.recvd_msg.game.boss_timer;
+      game->boss_idx = client.recvd_msg.game.boss_idx;
+      game->score = client.recvd_msg.game.score;
       break;
     case MSG_MOVE:
       for (u32 i = 0; i < client.recvd_msg.move.count; i++) {

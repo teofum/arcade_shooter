@@ -22,6 +22,7 @@ int main() {
     if (client_update(game) < 0)
       break;
 
+    game_update_client(game);
     game_draw(game);
   }
 

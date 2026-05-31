@@ -27,6 +27,19 @@ static EntityUpdateFunction ent_update_dispatch[] = {
     [ENT_ENEMY_BULLET] = enemy_bullet_update,
 };
 
+static EntityUpdateFunction ent_client_update_dispatch[] = {
+    [ENT_PLAYER] = NULL,
+    [ENT_BULLET] = NULL,
+    [ENT_WALL] = NULL,
+    [ENT_ENEMY] = NULL,
+    [ENT_DMG_NUMBER] = NULL,
+    [ENT_XP_GEM] = NULL,
+    [ENT_POWERUP] = NULL,
+    [ENT_EXPLOSION] = explosion_update_client,
+    [ENT_LASER] = laser_update_client,
+    [ENT_ENEMY_BULLET] = NULL,
+};
+
 static EntityDrawFunction ent_draw_dispatch[] = {
     [ENT_PLAYER] = player_draw,
     [ENT_BULLET] = bullet_draw,
@@ -48,6 +61,14 @@ Entity *ent_create(EntityType type) {
 
 bool ent_update(Entity *entity, struct Game *game) {
   EntityUpdateFunction f = ent_update_dispatch[entity->type];
+  if (f == NULL)
+    return false;
+
+  return f(entity, game);
+}
+
+bool ent_update_client(Entity *entity, struct Game *game) {
+  EntityUpdateFunction f = ent_client_update_dispatch[entity->type];
   if (f == NULL)
     return false;
 

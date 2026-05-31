@@ -9,6 +9,7 @@
 
 Entity *explosion_create(Vector2 position, f32 radius, i32 damage);
 bool explosion_update(Entity *self, Game game);
+bool explosion_update_client(Entity *self, Game game);
 void explosion_draw(Entity *self, Game game);
 
 #endif

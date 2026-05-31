@@ -33,6 +33,18 @@ typedef struct ChangeData {
   u8 count;
 } ChangeData;
 
+typedef struct GameStateData {
+  GameState state;
+
+  f32 total_time;
+  f32 delta_time;
+
+  u32 boss_idx;
+  f32 boss_timer;
+
+  u32 score;
+} GameStateData;
+
 typedef struct Message {
   MessageType type;
   u32 seq;
@@ -40,6 +52,6 @@ typedef struct Message {
   union {
     MoveData move;
     ChangeData changes;
-    GameState game_state;
+    GameStateData game;
   };
 } Message;

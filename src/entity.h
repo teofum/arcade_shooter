@@ -272,6 +272,7 @@ typedef struct EntityCreateData {
 Entity *ent_create(EntityType type);
 
 bool ent_update(Entity *entity, struct Game *game);
+bool ent_update_client(Entity *entity, struct Game *game);
 void ent_draw(Entity *entity, struct Game *game);
 
 EntityCreateData ent_get_create_data(Entity *entity);

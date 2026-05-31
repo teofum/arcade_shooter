@@ -9,6 +9,7 @@
 
 Entity *laser_create(Vector2 position, i32 damage);
 bool laser_update(Entity *self, Game game);
+bool laser_update_client(Entity *self, Game game);
 void laser_draw(Entity *self, Game game);
 
 #endif
