@@ -6,6 +6,7 @@
 #include "assets.h"
 #include "bullet.h"
 #include "config.h"
+#include "entity.h"
 #include "game.h"
 #include "player.h"
 #include "powerup.h"
@@ -458,8 +459,8 @@ void ui_draw_level_up_screen(Game game) {
 
       // Level up options
       for (u32 i = 0; i < LEVEL_UP_OPTIONS; i++) {
-        LevelUpOption *option = pdata->level_up_options[i];
-        if (!option)
+        LevelUpOption *option = &pdata->level_up_options[i];
+        if (option->type == LU_NONE)
           break;
 
         ui_draw_level_up_option(game, option, i);

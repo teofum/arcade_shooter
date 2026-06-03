@@ -62,6 +62,7 @@ typedef struct SpecialBulletSlot {
 } SpecialBulletSlot;
 
 typedef enum {
+  LU_NONE,
   LU_UPGRADE,
   LU_NEW,
 } LevelUpOptionType;
@@ -103,7 +104,7 @@ typedef struct Player {
   u32 level;
   u32 xp;
   u32 to_next_level;
-  LevelUpOption *level_up_options[LEVEL_UP_OPTIONS];
+  LevelUpOption level_up_options[LEVEL_UP_OPTIONS];
   bool leveled_up_stats[4];
 
   PowerupType active_powerup;

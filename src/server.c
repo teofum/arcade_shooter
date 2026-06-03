@@ -163,6 +163,10 @@ void server_update(Game game) {
               .boss_idx = game->boss_idx,
               .boss_timer = game->boss_timer,
               .score = game->score,
+              .player_state = game->player->player,
+              .menu_layout = game->menu_layout,
+              .menu_n_options = game->menu_n_options,
+              .menu_selected_option = game->menu_selected_option,
           },
   };
   broadcast_message(&game_state);

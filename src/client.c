@@ -1,5 +1,4 @@
 #include <fcntl.h>
-#include <netinet/in.h>
 #include <stdio.h>
 #include <unistd.h>
 
@@ -15,7 +14,6 @@
 #include "laser.h"
 #include "network_shared.h"
 #include "powerup.h"
-#include "raylib.h"
 #include "types.h"
 #include "utils.h"
 #include "xp_gem.h"
@@ -105,6 +103,7 @@ i32 client_update(Game game) {
       game->boss_timer = client.recvd_msg.game.boss_timer;
       game->boss_idx = client.recvd_msg.game.boss_idx;
       game->score = client.recvd_msg.game.score;
+      game->player->player = client.recvd_msg.game.player_state;
       break;
     case MSG_MOVE:
       for (u32 i = 0; i < client.recvd_msg.move.count; i++) {

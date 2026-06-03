@@ -255,8 +255,9 @@ static void player_level_up(Entity *self, Game game) {
 
   // Pick the first three
   for (u32 i = 0; i < LEVEL_UP_OPTIONS; i++) {
-    data->level_up_options[i] =
-        i < option_count ? &all_level_up_options[i] : NULL;
+    data->level_up_options[i] = i < option_count
+                                    ? all_level_up_options[i]
+                                    : (LevelUpOption){.type = LU_NONE};
   }
 
   // Show level up screen

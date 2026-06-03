@@ -1,5 +1,6 @@
 #include <raylib.h>
 
+#include "entity.h"
 #include "entity_list.h"
 #include "game.h"
 #include "types.h"
@@ -43,6 +44,12 @@ typedef struct GameStateData {
   f32 boss_timer;
 
   u32 score;
+
+  u32 menu_selected_option;
+  u32 menu_n_options;
+  Orientation menu_layout;
+
+  Player player_state;
 } GameStateData;
 
 typedef struct Message {
