@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include "entity.h"
 #include "entity_list.h"
 #include "game.h"
 #include "network_shared.h"
@@ -25,6 +26,7 @@ typedef struct ServerState {
   i32 sock;
   u64 last_heartbeat_sent;
   u32 seq;
+  bool main_menu;
 
   Client clients[MAX_CLIENTS];
 
@@ -61,6 +63,7 @@ i32 server_init() {
   server = (ServerState){
       .sock = sock,
       .last_heartbeat_sent = now(),
+      .main_menu = false,
       .clients = {0},
       .recvd_msg = {0},
   };
@@ -68,8 +71,6 @@ i32 server_init() {
   printf("Server listening on 127.0.0.1:%d\n", SERVER_PORT);
   return 0;
 }
-
-void server_start_game(Game game) {}
 
 static void send_message(Message *msg, Client *cli) {
   sendto(server.sock, msg, sizeof(Message), 0, (struct sockaddr *)&cli->addr,
@@ -151,6 +152,19 @@ void server_update(Game game) {
     server.last_heartbeat_sent = frame_time;
   }
 
+  if (game->state == GS_MAIN_MENU) {
+    if (!server.main_menu) {
+      Message reset = {
+          .type = MSG_RESET,
+          .seq = server.seq++,
+      };
+      broadcast_message(&reset);
+    }
+    server.main_menu = true;
+  } else {
+    server.main_menu = false;
+  }
+
   // Send updates
   Message game_state = {
       .type = MSG_GAME_STATE,
@@ -205,6 +219,32 @@ void server_update(Game game) {
       }
       broadcast_message(&move);
     }
+
+    Message update = {
+        .type = MSG_UPDATE,
+        .seq = server.seq++,
+        .updates = (UpdateData){.updates = {0}, .count = 0},
+    };
+    count = 0;
+    for (u32 i = 0; i < el_size(game->world); i++) {
+      Entity *ent = el_get(game->world, i);
+      if (ent->type == ENT_ENEMY) {
+        update.updates.updates[count++] = (EntityUpdateData){
+            .idx = i,
+            .enemy = ent->enemy,
+        };
+        if (count == UPDATE_ENT_COUNT) {
+          update.updates.count = count;
+          broadcast_message(&update);
+          count = 0;
+          update.seq = server.seq++;
+        }
+      }
+    }
+    if (count > 0) {
+      update.updates.count = count;
+      broadcast_message(&update);
+    }
   }
 
   // Receive messages
@@ -240,7 +280,21 @@ void server_update(Game game) {
   cleanup_clients(frame_time);
 }
 
-void server_end_game(Game game) {}
+void server_start_game(Game game) {
+  Message reset = {
+      .type = MSG_RESET,
+      .seq = server.seq++,
+  };
+  broadcast_message(&reset);
+}
+
+void server_end_game(Game game) {
+  Message end_game = {
+      .type = MSG_END_GAME,
+      .seq = server.seq++,
+  };
+  broadcast_message(&end_game);
+}
 
 void server_shutdown() {
   Message goodbye = {.type = MSG_GOODBYE, .seq = server.seq++};

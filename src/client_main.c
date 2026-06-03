@@ -25,6 +25,7 @@ int main() {
     game_update_client(game);
     game_draw(game);
   }
+  game_end(game);
 
   cleanup();
 

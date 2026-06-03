@@ -8,6 +8,7 @@
 #define SERVER_PORT 2112
 #define MOVE_ENT_COUNT 40
 #define CHANGE_ENT_COUNT 12
+#define UPDATE_ENT_COUNT 8
 
 typedef enum {
   MSG_HELLO,
@@ -17,6 +18,10 @@ typedef enum {
   MSG_GAME_STATE,
   MSG_MOVE,
   MSG_CHANGES,
+  MSG_UPDATE,
+
+  MSG_END_GAME,
+  MSG_RESET,
 } MessageType;
 
 typedef struct EntityMoveData {
@@ -33,6 +38,19 @@ typedef struct ChangeData {
   EntityListChange changes[CHANGE_ENT_COUNT];
   u8 count;
 } ChangeData;
+
+typedef struct EntityUpdateData {
+  u16 idx;
+
+  union {
+    Enemy enemy;
+  };
+} EntityUpdateData;
+
+typedef struct UpdateData {
+  EntityUpdateData updates[UPDATE_ENT_COUNT];
+  u8 count;
+} UpdateData;
 
 typedef struct GameStateData {
   GameState state;
@@ -59,6 +77,7 @@ typedef struct Message {
   union {
     MoveData move;
     ChangeData changes;
+    UpdateData updates;
     GameStateData game;
   };
 } Message;

@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -91,12 +92,12 @@ i32 client_update(Game game) {
     }
 
     switch (client.recvd_msg.type) {
+    case MSG_HELLO:
+      break;
     case MSG_HEARTBEAT:
       printf("heartbeat\n");
       break;
     case MSG_GAME_STATE:
-      printf("game state %d; t=%f\n", client.recvd_msg.game.state,
-             client.recvd_msg.game.total_time);
       game->state = client.recvd_msg.game.state;
       game->total_time = client.recvd_msg.game.total_time;
       game->delta_time = client.recvd_msg.game.delta_time;
@@ -169,11 +170,27 @@ i32 client_update(Game game) {
       }
       el_flush_changes(game->world);
       break;
+    case MSG_UPDATE:
+      printf("update %u entities\n", client.recvd_msg.updates.count);
+      for (u32 i = 0; i < client.recvd_msg.updates.count; i++) {
+        EntityUpdateData update = client.recvd_msg.updates.updates[i];
+        Entity *ent = el_get(game->world, update.idx);
+        if (ent->type == ENT_ENEMY) {
+          ent->enemy = update.enemy;
+        } else {
+          assert(false && "Received update for an entity that it not an enemy");
+        }
+      }
+      break;
+    case MSG_END_GAME:
+      game_end(game);
+      break;
+    case MSG_RESET:
+      game_reset(game);
+      break;
     case MSG_GOODBYE:
       printf("Goodbye!\n");
       return -1;
-    default:
-      break;
     }
   }
 
