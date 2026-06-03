@@ -10,6 +10,9 @@
 #define CHANGE_ENT_COUNT 12
 #define UPDATE_ENT_COUNT 8
 
+#define ENABLE_PACKET_LOSS 1
+#define PACKET_LOSS_RATE 0.01
+
 typedef enum {
   MSG_HELLO,
   MSG_GOODBYE,

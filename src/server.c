@@ -73,6 +73,15 @@ i32 server_init() {
 }
 
 static void send_message(Message *msg, Client *cli) {
+
+#if ENABLE_PACKET_LOSS
+
+  if (frand() < PACKET_LOSS_RATE) {
+    return;
+  }
+
+#endif
+
   sendto(server.sock, msg, sizeof(Message), 0, (struct sockaddr *)&cli->addr,
          sizeof(cli->addr));
 }
