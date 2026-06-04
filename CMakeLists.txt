@@ -49,7 +49,7 @@ add_executable(${PROJECT_NAME}
   src/utils.h src/utils.c
   src/assets.h src/assets.c
   src/server.h src/server.c
-  src/network_shared.h
+  src/network_shared.h src/network_shared.c
 )
 target_link_libraries(${PROJECT_NAME} raylib)
 
@@ -81,7 +81,7 @@ add_executable(${PROJECT_NAME}_client
   src/utils.h src/utils.c
   src/assets.h src/assets.c
   src/client.h src/client.c
-  src/network_shared.h
+  src/network_shared.h src/network_shared.c
 )
 target_link_libraries(${PROJECT_NAME}_client raylib)
 

@@ -14,63 +14,14 @@
 #include "server.h"
 #include "utils.h"
 
-#define MESSAGE_BUF_SIZE 128
-#define advance(x) ((x) == MESSAGE_BUF_SIZE - 1 ? 0 : (x) + 1)
-
 typedef struct Client {
   struct sockaddr_in addr;
 
   u64 last_seen; // Timestamp, 0 if disconnected
-
-  Message delayed_msg_buffer[MESSAGE_BUF_SIZE];
-  u32 delayed_msg_head;
-  u32 delayed_msg_tail;
+  MessageQueue queue;
 } Client;
 
 static bool is_connected(Client *c) { return c->last_seen > 0; }
-
-static bool has_queued_msgs(Client *c) {
-  return c->delayed_msg_head != c->delayed_msg_tail;
-}
-
-static u32 get_queued_count(Client *c) {
-  u32 head = c->delayed_msg_head;
-  u32 tail = c->delayed_msg_tail;
-
-  if (head <= tail) {
-    return tail - head;
-  } else {
-    return MESSAGE_BUF_SIZE - head + tail;
-  }
-}
-
-static Message *peek_msg(Client *c) {
-  if (has_queued_msgs(c)) {
-    return &c->delayed_msg_buffer[c->delayed_msg_head];
-  } else {
-    return NULL;
-  }
-}
-
-static Message *dequeue_msg(Client *c) {
-  if (has_queued_msgs(c)) {
-    Message *msg = &c->delayed_msg_buffer[c->delayed_msg_head];
-    c->delayed_msg_head = advance(c->delayed_msg_head);
-    return msg;
-  } else {
-    return NULL;
-  }
-}
-
-static bool enqueue_msg(Client *c, Message *msg) {
-  if (advance(c->delayed_msg_tail) == c->delayed_msg_head) {
-    return false;
-  } else {
-    c->delayed_msg_buffer[c->delayed_msg_tail] = *msg;
-    c->delayed_msg_tail = advance(c->delayed_msg_tail);
-    return true;
-  }
-}
 
 typedef struct ServerState {
   i32 sock;
@@ -188,15 +139,15 @@ static void send_message_impl(Message *msg, Client *cli) {
 
 static void send_message(Message *msg, Client *cli) {
   // If there are no queued up priority messages, send
-  if (!has_queued_msgs(cli)) {
+  if (!has_queued_msgs(&cli->queue)) {
     send_message_impl(msg, cli);
   }
 
   // If the message is priority, queue it until ACKed by client
   if (msg->priority) {
-    if (enqueue_msg(cli, msg)) {
+    if (enqueue_msg(&cli->queue, msg)) {
       printf("enqueue priority message %u (%u in queue)\n", msg->seq,
-             get_queued_count(cli));
+             get_queued_count(&cli->queue));
     } else {
       // The queue is full, fail and disconnect the client
       printf("fatal: queue full, client disconnected\n");
@@ -345,25 +296,14 @@ void server_update(Game game) {
       printf("heartbeat\n");
       break;
     case MSG_ACK:
-      u32 acked_seq = server.recvd_msg.seq;
-      Message *queued_msg = peek_msg(sender);
-      if (queued_msg) {
-        if (queued_msg->seq == acked_seq) {
-          dequeue_msg(sender);
-          printf("client acked message %u (%u left in queue)\n",
-                 queued_msg->seq, get_queued_count(sender));
-        } else if (queued_msg->seq < acked_seq) {
-          // Client ACKed a message that it shouldn't have received yet
-          // Something is very wrong, disconnect the client
-          printf("fatal: client acked future message, disconnected\n");
-          disconnect_client(&server.sender_addr);
-        }
-        // If the message ACKed is older than whatever is in queue, ignore ACK
+      if (ack_msg(&sender->queue, server.recvd_msg.seq) < 0) {
+        // Client ACKed a message that it shouldn't have received yet
+        // Something is very wrong, disconnect the client
+        disconnect_client(&server.sender_addr);
       }
       break;
     default:
-      printf("\n");
-      // TODO
+      printf("something else; ignored\n");
       break;
     }
   }
@@ -371,11 +311,11 @@ void server_update(Game game) {
   // Resend queued messages until ACKed
   for (u32 i = 0; i < MAX_CLIENTS; i++) {
     Client *cli = &server.clients[i];
-    if (is_connected(cli) && has_queued_msgs(cli)) {
+    if (is_connected(cli) && has_queued_msgs(&cli->queue)) {
       // Resend message, do it as non-priority so it won't get re-queued
-      printf("resending message %u (%u in queue)\n", peek_msg(cli)->seq,
-             get_queued_count(cli));
-      send_message_impl(peek_msg(cli), cli);
+      printf("resending message %u (%u in queue)\n", peek_msg(&cli->queue)->seq,
+             get_queued_count(&cli->queue));
+      send_message_impl(peek_msg(&cli->queue), cli);
     }
   }
 

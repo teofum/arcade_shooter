@@ -10,6 +10,9 @@
 #define CHANGE_ENT_COUNT 12
 #define UPDATE_ENT_COUNT 8
 
+#define MESSAGE_BUF_SIZE 128
+#define advance(x) ((x) == MESSAGE_BUF_SIZE - 1 ? 0 : (x) + 1)
+
 #define ENABLE_PACKET_LOSS 0
 #define PACKET_LOSS_RATE 0.3
 
@@ -86,3 +89,16 @@ typedef struct Message {
     GameStateData game;
   };
 } Message;
+
+typedef struct MessageQueue {
+  Message delayed_msg_buffer[MESSAGE_BUF_SIZE];
+  u32 delayed_msg_head;
+  u32 delayed_msg_tail;
+} MessageQueue;
+
+bool has_queued_msgs(MessageQueue *q);
+u32 get_queued_count(MessageQueue *q);
+Message *peek_msg(MessageQueue *q);
+Message *dequeue_msg(MessageQueue *q);
+bool enqueue_msg(MessageQueue *q, Message *msg);
+i32 ack_msg(MessageQueue *q, u32 seq);

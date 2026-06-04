@@ -87,11 +87,7 @@ i32 client_update(Game game) {
     // If we receive a priority message, ACK, even if it is outdated
     // (server might not have received previous ACK)
     if (client.recvd_msg.priority) {
-      printf("ack %u\n", client.recvd_msg.seq);
-      Message ack = {
-          .type = MSG_ACK,
-          .seq = client.recvd_msg.seq,
-      };
+      Message ack = {.type = MSG_ACK, .seq = client.recvd_msg.seq};
       send_message(&ack);
     }
 
