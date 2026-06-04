@@ -1,5 +1,4 @@
 #include <fcntl.h>
-#include <netinet/in.h>
 #include <raylib.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -14,22 +13,15 @@
 #include "server.h"
 #include "utils.h"
 
-typedef struct Client {
-  struct sockaddr_in addr;
-
-  u64 last_seen; // Timestamp, 0 if disconnected
-  MessageQueue queue;
-} Client;
-
-static bool is_connected(Client *c) { return c->last_seen > 0; }
-
 typedef struct ServerState {
   i32 sock;
   u64 last_heartbeat_sent;
+  u32 last_seq_recvd;
   u32 seq;
+
   bool main_menu;
 
-  Client clients[MAX_CLIENTS];
+  Connection clients[MAX_CLIENTS];
 
   Message recvd_msg;
   struct sockaddr_in sender_addr;
@@ -77,9 +69,9 @@ static bool cmp_addr(struct sockaddr_in *a, struct sockaddr_in *b) {
   return memcmp(a, b, sizeof(struct sockaddr_in)) == 0;
 }
 
-static Client *find_client(struct sockaddr_in *addr) {
+static Connection *find_client(struct sockaddr_in *addr) {
   for (u32 i = 0; i < MAX_CLIENTS; i++) {
-    Client *cli = &server.clients[i];
+    Connection *cli = &server.clients[i];
     if (is_connected(cli) && cmp_addr(&cli->addr, addr))
       return cli;
   }
@@ -90,7 +82,7 @@ static Client *find_client(struct sockaddr_in *addr) {
 static bool connect_client(struct sockaddr_in *addr) {
   for (u32 i = 0; i < MAX_CLIENTS; i++) {
     if (!is_connected(&server.clients[i])) {
-      server.clients[i] = (Client){
+      server.clients[i] = (Connection){
           .addr = *addr,
           .last_seen = now(),
       };
@@ -103,7 +95,7 @@ static bool connect_client(struct sockaddr_in *addr) {
 
 static bool disconnect_client(struct sockaddr_in *addr) {
   for (u32 i = 0; i < MAX_CLIENTS; i++) {
-    Client *cli = &server.clients[i];
+    Connection *cli = &server.clients[i];
     if (is_connected(cli) && cmp_addr(&cli->addr, addr)) {
       cli->last_seen = 0;
       return true;
@@ -115,7 +107,7 @@ static bool disconnect_client(struct sockaddr_in *addr) {
 
 static void cleanup_clients(u64 frame_time) {
   for (u32 i = 0; i < MAX_CLIENTS; i++) {
-    Client *cli = &server.clients[i];
+    Connection *cli = &server.clients[i];
     if (is_connected(cli) && frame_time - cli->last_seen > SERVER_TIMEOUT) {
       printf("Disconnect client %d\n", i);
       cli->last_seen = 0;
@@ -123,7 +115,7 @@ static void cleanup_clients(u64 frame_time) {
   }
 }
 
-static void send_message_impl(Message *msg, Client *cli) {
+static void send_message_impl(Message *msg, Connection *cli) {
 
 #if ENABLE_PACKET_LOSS
 
@@ -137,7 +129,7 @@ static void send_message_impl(Message *msg, Client *cli) {
          sizeof(cli->addr));
 }
 
-static void send_message(Message *msg, Client *cli) {
+static void send_message(Message *msg, Connection *cli) {
   // If there are no queued up priority messages, send
   if (!has_queued_msgs(&cli->queue)) {
     send_message_impl(msg, cli);
@@ -161,7 +153,7 @@ static void broadcast_message(Message *msg, bool priority) {
   msg->priority = priority;
 
   for (u32 i = 0; i < MAX_CLIENTS; i++) {
-    Client *cli = &server.clients[i];
+    Connection *cli = &server.clients[i];
     if (is_connected(cli))
       send_message(msg, cli);
   }
@@ -275,7 +267,7 @@ void server_update(Game game) {
 
   // Receive messages
   while (recv_message()) {
-    Client *sender = find_client(&server.sender_addr);
+    Connection *sender = find_client(&server.sender_addr);
     if (sender) {
       sender->last_seen = frame_time;
     } else if (server.recvd_msg.type != MSG_HELLO) {
@@ -310,7 +302,7 @@ void server_update(Game game) {
 
   // Resend queued messages until ACKed
   for (u32 i = 0; i < MAX_CLIENTS; i++) {
-    Client *cli = &server.clients[i];
+    Connection *cli = &server.clients[i];
     if (is_connected(cli) && has_queued_msgs(&cli->queue)) {
       // Resend message, do it as non-priority so it won't get re-queued
       printf("resending message %u (%u in queue)\n", peek_msg(&cli->queue)->seq,

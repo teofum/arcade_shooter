@@ -59,3 +59,5 @@ i32 ack_msg(MessageQueue *q, u32 seq) {
 
   return 0;
 }
+
+bool is_connected(Connection *c) { return c->last_seen > 0; }

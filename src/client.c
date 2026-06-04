@@ -22,10 +22,12 @@
 typedef struct ClientState {
   i32 sock;
   u64 last_heartbeat_sent;
-  u32 last_seq;
+  u32 last_seq_recvd;
+  u32 seq;
+
+  Connection server;
 
   Message recvd_msg;
-  struct sockaddr_in serv_addr;
 } ClientState;
 
 static ClientState client = {0};
@@ -48,7 +50,7 @@ i32 client_init() {
 
 void send_message(Message *msg) {
   sendto(client.sock, msg, sizeof(Message), 0,
-         (struct sockaddr *)&client.serv_addr, sizeof(client.serv_addr));
+         (struct sockaddr *)&client.server.addr, sizeof(client.server.addr));
 }
 
 bool recv_message() {
@@ -57,11 +59,16 @@ bool recv_message() {
 }
 
 i32 client_connect(const char *address) {
-  client.serv_addr = (struct sockaddr_in){
-      .sin_family = AF_INET,
-      .sin_port = htons(SERVER_PORT),
+  client.server = (Connection){
+      .addr =
+          (struct sockaddr_in){
+              .sin_family = AF_INET,
+              .sin_port = htons(SERVER_PORT),
+          },
+      .last_seen = 0,
+      .queue = {0},
   };
-  inet_pton(AF_INET, address, &client.serv_addr.sin_addr);
+  inet_pton(AF_INET, address, &client.server.addr.sin_addr);
 
   printf("Connecting to server at %s...\n", address);
 
@@ -91,12 +98,12 @@ i32 client_update(Game game) {
       send_message(&ack);
     }
 
-    if (client.recvd_msg.seq <= client.last_seq) {
+    if (client.recvd_msg.seq <= client.last_seq_recvd) {
       printf("old data; ignored\n");
       continue;
     }
 
-    client.last_seq = client.recvd_msg.seq;
+    client.last_seq_recvd = client.recvd_msg.seq;
 
     switch (client.recvd_msg.type) {
     case MSG_HELLO:

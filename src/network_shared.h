@@ -1,3 +1,4 @@
+#include <arpa/inet.h>
 #include <raylib.h>
 
 #include "entity.h"
@@ -96,9 +97,18 @@ typedef struct MessageQueue {
   u32 delayed_msg_tail;
 } MessageQueue;
 
+typedef struct Connection {
+  struct sockaddr_in addr;
+
+  u64 last_seen; // Timestamp, 0 if disconnected
+  MessageQueue queue;
+} Connection;
+
 bool has_queued_msgs(MessageQueue *q);
 u32 get_queued_count(MessageQueue *q);
 Message *peek_msg(MessageQueue *q);
 Message *dequeue_msg(MessageQueue *q);
 bool enqueue_msg(MessageQueue *q, Message *msg);
 i32 ack_msg(MessageQueue *q, u32 seq);
+
+bool is_connected(Connection *c);
