@@ -11,12 +11,13 @@
 #define UPDATE_ENT_COUNT 8
 
 #define ENABLE_PACKET_LOSS 1
-#define PACKET_LOSS_RATE 0.01
+#define PACKET_LOSS_RATE 0.3
 
 typedef enum {
   MSG_HELLO,
   MSG_GOODBYE,
   MSG_HEARTBEAT,
+  MSG_ACK,
 
   MSG_GAME_STATE,
   MSG_MOVE,
@@ -76,6 +77,7 @@ typedef struct GameStateData {
 typedef struct Message {
   MessageType type;
   u32 seq;
+  bool priority;
 
   union {
     MoveData move;
