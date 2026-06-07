@@ -15,7 +15,6 @@ int main() {
 
   Game game = game_init();
   while (!WindowShouldClose() && game->state != GS_QUIT) {
-    game_process_input(game);
     game_update(game);
     server_update(game);
     game_draw(game);

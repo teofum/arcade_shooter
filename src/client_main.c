@@ -19,6 +19,8 @@ int main() {
 
   Game game = game_init();
   while (!WindowShouldClose()) {
+    game_process_input(game);
+
     if (client_update(game) < 0)
       break;
 

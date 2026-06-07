@@ -1,9 +1,10 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include <raylib.h>
+
 #include "entity.h"
 #include "entity_list.h"
-#include "raylib.h"
 #include "types.h"
 
 typedef enum {
@@ -21,9 +22,16 @@ typedef enum {
   HORIZONTAL,
 } Orientation;
 
+typedef struct InputData {
+  Vector2 direction;
+  Vector2 crosshair;
+  bool firing;
+} InputData;
+
 typedef struct Game {
   EntityList world;
   Entity *player;
+  InputData input;
 
   Camera2D camera;
   f32 camera_shake;

@@ -48,12 +48,45 @@ i32 client_init() {
   return 0;
 }
 
-void send_message(Message *msg) {
+void send_message_impl(Message *msg) {
+
+#if ENABLE_PACKET_LOSS
+
+  if (frand() < PACKET_LOSS_RATE) {
+    return;
+  }
+
+#endif
+
   sendto(client.sock, msg, sizeof(Message), 0,
          (struct sockaddr *)&client.server.addr, sizeof(client.server.addr));
 }
 
-bool recv_message() {
+static i32 send_message(Message *msg, bool priority) {
+  msg->seq = ++client.seq;
+  msg->priority = priority;
+
+  // If there are no queued up priority messages, send
+  if (!has_queued_msgs(&client.server.queue)) {
+    send_message_impl(msg);
+  }
+
+  // If the message is priority, queue it until ACKed by client
+  if (msg->priority) {
+    if (enqueue_msg(&client.server.queue, msg)) {
+      printf("enqueue priority message %u (%u in queue)\n", msg->seq,
+             get_queued_count(&client.server.queue));
+    } else {
+      // The queue is full, fail and disconnect the client
+      printf("Disconnected from server: message queue full\n");
+      return -1;
+    }
+  }
+
+  return 0;
+}
+
+static bool recv_message() {
   i32 recvd_bytes = recv(client.sock, &client.recvd_msg, sizeof(Message), 0);
   return recvd_bytes > 0;
 }
@@ -65,7 +98,7 @@ i32 client_connect(const char *address) {
               .sin_family = AF_INET,
               .sin_port = htons(SERVER_PORT),
           },
-      .last_seen = 0,
+      .last_seen = now(),
       .queue = {0},
   };
   inet_pton(AF_INET, address, &client.server.addr.sin_addr);
@@ -73,7 +106,7 @@ i32 client_connect(const char *address) {
   printf("Connecting to server at %s...\n", address);
 
   Message greeting = {.type = MSG_HELLO};
-  send_message(&greeting);
+  send_message(&greeting, false);
 
   printf("Connected\n");
 
@@ -86,35 +119,54 @@ i32 client_update(Game game) {
   // Send heartbeat
   if (frame_time - client.last_heartbeat_sent > CLIENT_HB_INTERVAL) {
     Message heartbeat = {.type = MSG_HEARTBEAT};
-    send_message(&heartbeat);
+    send_message(&heartbeat, false);
     client.last_heartbeat_sent = frame_time;
   }
 
+  // Send input
+  Message input = {.type = MSG_INPUT, .input = game->input};
+  send_message(&input, false);
+
   while (recv_message()) {
+    client.server.last_seen = frame_time;
+
     // If we receive a priority message, ACK, even if it is outdated
     // (server might not have received previous ACK)
     if (client.recvd_msg.priority) {
       Message ack = {.type = MSG_ACK, .seq = client.recvd_msg.seq};
-      send_message(&ack);
+      send_message_impl(&ack);
     }
 
-    if (client.recvd_msg.seq <= client.last_seq_recvd) {
+    printf("Received: ");
+    if (client.recvd_msg.type != MSG_ACK &&
+        client.recvd_msg.seq <= client.last_seq_recvd) {
       printf("old data; ignored\n");
       continue;
     }
 
-    client.last_seq_recvd = client.recvd_msg.seq;
+    if (client.recvd_msg.type != MSG_ACK) {
+      client.last_seq_recvd = client.recvd_msg.seq;
+    }
 
     switch (client.recvd_msg.type) {
     case MSG_HELLO:
+      break;
+    case MSG_INPUT:
       break;
     case MSG_HEARTBEAT:
       printf("heartbeat\n");
       break;
     case MSG_ACK:
-      printf("warn: client received ACK\n");
+      printf("ACK for message %d\n", client.recvd_msg.seq);
+      if (ack_msg(&client.server.queue, client.recvd_msg.seq) < 0) {
+        // Server ACKed a message that it shouldn't have received yet
+        // Something is very wrong, disconnect
+        printf("Disconnected from server: invalid ACK reecived\n");
+        return -1;
+      }
       break;
     case MSG_GAME_STATE:
+      printf("game state\n");
       game->state = client.recvd_msg.game.state;
       game->total_time = client.recvd_msg.game.total_time;
       game->delta_time = client.recvd_msg.game.delta_time;
@@ -124,16 +176,16 @@ i32 client_update(Game game) {
       game->player->player = client.recvd_msg.game.player_state;
       break;
     case MSG_MOVE:
+      printf("move %u entities\n", client.recvd_msg.move.count);
       for (u32 i = 0; i < client.recvd_msg.move.count; i++) {
         EntityMoveData ent = client.recvd_msg.move.entities[i];
         el_get(game->world, ent.idx)->position = ent.position;
       }
       break;
     case MSG_CHANGES:
+      printf("change %u entities\n", client.recvd_msg.changes.count);
       for (u32 i = 0; i < client.recvd_msg.changes.count; i++) {
         EntityListChange c = client.recvd_msg.changes.changes[i];
-        printf("%s [%u] type=%d\n", c.type == -1 ? "destroy" : "create", c.idx,
-               c.type);
         if (c.type == -1) {
           el_destroy(game->world, c.idx);
         } else {
@@ -206,9 +258,25 @@ i32 client_update(Game game) {
       game_reset(game);
       break;
     case MSG_GOODBYE:
-      printf("Goodbye!\n");
+      printf("Disconnected from server: goodbye!\n");
       return -1;
     }
+  }
+
+  // Resend queued messages until ACKed
+  if (has_queued_msgs(&client.server.queue)) {
+    // Resend message, do it as non-priority so it won't get re-queued
+    printf("resending message %u (%u in queue)\n",
+           peek_msg(&client.server.queue)->seq,
+           get_queued_count(&client.server.queue));
+    send_message_impl(peek_msg(&client.server.queue));
+  }
+
+  // Timeout server
+  if (is_connected(&client.server) &&
+      frame_time - client.server.last_seen > CLIENT_TIMEOUT) {
+    printf("Disconnected from server: connection timed out\n");
+    return -1;
   }
 
   return 0;
@@ -216,7 +284,7 @@ i32 client_update(Game game) {
 
 void client_disconnect() {
   Message goodbye = {.type = MSG_GOODBYE};
-  send_message(&goodbye);
+  send_message(&goodbye, false);
 }
 
 void client_shutdown() {

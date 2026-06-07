@@ -109,7 +109,7 @@ static void cleanup_clients(u64 frame_time) {
   for (u32 i = 0; i < MAX_CLIENTS; i++) {
     Connection *cli = &server.clients[i];
     if (is_connected(cli) && frame_time - cli->last_seen > SERVER_TIMEOUT) {
-      printf("Disconnect client %d\n", i);
+      printf("Disconnect client %d: connection timed out\n", i);
       cli->last_seen = 0;
     }
   }
@@ -149,7 +149,7 @@ static void send_message(Message *msg, Connection *cli) {
 }
 
 static void broadcast_message(Message *msg, bool priority) {
-  msg->seq = server.seq++;
+  msg->seq = ++server.seq;
   msg->priority = priority;
 
   for (u32 i = 0; i < MAX_CLIENTS; i++) {
@@ -169,13 +169,14 @@ static bool recv_message() {
 void server_update(Game game) {
   u64 frame_time = now();
 
-  // Server heartbeat
+  // Send heartbeat
   if (frame_time - server.last_heartbeat_sent > SERVER_HB_INTERVAL) {
     Message heartbeat = {.type = MSG_HEARTBEAT};
     broadcast_message(&heartbeat, false);
     server.last_heartbeat_sent = frame_time;
   }
 
+  // Game reset on entering main menu
   if (game->state == GS_MAIN_MENU) {
     if (!server.main_menu) {
       Message reset = {
@@ -274,7 +275,24 @@ void server_update(Game game) {
       continue;
     }
 
+    // If we receive a priority message, ACK, even if it is outdated
+    // (server might not have received previous ACK)
+    if (server.recvd_msg.priority) {
+      Message ack = {.type = MSG_ACK, .seq = server.recvd_msg.seq};
+      send_message_impl(&ack, sender);
+    }
+
     printf("Received: ");
+    if (server.recvd_msg.type != MSG_ACK &&
+        server.recvd_msg.seq <= server.last_seq_recvd) {
+      printf("old data; ignored\n");
+      continue;
+    }
+
+    if (server.recvd_msg.type != MSG_ACK) {
+      server.last_seq_recvd = server.recvd_msg.seq;
+    }
+
     switch (server.recvd_msg.type) {
     case MSG_HELLO:
       printf("client\n");
@@ -288,11 +306,16 @@ void server_update(Game game) {
       printf("heartbeat\n");
       break;
     case MSG_ACK:
+      printf("ACK for message %d\n", server.recvd_msg.seq);
       if (ack_msg(&sender->queue, server.recvd_msg.seq) < 0) {
         // Client ACKed a message that it shouldn't have received yet
         // Something is very wrong, disconnect the client
         disconnect_client(&server.sender_addr);
       }
+      break;
+    case MSG_INPUT:
+      printf("input\n");
+      game->input = server.recvd_msg.input;
       break;
     default:
       printf("something else; ignored\n");

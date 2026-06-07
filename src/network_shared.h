@@ -28,6 +28,8 @@ typedef enum {
   MSG_CHANGES,
   MSG_UPDATE,
 
+  MSG_INPUT,
+
   MSG_END_GAME,
   MSG_RESET,
 } MessageType;
@@ -88,6 +90,7 @@ typedef struct Message {
     ChangeData changes;
     UpdateData updates;
     GameStateData game;
+    InputData input;
   };
 } Message;
 

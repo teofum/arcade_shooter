@@ -145,7 +145,7 @@ void game_process_input(Game game) {
   if (game->state != GS_RUNNING)
     return;
 
-  Player *pdata = &game->player->player;
+  InputData *i = &game->input;
 
   // Player movement
   Vector2 v_target = {0, 0};
@@ -164,18 +164,18 @@ void game_process_input(Game game) {
         GetGamepadAxisMovement(0, GAMEPAD_AXIS_RIGHT_Y),
     };
     if (Vector2Length(aim_movement) >= INPUT_GAMEPAD_DEADZONE) {
-      pdata->crosshair = Vector2Add(pdata->crosshair, aim_movement);
-      if (pdata->crosshair.x < -FIELD_WIDTH / 2.0f)
-        pdata->crosshair.x = -FIELD_WIDTH / 2.0f;
-      if (pdata->crosshair.x > FIELD_WIDTH / 2.0f)
-        pdata->crosshair.x = FIELD_WIDTH / 2.0f;
-      if (pdata->crosshair.y < -FIELD_HEIGHT / 2.0f)
-        pdata->crosshair.y = -FIELD_HEIGHT / 2.0f;
-      if (pdata->crosshair.y > FIELD_HEIGHT / 2.0f)
-        pdata->crosshair.y = FIELD_HEIGHT / 2.0f;
+      i->crosshair = Vector2Add(i->crosshair, aim_movement);
+      if (i->crosshair.x < -FIELD_WIDTH / 2.0f)
+        i->crosshair.x = -FIELD_WIDTH / 2.0f;
+      if (i->crosshair.x > FIELD_WIDTH / 2.0f)
+        i->crosshair.x = FIELD_WIDTH / 2.0f;
+      if (i->crosshair.y < -FIELD_HEIGHT / 2.0f)
+        i->crosshair.y = -FIELD_HEIGHT / 2.0f;
+      if (i->crosshair.y > FIELD_HEIGHT / 2.0f)
+        i->crosshair.y = FIELD_HEIGHT / 2.0f;
     }
 
-    pdata->firing = IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_TRIGGER_1);
+    i->firing = IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_TRIGGER_1);
   } else {
     // Keyboard input
     if (IsKeyDown(KEY_W))
@@ -192,13 +192,13 @@ void game_process_input(Game game) {
     // Aiming
     Matrix m = GetCameraMatrix2D(game->camera);
     m = MatrixInvert(m);
-    pdata->crosshair = Vector2Transform(GetMousePosition(), m);
+    i->crosshair = Vector2Transform(GetMousePosition(), m);
 
     // Fire!
-    pdata->firing = IsKeyDown(KEY_SPACE);
+    i->firing = IsKeyDown(KEY_SPACE);
   }
 
-  pdata->direction = v_target;
+  i->direction = v_target;
 }
 
 static void game_spawn_wave(Game game) {
@@ -331,6 +331,11 @@ void game_update(Game game) {
   if (game->state == GS_PAUSED || game->state == GS_MAIN_MENU ||
       game->state == GS_LEVEL_UP)
     return;
+
+  // Update input
+  game->player->player.direction = game->input.direction;
+  game->player->player.crosshair = game->input.crosshair;
+  game->player->player.firing = game->input.firing;
 
   // Update entities
   EntityListIterator it = el_iter(game->world);
