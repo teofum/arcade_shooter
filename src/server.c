@@ -16,7 +16,6 @@
 typedef struct ServerState {
   i32 sock;
   u64 last_heartbeat_sent;
-  u32 last_seq_recvd;
   u32 seq;
 
   bool main_menu;
@@ -293,14 +292,14 @@ void server_update(Game game) {
     }
 
     printf("Received: ");
-    if (server.recvd_msg.type != MSG_ACK &&
-        server.recvd_msg.seq <= server.last_seq_recvd) {
+    if (server.recvd_msg.type != MSG_ACK && sender &&
+        server.recvd_msg.seq <= sender->last_seq_recvd) {
       printf("old data; ignored\n");
       continue;
     }
 
-    if (server.recvd_msg.type != MSG_ACK) {
-      server.last_seq_recvd = server.recvd_msg.seq;
+    if (server.recvd_msg.type != MSG_ACK && sender) {
+      sender->last_seq_recvd = server.recvd_msg.seq;
     }
 
     switch (server.recvd_msg.type) {

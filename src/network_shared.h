@@ -114,6 +114,7 @@ typedef struct Connection {
   struct sockaddr_in addr;
 
   u64 last_seen; // Timestamp, 0 if disconnected
+  u32 last_seq_recvd;
   MessageQueue queue;
 } Connection;
 
