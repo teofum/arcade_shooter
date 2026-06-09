@@ -386,21 +386,8 @@ static void ui_draw_level_up_option(Game game, LevelUpOption *option, u32 i) {
   ui_end_frame();
 
   if (clicked) {
-    if (option->type == LU_NEW) {
-      SpecialBulletSlot *bullet =
-          &pdata->special_bullets[pdata->special_bullet_count];
-
-      bullet->fired = false;
-      bullet->level = 1;
-      bullet->type = option->bullet_type;
-      pdata->special_bullet_count++;
-      game_set_state(game, GS_RUNNING);
-    } else {
-      SpecialBulletSlot *bullet = &pdata->special_bullets[option->bullet_idx];
-
-      bullet->level++;
-      game_set_state(game, GS_RUNNING);
-    }
+    game->level_up_option = i;
+    game->level_up_menu = false;
   }
 }
 
@@ -481,7 +468,7 @@ void ui_draw_pause_screen(Game game) {
 
     if (ui_button_ex("Resume", 20, (Vector2){0, 20}, gp && m == 0,
                      (Vector2){200, 0}, CENTER, CENTER)) {
-      game_set_state(game, GS_RUNNING);
+      game->pause_menu = false;
     }
     if (ui_button_ex("Main menu", 20, (Vector2){0, 60}, gp && m == 1,
                      (Vector2){200, 0}, CENTER, CENTER)) {

@@ -38,8 +38,8 @@ void init() {
   InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "ArcadeShooterClient");
   SetTargetFPS(TARGET_FPS);
 
-  // HideCursor();
-  // SetExitKey(0); // Stop "esc" key from immediately quitting the game
+  HideCursor();
+  SetExitKey(0); // Stop "esc" key from immediately quitting the game
 
   load_assets();
 

@@ -127,6 +127,17 @@ i32 client_update(Game game) {
   Message input = {.type = MSG_INPUT, .input = game->input};
   send_message(&input, false);
 
+  // Send level up
+  if (game->level_up_option != -1) {
+    Message level_up = {
+        .type = MSG_LEVEL_UP,
+        .level_up = (LevelUpData){.chosen_option = game->level_up_option},
+    };
+    send_message(&level_up, true);
+
+    game->level_up_option = -1;
+  }
+
   while (recv_message()) {
     client.server.last_seen = frame_time;
 
@@ -250,6 +261,11 @@ i32 client_update(Game game) {
           assert(false && "Received update for an entity that it not an enemy");
         }
       }
+      break;
+    case MSG_LEVEL_UP:
+      game->player->player = client.recvd_msg.level_up.player_state;
+      game->level_up_menu = true;
+      game->level_up_option = -1;
       break;
     case MSG_END_GAME:
       game_end(game);

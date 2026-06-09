@@ -260,8 +260,8 @@ static void player_level_up(Entity *self, Game game) {
                                     : (LevelUpOption){.type = LU_NONE};
   }
 
-  // Show level up screen
-  game_set_state(game, GS_LEVEL_UP);
+  // Level up event
+  data->leveled_up = true;
 }
 
 /*============================================================================*

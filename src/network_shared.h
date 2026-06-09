@@ -1,6 +1,7 @@
 #include <arpa/inet.h>
 #include <raylib.h>
 
+#include "config.h"
 #include "entity.h"
 #include "entity_list.h"
 #include "game.h"
@@ -29,6 +30,7 @@ typedef enum {
   MSG_UPDATE,
 
   MSG_INPUT,
+  MSG_LEVEL_UP,
 
   MSG_END_GAME,
   MSG_RESET,
@@ -80,6 +82,13 @@ typedef struct GameStateData {
   Player player_state;
 } GameStateData;
 
+typedef struct LevelUpData {
+  union {
+    Player player_state;
+    i32 chosen_option;
+  };
+} LevelUpData;
+
 typedef struct Message {
   MessageType type;
   u32 seq;
@@ -91,6 +100,7 @@ typedef struct Message {
     UpdateData updates;
     GameStateData game;
     InputData input;
+    LevelUpData level_up;
   };
 } Message;
 

@@ -10,8 +10,6 @@
 typedef enum {
   GS_MAIN_MENU,
   GS_RUNNING,
-  GS_LEVEL_UP,
-  GS_PAUSED,
   GS_GAME_OVER,
   GS_WIN,
   GS_QUIT,
@@ -48,6 +46,10 @@ typedef struct Game {
 
   GameState state;
   u32 score;
+
+  bool pause_menu;
+  bool level_up_menu;
+  i32 level_up_option;
 
   u32 menu_selected_option;
   u32 menu_n_options;

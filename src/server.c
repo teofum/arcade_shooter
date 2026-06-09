@@ -266,6 +266,16 @@ void server_update(Game game) {
     }
   }
 
+  if (game->player->player.leveled_up) {
+    game->player->player.leveled_up = false;
+
+    Message level_up = {
+        .type = MSG_LEVEL_UP,
+        .level_up = (LevelUpData){.player_state = game->player->player},
+    };
+    broadcast_message(&level_up, true);
+  }
+
   // Receive messages
   while (recv_message()) {
     Connection *sender = find_client(&server.sender_addr);
@@ -317,6 +327,27 @@ void server_update(Game game) {
       printf("input\n");
       game->input = server.recvd_msg.input;
       break;
+    case MSG_LEVEL_UP: {
+      printf("level up\n");
+      Player *p = &game->player->player;
+      LevelUpOption *option =
+          &p->level_up_options[server.recvd_msg.level_up.chosen_option];
+
+      if (option->type == LU_NEW) {
+        SpecialBulletSlot *bullet =
+            &p->special_bullets[p->special_bullet_count];
+
+        bullet->fired = false;
+        bullet->level = 1;
+        bullet->type = option->bullet_type;
+        p->special_bullet_count++;
+      } else {
+        SpecialBulletSlot *bullet = &p->special_bullets[option->bullet_idx];
+
+        bullet->level++;
+      }
+      break;
+    }
     default:
       printf("something else; ignored\n");
       break;

@@ -104,6 +104,7 @@ typedef struct Player {
   u32 level;
   u32 xp;
   u32 to_next_level;
+  bool leveled_up;
   LevelUpOption level_up_options[LEVEL_UP_OPTIONS];
   bool leveled_up_stats[4];
 

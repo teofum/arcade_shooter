@@ -42,14 +42,12 @@ static void game_setup_menu(Game game, u32 n_opts, Orientation orientation) {
 void game_set_state(Game game, GameState state) {
   if (state == GS_MAIN_MENU || state == GS_GAME_OVER) {
     game_setup_menu(game, 2, VERTICAL);
-  } else if (state == GS_PAUSED) {
+  } else if (state == GS_RUNNING) {
     game_setup_menu(game, 3, VERTICAL);
-  } else if (state == GS_LEVEL_UP) {
-    game_setup_menu(game, 3, HORIZONTAL);
   }
 
   if (ENABLE_BGM) {
-    if (state == GS_MAIN_MENU || state == GS_PAUSED || state == GS_GAME_OVER) {
+    if (state == GS_MAIN_MENU || state == GS_GAME_OVER) {
       StopMusicStream(game->bgm);
     } else if (state == GS_RUNNING) {
       if (!IsMusicStreamPlaying(game->bgm)) {
@@ -101,6 +99,10 @@ void game_reset(Game game) {
   game_set_state(game, GS_MAIN_MENU);
   game->score = 0;
 
+  game->pause_menu = false;
+  game->level_up_menu = false;
+  game->level_up_option = -1;
+
   game->bgm = assets.bgm;
 }
 
@@ -135,10 +137,8 @@ void game_process_input(Game game) {
   if (IsKeyPressed(KEY_ESCAPE) ||
       IsGamepadAvailable(0) &&
           IsGamepadButtonPressed(0, GAMEPAD_BUTTON_MIDDLE_RIGHT)) {
-    if (game->state == GS_PAUSED) {
-      game_set_state(game, GS_RUNNING);
-    } else if (game->state == GS_RUNNING) {
-      game_set_state(game, GS_PAUSED);
+    if (game->state == GS_RUNNING) {
+      game->pause_menu = !game->pause_menu;
     }
   }
 
@@ -328,8 +328,7 @@ void game_update(Game game) {
   game->delta_time = now - game->total_time;
   game->total_time = now;
 
-  if (game->state == GS_PAUSED || game->state == GS_MAIN_MENU ||
-      game->state == GS_LEVEL_UP)
+  if (game->state == GS_MAIN_MENU)
     return;
 
   // Update input
@@ -356,8 +355,7 @@ void game_update_client(Game game) {
   // Update BGM stream
   UpdateMusicStream(game->bgm);
 
-  if (game->state == GS_PAUSED || game->state == GS_MAIN_MENU ||
-      game->state == GS_LEVEL_UP)
+  if (game->state == GS_MAIN_MENU)
     return;
 
   // Update entities
@@ -389,9 +387,9 @@ void game_draw(Game game) {
 
     ui_draw_game_ui(game);
 
-    if (game->state == GS_LEVEL_UP) {
+    if (game->level_up_menu) {
       ui_draw_level_up_screen(game);
-    } else if (game->state == GS_PAUSED) {
+    } else if (game->pause_menu) {
       ui_draw_pause_screen(game);
     } else if (game->state == GS_GAME_OVER) {
       ui_draw_game_over_screen(game);
