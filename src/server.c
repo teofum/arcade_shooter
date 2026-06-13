@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include "config.h"
 #include "entity.h"
 #include "entity_list.h"
 #include "game.h"
@@ -18,7 +19,7 @@ typedef struct ServerState {
   u64 last_heartbeat_sent;
   u32 seq;
 
-  bool main_menu;
+  bool game_running;
 
   Connection clients[MAX_CLIENTS];
 
@@ -55,7 +56,7 @@ i32 server_init() {
   server = (ServerState){
       .sock = sock,
       .last_heartbeat_sent = now(),
-      .main_menu = false,
+      .game_running = false,
       .clients = {0},
       .recvd_msg = {0},
   };
@@ -78,38 +79,49 @@ static Connection *find_client(struct sockaddr_in *addr) {
   return NULL;
 }
 
-static bool connect_client(struct sockaddr_in *addr) {
+static u32 get_client_idx(struct sockaddr_in *addr) {
+  for (u32 i = 0; i < MAX_CLIENTS; i++) {
+    Connection *cli = &server.clients[i];
+    if (is_connected(cli) && cmp_addr(&cli->addr, addr))
+      return i;
+  }
+
+  return -1;
+}
+
+static i32 connect_client(struct sockaddr_in *addr) {
   for (u32 i = 0; i < MAX_CLIENTS; i++) {
     if (!is_connected(&server.clients[i])) {
       server.clients[i] = (Connection){
           .addr = *addr,
           .last_seen = now(),
       };
-      return true;
+      return i;
     }
   }
 
-  return false;
+  return -1;
 }
 
-static bool disconnect_client(struct sockaddr_in *addr) {
+static i32 disconnect_client(struct sockaddr_in *addr) {
   for (u32 i = 0; i < MAX_CLIENTS; i++) {
     Connection *cli = &server.clients[i];
     if (is_connected(cli) && cmp_addr(&cli->addr, addr)) {
       cli->last_seen = 0;
-      return true;
+      return i;
     }
   }
 
-  return false;
+  return -1;
 }
 
-static void cleanup_clients(u64 frame_time) {
+static void cleanup_clients(u64 frame_time, Game game) {
   for (u32 i = 0; i < MAX_CLIENTS; i++) {
     Connection *cli = &server.clients[i];
     if (is_connected(cli) && frame_time - cli->last_seen > SERVER_TIMEOUT) {
       printf("Disconnect client %d: connection timed out\n", i);
       cli->last_seen = 0;
+      game->players_enabled[i] = false;
     }
   }
 }
@@ -158,6 +170,13 @@ static void broadcast_message(Message *msg, bool priority) {
   }
 }
 
+static void send_message_to(Message *msg, Connection *cli, bool priority) {
+  msg->seq = ++server.seq;
+  msg->priority = priority;
+
+  send_message(msg, cli);
+}
+
 static bool recv_message() {
   u32 size = sizeof(struct sockaddr);
   i32 recvd_bytes = recvfrom(server.sock, &server.recvd_msg, sizeof(Message), 0,
@@ -176,16 +195,19 @@ void server_update(Game game) {
   }
 
   // Game reset on entering main menu
-  if (game->state == GS_MAIN_MENU) {
-    if (!server.main_menu) {
+  if (game->state == GS_RUNNING) {
+    if (!server.game_running) {
       Message reset = {
           .type = MSG_RESET,
+          .reset = (ResetData){.players_enabled = {0}},
       };
+      memcpy(reset.reset.players_enabled, game->players_enabled,
+             MAX_CLIENTS * sizeof(bool));
       broadcast_message(&reset, true);
     }
-    server.main_menu = true;
+    server.game_running = true;
   } else {
-    server.main_menu = false;
+    server.game_running = false;
   }
 
   // Send updates
@@ -199,7 +221,6 @@ void server_update(Game game) {
               .boss_idx = game->boss_idx,
               .boss_timer = game->boss_timer,
               .score = game->score,
-              .player_state = game->player->player,
               .menu_layout = game->menu_layout,
               .menu_n_options = game->menu_n_options,
               .menu_selected_option = game->menu_selected_option,
@@ -208,6 +229,20 @@ void server_update(Game game) {
   broadcast_message(&game_state, false);
 
   if (game->state == GS_RUNNING) {
+    for (u32 i = 0; i < MAX_CLIENTS; i++) {
+      if (game->players_enabled[i]) {
+        Message player_state = {
+            .type = MSG_PLAYER_STATE,
+            .player =
+                (PlayerStateData){
+                    .player_data = game->players[i]->player,
+                    .player_idx = i,
+                },
+        };
+        broadcast_message(&player_state, false);
+      }
+    }
+
     u32 change_count;
     EntityListChange *changes = el_get_changes(game->world, &change_count);
     el_flush_changes(game->world);
@@ -263,21 +298,24 @@ void server_update(Game game) {
       update.updates.count = count;
       broadcast_message(&update, false);
     }
-  }
 
-  if (game->player->player.leveled_up) {
-    game->player->player.leveled_up = false;
+    for (u32 i = 0; i < MAX_CLIENTS; i++) {
+      if (game->players_enabled[i] && game->players[i]->player.leveled_up) {
+        game->players[i]->player.leveled_up = false;
 
-    Message level_up = {
-        .type = MSG_LEVEL_UP,
-        .level_up = (LevelUpData){.player_state = game->player->player},
-    };
-    broadcast_message(&level_up, true);
+        Message level_up = {
+            .type = MSG_LEVEL_UP,
+            .level_up = (LevelUpData){.player_state = game->players[i]->player},
+        };
+        send_message_to(&level_up, &server.clients[i], true);
+      }
+    }
   }
 
   // Receive messages
   while (recv_message()) {
     Connection *sender = find_client(&server.sender_addr);
+    u32 sender_idx = get_client_idx(&server.sender_addr);
     if (sender) {
       sender->last_seen = frame_time;
     } else if (server.recvd_msg.type != MSG_HELLO) {
@@ -291,7 +329,7 @@ void server_update(Game game) {
       send_message_impl(&ack, sender);
     }
 
-    printf("Received: ");
+    printf("Received from client %u: ", sender_idx);
     if (server.recvd_msg.type != MSG_ACK && sender &&
         server.recvd_msg.seq <= sender->last_seq_recvd) {
       printf("old data; ignored\n");
@@ -303,14 +341,23 @@ void server_update(Game game) {
     }
 
     switch (server.recvd_msg.type) {
-    case MSG_HELLO:
+    case MSG_HELLO: {
       printf("client\n");
-      connect_client(&server.sender_addr);
+      i32 idx = connect_client(&server.sender_addr);
+      game->players_enabled[idx] = true;
+      Message response = {
+          .type = MSG_HELLO,
+          .hello = (HelloData){.player_idx = idx},
+      };
+      send_message_to(&response, &server.clients[idx], true);
       break;
-    case MSG_GOODBYE:
+    }
+    case MSG_GOODBYE: {
       printf("bye\n");
-      disconnect_client(&server.sender_addr);
+      i32 idx = disconnect_client(&server.sender_addr);
+      game->players_enabled[idx] = false;
       break;
+    }
     case MSG_HEARTBEAT:
       printf("heartbeat\n");
       break;
@@ -324,11 +371,11 @@ void server_update(Game game) {
       break;
     case MSG_INPUT:
       printf("input\n");
-      game->input = server.recvd_msg.input;
+      game->server.input[sender_idx] = server.recvd_msg.input;
       break;
     case MSG_LEVEL_UP: {
       printf("level up\n");
-      Player *p = &game->player->player;
+      Player *p = &game->players[sender_idx]->player;
       LevelUpOption *option =
           &p->level_up_options[server.recvd_msg.level_up.chosen_option];
 
@@ -365,7 +412,7 @@ void server_update(Game game) {
   }
 
   // Timeout clients
-  cleanup_clients(frame_time);
+  cleanup_clients(frame_time, game);
 }
 
 void server_start_game(Game game) {

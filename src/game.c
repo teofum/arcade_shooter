@@ -26,9 +26,8 @@ Game game_init() {
               .offset = BASE_OFFSET,
               .zoom = (f32)WINDOW_HEIGHT / FIELD_HEIGHT,
           },
+      .players_enabled = {0},
   };
-
-  game_reset(game);
 
   return game;
 }
@@ -68,8 +67,12 @@ void game_reset(Game game) {
   // Create world
   game->world = el_create();
 
-  Entity *player = player_create();
-  game->player = el_add(game->world, player);
+  for (u32 i = 0; i < MAX_CLIENTS; i++) {
+    if (game->players_enabled[i]) {
+      Entity *player = player_create();
+      game->players[i] = el_add(game->world, player);
+    }
+  }
 
   Entity *left_wall =
       wall_create((Rectangle){-1000 - FIELD_WIDTH / 2.0f, -100, 1000, 200});
@@ -96,7 +99,7 @@ void game_reset(Game game) {
   game->boss_idx = 0;
   game->boss_timer = BOSS_TIME;
 
-  game_set_state(game, GS_MAIN_MENU);
+  game_set_state(game, GS_RUNNING);
   game->score = 0;
 
   game->pause_menu = false;
@@ -145,7 +148,7 @@ void game_process_input(Game game) {
   if (game->state != GS_RUNNING)
     return;
 
-  InputData *i = &game->input;
+  InputData *i = &game->client.input;
 
   // Player movement
   Vector2 v_target = {0, 0};
@@ -332,9 +335,13 @@ void game_update(Game game) {
     return;
 
   // Update input
-  game->player->player.direction = game->input.direction;
-  game->player->player.crosshair = game->input.crosshair;
-  game->player->player.firing = game->input.firing;
+  for (u32 i = 0; i < MAX_CLIENTS; i++) {
+    if (game->players_enabled[i]) {
+      game->players[i]->player.direction = game->server.input[i].direction;
+      game->players[i]->player.crosshair = game->server.input[i].crosshair;
+      game->players[i]->player.firing = game->server.input[i].firing;
+    }
+  }
 
   // Update entities
   EntityListIterator it = el_iter(game->world);

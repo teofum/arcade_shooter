@@ -3,6 +3,7 @@
 
 #include <raylib.h>
 
+#include "config.h"
 #include "entity.h"
 #include "entity_list.h"
 #include "types.h"
@@ -28,8 +29,19 @@ typedef struct InputData {
 
 typedef struct Game {
   EntityList world;
-  Entity *player;
-  InputData input;
+
+  bool players_enabled[MAX_CLIENTS];
+  Entity *players[MAX_CLIENTS];
+
+  union {
+    struct {
+      InputData input[MAX_CLIENTS];
+    } server;
+    struct {
+      InputData input;
+      u32 local_player_idx;
+    } client;
+  };
 
   Camera2D camera;
   f32 camera_shake;

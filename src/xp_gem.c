@@ -35,12 +35,16 @@ bool xp_gem_update(Entity *self, Game game) {
 
   // Accelerate towards player and move
   Vector2 target_velocity = {0, 0};
-  Vector2 player_pos = game->player->position;
+  Vector2 player_pos = game->players[0]->position;
   f32 distance = Vector2Distance(player_pos, self->position);
 
   if (distance < XP_PICKUP_RANGE) {
-    Player *pdata = &game->player->player;
-    pdata->xp += data->value;
+    for (u32 i = 0; i < MAX_CLIENTS; i++) {
+      if (game->players_enabled[i]) {
+        Player *pdata = &game->players[i]->player;
+        pdata->xp += data->value;
+      }
+    }
 
     return true;
   } else if (distance < XP_MAGNET_RANGE) {

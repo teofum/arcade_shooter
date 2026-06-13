@@ -4,13 +4,10 @@
 
 #include "assets.h"
 #include "config.h"
-#include "dmg_number.h"
 #include "enemy_bullet.h"
 #include "entity.h"
-#include "entity_list.h"
 #include "game.h"
 #include "types.h"
-#include "utils.h"
 
 /*============================================================================*
  * Enemy bullet initialization                                                *
@@ -23,25 +20,6 @@ static EnemyBullet enemy_bullet_init_data(Vector2 initial_velocity,
       .damage = damage,
       .deferred_destroy = false,
   };
-}
-
-/*============================================================================*
- * Enemy bullet update helpers                                                *
- *============================================================================*/
-
-/*
- * Hit callback
- */
-static void bullet_hit_player(Entity *self, Game game) {
-  EnemyBullet *data = &self->enemy_bullet;
-  Player *pdata = &game->player->player;
-
-  i32 damage = get_damage(data->damage);
-  pdata->health -= damage;
-
-  Entity *dmg_number =
-      dmg_number_create(self->position, damage, DMG_NUMBER_SIZE);
-  el_add(game->world, dmg_number);
 }
 
 /*============================================================================*

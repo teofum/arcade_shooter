@@ -37,6 +37,8 @@ typedef struct Bullet {
   BulletType type;
   u32 level;
   i32 damage;
+
+  struct Entity *player;
   u32 special_idx;
 
   bool deferred_destroy;
@@ -56,9 +58,9 @@ typedef struct Powerup {
 
 typedef struct SpecialBulletSlot {
   BulletType type;
-  u32 level;
-  bool fired;
   f32 cooldown;
+  u8 level;
+  bool fired;
 } SpecialBulletSlot;
 
 typedef enum {
@@ -70,8 +72,8 @@ typedef enum {
 typedef struct LevelUpOption {
   LevelUpOptionType type;
   union {
-    u32 bullet_idx;
     BulletType bullet_type;
+    u32 bullet_idx;
   };
 } LevelUpOption;
 
@@ -88,34 +90,32 @@ typedef struct Player {
   Vector2 velocity;
   Vector2 crosshair;
 
-  i32 max_health;
-  i32 health;
-  i32 base_damage;
   f32 move_speed;
+  i16 max_health;
+  i16 health;
+  i16 base_damage;
 
-  u32 max_ammo;
-  u32 ammo;
-  u32 special_bullet_count;
+  u8 max_ammo;
+  u8 ammo;
+  u8 special_bullet_count;
+  u8 level;
+  bool leveled_up;
+  bool firing;
+
   SpecialBulletSlot special_bullets[MAX_SPECIAL_BULLETS];
 
   f32 fire_cooldown;
   f32 fire_timer;
 
-  u32 level;
   u32 xp;
   u32 to_next_level;
-  bool leveled_up;
   LevelUpOption level_up_options[LEVEL_UP_OPTIONS];
   bool leveled_up_stats[4];
 
   PowerupType active_powerup;
   f32 powerup_timer;
 
-  // Input
   Vector2 direction;
-  bool firing;
-
-  // Rendering
   i32 orientation;
 } Player;
 

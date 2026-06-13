@@ -123,7 +123,7 @@ static Entity *player_fire_special(Entity *self, Game game, i32 damage) {
       if (sb->cooldown <= 0) {
         sb->fired = true;
         return bullet_create(self->position, data->crosshair, sb->type,
-                             sb->level, damage, i);
+                             sb->level, damage, i, self);
       }
     }
   }
@@ -147,7 +147,7 @@ static void player_fire(Entity *self, Game game) {
     // Otherwise fire a regular bullet if we have ammo
     if (!bullet && data->ammo > 0) {
       bullet = bullet_create(self->position, data->crosshair, BULLET_NORMAL, 1,
-                             damage, 0);
+                             damage, 0, self);
       data->ammo--;
     }
 

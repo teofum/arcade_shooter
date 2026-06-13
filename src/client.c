@@ -1,10 +1,12 @@
 #include <assert.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "bullet.h"
 #include "client.h"
+#include "config.h"
 #include "dmg_number.h"
 #include "enemy.h"
 #include "enemy_bullet.h"
@@ -122,19 +124,21 @@ i32 client_update(Game game) {
     client.last_heartbeat_sent = frame_time;
   }
 
-  // Send input
-  Message input = {.type = MSG_INPUT, .input = game->input};
-  send_message(&input, false);
+  if (game->state == GS_RUNNING) {
+    // Send input
+    Message input = {.type = MSG_INPUT, .input = game->client.input};
+    send_message(&input, false);
 
-  // Send level up
-  if (game->level_up_option != -1) {
-    Message level_up = {
-        .type = MSG_LEVEL_UP,
-        .level_up = (LevelUpData){.chosen_option = game->level_up_option},
-    };
-    send_message(&level_up, true);
+    // Send level up
+    if (game->level_up_option != -1) {
+      Message level_up = {
+          .type = MSG_LEVEL_UP,
+          .level_up = (LevelUpData){.chosen_option = game->level_up_option},
+      };
+      send_message(&level_up, true);
 
-    game->level_up_option = -1;
+      game->level_up_option = -1;
+    }
   }
 
   while (recv_message()) {
@@ -160,6 +164,8 @@ i32 client_update(Game game) {
 
     switch (client.recvd_msg.type) {
     case MSG_HELLO:
+      game->client.local_player_idx = client.recvd_msg.hello.player_idx;
+      printf("i am player %u\n", game->client.local_player_idx);
       break;
     case MSG_INPUT:
       break;
@@ -183,7 +189,11 @@ i32 client_update(Game game) {
       game->boss_timer = client.recvd_msg.game.boss_timer;
       game->boss_idx = client.recvd_msg.game.boss_idx;
       game->score = client.recvd_msg.game.score;
-      game->player->player = client.recvd_msg.game.player_state;
+      break;
+    case MSG_PLAYER_STATE:
+      printf("player %u state\n", client.recvd_msg.player.player_idx);
+      game->players[client.recvd_msg.player.player_idx]->player =
+          client.recvd_msg.player.player_data;
       break;
     case MSG_MOVE:
       printf("move %u entities\n", client.recvd_msg.move.count);
@@ -205,9 +215,10 @@ i32 client_update(Game game) {
             break;
           case ENT_BULLET:
             e = bullet_create(
-                game->player->position, c.create_data.bullet.target,
+                game->players[0]->position, c.create_data.bullet.target,
                 c.create_data.bullet.type, c.create_data.bullet.damage,
-                c.create_data.bullet.level, c.create_data.bullet.special_idx);
+                c.create_data.bullet.level, c.create_data.bullet.special_idx,
+                game->players[0]);
             break;
           case ENT_WALL:
             break;
@@ -262,7 +273,7 @@ i32 client_update(Game game) {
       }
       break;
     case MSG_LEVEL_UP:
-      game->player->player = client.recvd_msg.level_up.player_state;
+      game->players[0]->player = client.recvd_msg.level_up.player_state;
       game->level_up_menu = true;
       game->level_up_option = -1;
       break;
@@ -270,6 +281,8 @@ i32 client_update(Game game) {
       game_end(game);
       break;
     case MSG_RESET:
+      memcpy(game->players_enabled, client.recvd_msg.reset.players_enabled,
+             MAX_CLIENTS * sizeof(bool));
       game_reset(game);
       break;
     case MSG_GOODBYE:

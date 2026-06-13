@@ -114,7 +114,6 @@ static void push_entity(Entity *entity, Rectangle bounds, f32 size,
 
 static void enemy_move(Entity *self, Game game, Vector2 direction) {
   Enemy *data = &self->enemy;
-  Player *pdata = &game->player->player;
 
   // Move, pushing the player and bullets if it collides
   Vector2 delta = Vector2Scale(direction, game->delta_time * ENEMY_SPEED);
@@ -123,8 +122,14 @@ static void enemy_move(Entity *self, Game game, Vector2 direction) {
   Rectangle bounds = {self->position.x + EPS, self->position.y + EPS,
                       data->size.x - 2 * EPS, data->size.y - 2 * EPS};
 
-  if (CheckCollisionCircleRec(game->player->position, pdata->size, bounds)) {
-    push_entity(game->player, bounds, pdata->size, direction);
+  for (u32 i = 0; i < MAX_CLIENTS; i++) {
+    if (game->players_enabled[i]) {
+      Player *pdata = &game->players[i]->player;
+      if (CheckCollisionCircleRec(game->players[i]->position, pdata->size,
+                                  bounds)) {
+        push_entity(game->players[i], bounds, pdata->size, direction);
+      }
+    }
   }
 
   EntityListIterator it = el_iter(game->world);
@@ -176,7 +181,7 @@ bool enemy_update(Entity *self, Game game) {
   if (data->type == ENEMY_BOSS)
     return boss_update(self, game);
 
-  Player *pdata = &game->player->player;
+  // Player *pdata = &game->player->player;
   Vector2 center = Vector2Add(self->position, Vector2Scale(data->size, 0.5f));
 
   // Die
@@ -201,13 +206,17 @@ bool enemy_update(Entity *self, Game game) {
   enemy_move(self, game, down);
 
   if (data->type == ENEMY_SHOOTER || data->type == ENEMY_MINIBOSS_2) {
-    enemy_fire(self, game, game->player->position);
+    enemy_fire(self, game, game->players[0]->position);
   }
 
   // Destroy self on reaching the bottom of the screen
   if (self->position.y >
       FIELD_HEIGHT / 2.0f - data->size.y - ((f32)FIELD_WIDTH / FIELD_COLS)) {
-    pdata->health -= data->damage;
+    for (u32 i = 0; i < MAX_CLIENTS; i++) {
+      if (game->players_enabled[i]) {
+        game->players[i]->player.health -= data->damage;
+      }
+    }
     return true;
   }
 
@@ -261,7 +270,7 @@ void enemy_draw(Entity *self, Game game) {
   // Tank gun
   if (data->type == ENEMY_MINIBOSS_2) {
     Vector2 center = Vector2Add(self->position, Vector2Scale(data->size, 0.5f));
-    Vector2 delta = Vector2Subtract(game->player->position, center);
+    Vector2 delta = Vector2Subtract(game->players[0]->position, center);
 
     sprite = &assets.boss_tank_gun;
     dest.x += dest.width / 2;
@@ -386,7 +395,7 @@ bool boss_update(Entity *self, Game game) {
   }
   case BOSS_SHOOT_HOMING_1:
   case BOSS_SHOOT_HOMING_2: {
-    enemy_fire(self, game, game->player->position);
+    enemy_fire(self, game, game->players[0]->position);
 
     if (data->boss_bullet_counter == BOSS_HOMING_BULLETS)
       boss_next_state(data);

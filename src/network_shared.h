@@ -25,6 +25,7 @@ typedef enum {
   MSG_ACK,
 
   MSG_GAME_STATE,
+  MSG_PLAYER_STATE,
   MSG_MOVE,
   MSG_CHANGES,
   MSG_UPDATE,
@@ -78,9 +79,12 @@ typedef struct GameStateData {
   u32 menu_selected_option;
   u32 menu_n_options;
   Orientation menu_layout;
-
-  Player player_state;
 } GameStateData;
+
+typedef struct PlayerStateData {
+  Player player_data;
+  u32 player_idx;
+} PlayerStateData;
 
 typedef struct LevelUpData {
   union {
@@ -88,6 +92,14 @@ typedef struct LevelUpData {
     i32 chosen_option;
   };
 } LevelUpData;
+
+typedef struct ResetData {
+  bool players_enabled[MAX_CLIENTS];
+} ResetData;
+
+typedef struct HelloData {
+  u32 player_idx;
+} HelloData;
 
 typedef struct Message {
   MessageType type;
@@ -99,8 +111,11 @@ typedef struct Message {
     ChangeData changes;
     UpdateData updates;
     GameStateData game;
+    PlayerStateData player;
     InputData input;
     LevelUpData level_up;
+    ResetData reset;
+    HelloData hello;
   };
 } Message;
 

@@ -1,10 +1,12 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define WINDOW_WIDTH 1200
-#define WINDOW_HEIGHT 800
+#define WINDOW_WIDTH 800
+#define WINDOW_HEIGHT 600
 
 #define ENABLE_BGM true
+
+#define MAX_CLIENTS 4
 
 #define FIELD_HEIGHT 200
 #define FIELD_WIDTH 120

@@ -8,8 +8,6 @@
 #include "game.h"
 #include "types.h"
 
-#define MAX_CLIENTS 4
-
 #define SERVER_HB_INTERVAL 1000
 #define SERVER_TIMEOUT 10000
 

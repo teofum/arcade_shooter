@@ -8,11 +8,9 @@
 #include "config.h"
 #include "entity.h"
 #include "game.h"
-#include "player.h"
 #include "powerup.h"
 #include "types.h"
 #include "ui.h"
-#include "utils.h"
 
 #define BUTTON_PADDING 5
 
@@ -204,7 +202,7 @@ void ui_draw_main_menu(Game game) {
 
     if (ui_button_ex("Start", 20, (Vector2){WINDOW_WIDTH / 2.0f + 100, 0},
                      gp && m == 0, (Vector2){200, 0}, START, CENTER)) {
-      game_set_state(game, GS_RUNNING);
+      game_reset(game);
     }
     if (ui_button_ex("Quit", 20, (Vector2){WINDOW_WIDTH / 2.0f + 100, 40},
                      gp && m == 1, (Vector2){200, 0}, START, CENTER)) {
@@ -320,7 +318,7 @@ static void ui_draw_player_crosshair(Player *pdata) {
 }
 
 void ui_draw_game_ui(Game game) {
-  Player *pdata = &game->player->player;
+  Player *pdata = &game->players[0]->player;
 
   ui_begin_frame_ex(full_screen, BLANK, BLANK, (Vector2){20, 20});
   {
@@ -342,7 +340,7 @@ void ui_draw_game_ui(Game game) {
 }
 
 static void ui_draw_level_up_option(Game game, LevelUpOption *option, u32 i) {
-  Player *pdata = &game->player->player;
+  Player *pdata = &game->players[0]->player;
   static char text[30];
 
   f32 button_x = (i + 1) * 220;
@@ -380,7 +378,7 @@ static void ui_draw_level_up_option(Game game, LevelUpOption *option, u32 i) {
     DrawTexturePro(sprite->texture, get_frame_rect(sprite, 0), dest,
                    (Vector2){0, 0}, 0, WHITE);
 
-    ui_text(get_bullet_description(game, type, level), 10, BLACK,
+    ui_text(get_bullet_description(game->players[0], type, level), 10, BLACK,
             (Vector2){0, 150}, CENTER, START);
   }
   ui_end_frame();
@@ -392,7 +390,7 @@ static void ui_draw_level_up_option(Game game, LevelUpOption *option, u32 i) {
 }
 
 void ui_draw_level_up_screen(Game game) {
-  Player *pdata = &game->player->player;
+  Player *pdata = &game->players[0]->player;
 
   static char level_up_str[30];
   sprintf(level_up_str, "Lv. %d -> %d", pdata->level - 1, pdata->level);
@@ -472,7 +470,7 @@ void ui_draw_pause_screen(Game game) {
     }
     if (ui_button_ex("Main menu", 20, (Vector2){0, 60}, gp && m == 1,
                      (Vector2){200, 0}, CENTER, CENTER)) {
-      game_reset(game);
+      game_set_state(game, GS_MAIN_MENU);
     }
     if (ui_button_ex("Quit", 20, (Vector2){0, 100}, gp && m == 2,
                      (Vector2){200, 0}, CENTER, CENTER)) {
@@ -496,7 +494,7 @@ void ui_draw_game_over_screen(Game game) {
 
     if (ui_button_ex("Main menu", 20, (Vector2){0, 20}, gp && m == 0,
                      (Vector2){200, 0}, CENTER, CENTER)) {
-      game_reset(game);
+      game_set_state(game, GS_MAIN_MENU);
     }
     if (ui_button_ex("Quit", 20, (Vector2){0, 60}, gp && m == 1,
                      (Vector2){200, 0}, CENTER, CENTER)) {
@@ -521,7 +519,7 @@ void ui_draw_win_screen(Game game) {
 
     if (ui_button_ex("Main menu", 20, (Vector2){0, 45}, gp && m == 0,
                      (Vector2){200, 0}, CENTER, CENTER)) {
-      game_reset(game);
+      game_set_state(game, GS_MAIN_MENU);
     }
     if (ui_button_ex("Quit", 20, (Vector2){0, 85}, gp && m == 1,
                      (Vector2){200, 0}, CENTER, CENTER)) {

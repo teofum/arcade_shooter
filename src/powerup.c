@@ -5,9 +5,7 @@
 #include "assets.h"
 #include "config.h"
 #include "entity.h"
-#include "entity_list.h"
 #include "game.h"
-#include "player.h"
 #include "powerup.h"
 #include "types.h"
 #include "utils.h"
@@ -39,11 +37,11 @@ bool powerup_update(Entity *self, Game game) {
 
   // Accelerate towards player and move
   Vector2 target_velocity = {0, 0};
-  Vector2 player_pos = game->player->position;
+  Vector2 player_pos = game->players[0]->position;
   f32 distance = Vector2Distance(player_pos, self->position);
 
   if (distance < XP_PICKUP_RANGE) {
-    Player *pdata = &game->player->player;
+    Player *pdata = &game->players[0]->player;
     pdata->active_powerup = data->type;
     pdata->powerup_timer = POWERUP_DURATION;
 
