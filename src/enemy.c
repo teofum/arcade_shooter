@@ -206,7 +206,8 @@ bool enemy_update(Entity *self, Game game) {
   enemy_move(self, game, down);
 
   if (data->type == ENEMY_SHOOTER || data->type == ENEMY_MINIBOSS_2) {
-    enemy_fire(self, game, game->players[0]->position);
+    PlayerPosition closest = get_closest_player(game, self->position);
+    enemy_fire(self, game, closest.position);
   }
 
   // Destroy self on reaching the bottom of the screen
@@ -269,8 +270,9 @@ void enemy_draw(Entity *self, Game game) {
 
   // Tank gun
   if (data->type == ENEMY_MINIBOSS_2) {
+    PlayerPosition closest = get_closest_player(game, self->position);
     Vector2 center = Vector2Add(self->position, Vector2Scale(data->size, 0.5f));
-    Vector2 delta = Vector2Subtract(game->players[0]->position, center);
+    Vector2 delta = Vector2Subtract(closest.position, center);
 
     sprite = &assets.boss_tank_gun;
     dest.x += dest.width / 2;
@@ -395,7 +397,8 @@ bool boss_update(Entity *self, Game game) {
   }
   case BOSS_SHOOT_HOMING_1:
   case BOSS_SHOOT_HOMING_2: {
-    enemy_fire(self, game, game->players[0]->position);
+    PlayerPosition closest = get_closest_player(game, self->position);
+    enemy_fire(self, game, closest.position);
 
     if (data->boss_bullet_counter == BOSS_HOMING_BULLETS)
       boss_next_state(data);

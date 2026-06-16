@@ -318,7 +318,7 @@ static void ui_draw_player_crosshair(Player *pdata) {
 }
 
 void ui_draw_game_ui(Game game) {
-  Player *pdata = &game->players[0]->player;
+  Player *pdata = &game->players[game->client.local_player_idx]->player;
 
   ui_begin_frame_ex(full_screen, BLANK, BLANK, (Vector2){20, 20});
   {
@@ -340,7 +340,7 @@ void ui_draw_game_ui(Game game) {
 }
 
 static void ui_draw_level_up_option(Game game, LevelUpOption *option, u32 i) {
-  Player *pdata = &game->players[0]->player;
+  Player *pdata = &game->players[game->client.local_player_idx]->player;
   static char text[30];
 
   f32 button_x = (i + 1) * 220;
@@ -378,8 +378,9 @@ static void ui_draw_level_up_option(Game game, LevelUpOption *option, u32 i) {
     DrawTexturePro(sprite->texture, get_frame_rect(sprite, 0), dest,
                    (Vector2){0, 0}, 0, WHITE);
 
-    ui_text(get_bullet_description(game->players[0], type, level), 10, BLACK,
-            (Vector2){0, 150}, CENTER, START);
+    ui_text(get_bullet_description(game->players[game->client.local_player_idx],
+                                   type, level),
+            10, BLACK, (Vector2){0, 150}, CENTER, START);
   }
   ui_end_frame();
 
@@ -390,7 +391,7 @@ static void ui_draw_level_up_option(Game game, LevelUpOption *option, u32 i) {
 }
 
 void ui_draw_level_up_screen(Game game) {
-  Player *pdata = &game->players[0]->player;
+  Player *pdata = &game->players[game->client.local_player_idx]->player;
 
   static char level_up_str[30];
   sprintf(level_up_str, "Lv. %d -> %d", pdata->level - 1, pdata->level);

@@ -35,7 +35,8 @@ bool xp_gem_update(Entity *self, Game game) {
 
   // Accelerate towards player and move
   Vector2 target_velocity = {0, 0};
-  Vector2 player_pos = game->players[0]->position;
+  PlayerPosition closest = get_closest_player(game, self->position);
+  Vector2 player_pos = closest.position;
   f32 distance = Vector2Distance(player_pos, self->position);
 
   if (distance < XP_PICKUP_RANGE) {

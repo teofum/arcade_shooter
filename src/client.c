@@ -273,7 +273,8 @@ i32 client_update(Game game) {
       }
       break;
     case MSG_LEVEL_UP:
-      game->players[0]->player = client.recvd_msg.level_up.player_state;
+      game->players[game->client.local_player_idx]->player =
+          client.recvd_msg.level_up.player_state;
       game->level_up_menu = true;
       game->level_up_option = -1;
       break;
