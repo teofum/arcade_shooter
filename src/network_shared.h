@@ -11,6 +11,7 @@
 #define MOVE_ENT_COUNT 40
 #define CHANGE_ENT_COUNT 12
 #define UPDATE_ENT_COUNT 8
+#define SYNC_ENT_COUNT 3
 
 #define MESSAGE_BUF_SIZE 128
 #define advance(x) ((x) == MESSAGE_BUF_SIZE - 1 ? 0 : (x) + 1)
@@ -29,6 +30,9 @@ typedef enum {
   MSG_MOVE,
   MSG_CHANGES,
   MSG_UPDATE,
+  MSG_PLAYER_JOIN,
+  MSG_PLAYER_LEAVE,
+  MSG_ENTITY_SYNC,
 
   MSG_INPUT,
   MSG_LEVEL_UP,
@@ -65,6 +69,12 @@ typedef struct UpdateData {
   u8 count;
 } UpdateData;
 
+typedef struct EntitySyncData {
+  Entity entities[SYNC_ENT_COUNT];
+  u8 first;
+  u8 count;
+} EntitySyncData;
+
 typedef struct GameStateData {
   GameState state;
 
@@ -99,7 +109,15 @@ typedef struct ResetData {
 
 typedef struct HelloData {
   u32 player_idx;
+
+  bool game_running;
+  bool players_enabled[MAX_CLIENTS];
+  u32 player_indices[MAX_CLIENTS];
 } HelloData;
+
+typedef struct PlayerChangeData {
+  u32 player_idx;
+} PlayerChangeData;
 
 typedef struct Message {
   MessageType type;
@@ -116,6 +134,8 @@ typedef struct Message {
     LevelUpData level_up;
     ResetData reset;
     HelloData hello;
+    PlayerChangeData player_change;
+    EntitySyncData entity_sync;
   };
 } Message;
 

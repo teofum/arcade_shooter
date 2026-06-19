@@ -17,7 +17,11 @@ EntityList el_create();
 
 Entity *el_add(EntityList el, Entity *entity);
 
+u64 el_indexof(EntityList el, Entity *entity);
+
 Entity *el_get(EntityList el, u32 idx);
+
+void el_set(EntityList el, u32 idx, Entity *entity);
 
 void el_destroy(EntityList el, u32 idx);
 

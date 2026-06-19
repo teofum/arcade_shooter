@@ -17,7 +17,10 @@ int main() {
   while (!WindowShouldClose() && game->state != GS_QUIT) {
     game_update(game);
     server_update(game);
-    game_draw(game);
+
+    if (game->state != GS_RUNNING) {
+      game_draw(game);
+    }
   }
   game_end(game);
 

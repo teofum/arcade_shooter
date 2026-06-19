@@ -60,7 +60,16 @@ Entity *el_add(EntityList el, Entity *entity) {
   return &el->entities[el->size++];
 }
 
+u64 el_indexof(EntityList el, Entity *entity) { return entity - el->entities; }
+
 Entity *el_get(EntityList el, u32 idx) { return &el->entities[idx]; }
+
+void el_set(EntityList el, u32 idx, Entity *entity) {
+  el->entities[idx] = *entity;
+  if (el->size < idx + 1) {
+    el->size = idx + 1;
+  }
+}
 
 void el_destroy(EntityList el, u32 idx) {
   el->entities[idx] = el->entities[--el->size];

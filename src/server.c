@@ -11,6 +11,7 @@
 #include "entity_list.h"
 #include "game.h"
 #include "network_shared.h"
+#include "player.h"
 #include "server.h"
 #include "utils.h"
 
@@ -345,11 +346,63 @@ void server_update(Game game) {
       printf("client\n");
       i32 idx = connect_client(&server.sender_addr);
       game->players_enabled[idx] = true;
+
       Message response = {
           .type = MSG_HELLO,
-          .hello = (HelloData){.player_idx = idx},
+          .hello =
+              (HelloData){
+                  .player_idx = idx,
+                  .game_running = game->state == GS_RUNNING,
+              },
       };
+      if (game->state == GS_RUNNING) {
+        // Create a new player and give them the same XP as player 1
+        Entity *new_player = player_create();
+        new_player->player.xp = game->players[0]->player.xp;
+        game->players[idx] = el_add(game->world, new_player);
+        el_flush_changes(game->world);
+
+        for (u32 i = 0; i < MAX_CLIENTS; i++) {
+          response.hello.players_enabled[i] = game->players_enabled[i];
+          if (game->players_enabled[i]) {
+            response.hello.player_indices[i] =
+                el_indexof(game->world, game->players[i]);
+          }
+        }
+      }
       send_message_to(&response, &server.clients[idx], true);
+
+      if (game->state == GS_RUNNING) {
+        // Sync entities with the new player
+        u32 count = el_size(game->world);
+        printf("sync %u entities\n", count);
+        for (u32 i = 0; i < count; i += SYNC_ENT_COUNT) {
+          u32 local_count = min(count - i, SYNC_ENT_COUNT);
+          Message sync = {
+              .type = MSG_ENTITY_SYNC,
+              .entity_sync =
+                  (EntitySyncData){
+                      .entities = {0},
+                      .first = i,
+                      .count = local_count,
+                  },
+          };
+          for (u32 j = 0; j < local_count; j++) {
+            printf("sync entity %u: %u\n", i + j,
+                   el_get(game->world, i + j)->type);
+            sync.entity_sync.entities[j] = *el_get(game->world, i + j);
+          }
+          send_message_to(&sync, &server.clients[idx], true);
+        }
+
+        // Tell the other players a new player has joined
+        Message join = {
+            .type = MSG_PLAYER_JOIN,
+            .player_change = (PlayerChangeData){.player_idx = idx},
+        };
+        broadcast_message(&join, true);
+      }
+
       break;
     }
     case MSG_GOODBYE: {

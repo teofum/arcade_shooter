@@ -16,6 +16,7 @@
 #include "game.h"
 #include "laser.h"
 #include "network_shared.h"
+#include "player.h"
 #include "powerup.h"
 #include "types.h"
 #include "utils.h"
@@ -163,10 +164,29 @@ i32 client_update(Game game) {
     }
 
     switch (client.recvd_msg.type) {
-    case MSG_HELLO:
+    case MSG_HELLO: {
       game->client.local_player_idx = client.recvd_msg.hello.player_idx;
       printf("i am player %u\n", game->client.local_player_idx);
+
+      // If we joined a game in progress
+      if (client.recvd_msg.hello.game_running) {
+        // Start game and temporarily set state to main menu until entities are
+        // synced
+        game_reset(game);
+        game->state = GS_MAIN_MENU;
+
+        // Sync player data
+        for (u32 i = 0; i < MAX_CLIENTS; i++) {
+          game->players_enabled[i] = client.recvd_msg.hello.players_enabled[i];
+          if (game->players_enabled[i]) {
+            game->players[i] =
+                el_get(game->world, client.recvd_msg.hello.player_indices[i]);
+          }
+        }
+      }
+
       break;
+    }
     case MSG_INPUT:
       break;
     case MSG_HEARTBEAT:
@@ -195,6 +215,16 @@ i32 client_update(Game game) {
       game->players[client.recvd_msg.player.player_idx]->player =
           client.recvd_msg.player.player_data;
       break;
+    case MSG_ENTITY_SYNC: {
+      EntitySyncData *sync = &client.recvd_msg.entity_sync;
+      printf("sync entities %u-%u\n", sync->first,
+             sync->first + sync->count - 1);
+      for (u32 i = 0; i < sync->count; i++) {
+        printf("sync entity %u: %u\n", i + sync->first, sync->entities[i].type);
+        el_set(game->world, sync->first + i, &sync->entities[i]);
+      }
+      break;
+    }
     case MSG_MOVE:
       printf("move %u entities\n", client.recvd_msg.move.count);
       for (u32 i = 0; i < client.recvd_msg.move.count; i++) {
@@ -278,6 +308,15 @@ i32 client_update(Game game) {
       game->level_up_menu = true;
       game->level_up_option = -1;
       break;
+    case MSG_PLAYER_JOIN: {
+      u32 idx = client.recvd_msg.player_change.player_idx;
+      if (idx != game->client.local_player_idx) {
+        Entity *new_player = player_create();
+        new_player->player.xp = game->players[0]->player.xp;
+        game->players[idx] = el_add(game->world, new_player);
+      }
+      break;
+    }
     case MSG_END_GAME:
       game_end(game);
       break;
