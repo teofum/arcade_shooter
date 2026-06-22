@@ -209,6 +209,13 @@ i32 client_update(Game game) {
       game->boss_timer = client.recvd_msg.game.boss_timer;
       game->boss_idx = client.recvd_msg.game.boss_idx;
       game->score = client.recvd_msg.game.score;
+
+      for (u32 i = 0; i < MAX_CLIENTS; i++) {
+        if (game->players_enabled[i] &&
+            !client.recvd_msg.game.players_enabled[i]) {
+          game_remove_player(game, i);
+        }
+      }
       break;
     case MSG_PLAYER_STATE:
       printf("player %u state\n", client.recvd_msg.player.player_idx);

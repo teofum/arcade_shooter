@@ -375,6 +375,14 @@ void game_update_client(Game game) {
   game_update_camera(game);
 }
 
+void game_remove_player(Game game, u32 idx) {
+  if (game->players_enabled[idx]) {
+    game->players_enabled[idx] = false;
+    el_destroy(game->world, el_indexof(game->world, game->players[idx]));
+    game->players[idx] = NULL;
+  }
+}
+
 void game_draw(Game game) {
   BeginDrawing();
   ClearBackground((Color){0, 128, 128, 255});

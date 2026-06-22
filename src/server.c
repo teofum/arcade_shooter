@@ -104,11 +104,14 @@ static i32 connect_client(struct sockaddr_in *addr) {
   return -1;
 }
 
-static i32 disconnect_client(struct sockaddr_in *addr) {
+static i32 disconnect_client(struct sockaddr_in *addr, Game game) {
   for (u32 i = 0; i < MAX_CLIENTS; i++) {
     Connection *cli = &server.clients[i];
     if (is_connected(cli) && cmp_addr(&cli->addr, addr)) {
       cli->last_seen = 0;
+      if (game != NULL) {
+        game_remove_player(game, i);
+      }
       return i;
     }
   }
@@ -122,7 +125,9 @@ static void cleanup_clients(u64 frame_time, Game game) {
     if (is_connected(cli) && frame_time - cli->last_seen > SERVER_TIMEOUT) {
       printf("Disconnect client %d: connection timed out\n", i);
       cli->last_seen = 0;
-      game->players_enabled[i] = false;
+      if (game != NULL) {
+        game_remove_player(game, i);
+      }
     }
   }
 }
@@ -141,7 +146,7 @@ static void send_message_impl(Message *msg, Connection *cli) {
          sizeof(cli->addr));
 }
 
-static void send_message(Message *msg, Connection *cli) {
+static void send_message(Message *msg, Connection *cli, Game game) {
   // If there are no queued up priority messages, send
   if (!has_queued_msgs(&cli->queue)) {
     send_message_impl(msg, cli);
@@ -155,27 +160,28 @@ static void send_message(Message *msg, Connection *cli) {
     } else {
       // The queue is full, fail and disconnect the client
       printf("fatal: queue full, client disconnected\n");
-      disconnect_client(&cli->addr);
+      disconnect_client(&cli->addr, game);
     }
   }
 }
 
-static void broadcast_message(Message *msg, bool priority) {
+static void broadcast_message(Message *msg, bool priority, Game game) {
   msg->seq = ++server.seq;
   msg->priority = priority;
 
   for (u32 i = 0; i < MAX_CLIENTS; i++) {
     Connection *cli = &server.clients[i];
     if (is_connected(cli))
-      send_message(msg, cli);
+      send_message(msg, cli, game);
   }
 }
 
-static void send_message_to(Message *msg, Connection *cli, bool priority) {
+static void send_message_to(Message *msg, Connection *cli, bool priority,
+                            Game game) {
   msg->seq = ++server.seq;
   msg->priority = priority;
 
-  send_message(msg, cli);
+  send_message(msg, cli, game);
 }
 
 static bool recv_message() {
@@ -191,7 +197,7 @@ void server_update(Game game) {
   // Send heartbeat
   if (frame_time - server.last_heartbeat_sent > SERVER_HB_INTERVAL) {
     Message heartbeat = {.type = MSG_HEARTBEAT};
-    broadcast_message(&heartbeat, false);
+    broadcast_message(&heartbeat, false, game);
     server.last_heartbeat_sent = frame_time;
   }
 
@@ -204,7 +210,7 @@ void server_update(Game game) {
       };
       memcpy(reset.reset.players_enabled, game->players_enabled,
              MAX_CLIENTS * sizeof(bool));
-      broadcast_message(&reset, true);
+      broadcast_message(&reset, true, game);
     }
     server.game_running = true;
   } else {
@@ -217,6 +223,7 @@ void server_update(Game game) {
       .game =
           (GameStateData){
               .state = game->state,
+              .players_enabled = {0},
               .total_time = game->total_time,
               .delta_time = game->delta_time,
               .boss_idx = game->boss_idx,
@@ -227,7 +234,9 @@ void server_update(Game game) {
               .menu_selected_option = game->menu_selected_option,
           },
   };
-  broadcast_message(&game_state, false);
+  memcpy(game_state.game.players_enabled, game->players_enabled,
+         MAX_CLIENTS * sizeof(bool));
+  broadcast_message(&game_state, false, game);
 
   if (game->state == GS_RUNNING) {
     for (u32 i = 0; i < MAX_CLIENTS; i++) {
@@ -240,7 +249,7 @@ void server_update(Game game) {
                     .player_idx = i,
                 },
         };
-        broadcast_message(&player_state, false);
+        broadcast_message(&player_state, false, game);
       }
     }
 
@@ -257,7 +266,7 @@ void server_update(Game game) {
       for (u32 j = 0; j < local_count; j++) {
         change.changes.changes[j] = changes[i + j];
       }
-      broadcast_message(&change, true);
+      broadcast_message(&change, true, game);
     }
 
     u32 count = el_size(game->world);
@@ -273,7 +282,7 @@ void server_update(Game game) {
             .position = el_get(game->world, i + j)->position,
         };
       }
-      broadcast_message(&move, false);
+      broadcast_message(&move, false, game);
     }
 
     Message update = {
@@ -290,14 +299,14 @@ void server_update(Game game) {
         };
         if (count == UPDATE_ENT_COUNT) {
           update.updates.count = count;
-          broadcast_message(&update, false);
+          broadcast_message(&update, false, game);
           count = 0;
         }
       }
     }
     if (count > 0) {
       update.updates.count = count;
-      broadcast_message(&update, false);
+      broadcast_message(&update, false, game);
     }
 
     for (u32 i = 0; i < MAX_CLIENTS; i++) {
@@ -308,7 +317,7 @@ void server_update(Game game) {
             .type = MSG_LEVEL_UP,
             .level_up = (LevelUpData){.player_state = game->players[i]->player},
         };
-        send_message_to(&level_up, &server.clients[i], true);
+        send_message_to(&level_up, &server.clients[i], true, game);
       }
     }
   }
@@ -370,7 +379,7 @@ void server_update(Game game) {
           }
         }
       }
-      send_message_to(&response, &server.clients[idx], true);
+      send_message_to(&response, &server.clients[idx], true, game);
 
       if (game->state == GS_RUNNING) {
         // Sync entities with the new player
@@ -392,7 +401,7 @@ void server_update(Game game) {
                    el_get(game->world, i + j)->type);
             sync.entity_sync.entities[j] = *el_get(game->world, i + j);
           }
-          send_message_to(&sync, &server.clients[idx], true);
+          send_message_to(&sync, &server.clients[idx], true, game);
         }
 
         // Tell the other players a new player has joined
@@ -400,15 +409,14 @@ void server_update(Game game) {
             .type = MSG_PLAYER_JOIN,
             .player_change = (PlayerChangeData){.player_idx = idx},
         };
-        broadcast_message(&join, true);
+        broadcast_message(&join, true, game);
       }
 
       break;
     }
     case MSG_GOODBYE: {
       printf("bye\n");
-      i32 idx = disconnect_client(&server.sender_addr);
-      game->players_enabled[idx] = false;
+      i32 idx = disconnect_client(&server.sender_addr, game);
       break;
     }
     case MSG_HEARTBEAT:
@@ -419,7 +427,7 @@ void server_update(Game game) {
       if (ack_msg(&sender->queue, server.recvd_msg.seq) < 0) {
         // Client ACKed a message that it shouldn't have received yet
         // Something is very wrong, disconnect the client
-        disconnect_client(&server.sender_addr);
+        disconnect_client(&server.sender_addr, game);
       }
       break;
     case MSG_INPUT:
@@ -472,19 +480,19 @@ void server_start_game(Game game) {
   Message reset = {
       .type = MSG_RESET,
   };
-  broadcast_message(&reset, true);
+  broadcast_message(&reset, true, game);
 }
 
 void server_end_game(Game game) {
   Message end_game = {
       .type = MSG_END_GAME,
   };
-  broadcast_message(&end_game, true);
+  broadcast_message(&end_game, true, game);
 }
 
 void server_shutdown() {
   Message goodbye = {.type = MSG_GOODBYE};
-  broadcast_message(&goodbye, true);
+  broadcast_message(&goodbye, true, NULL);
 
   close(server.sock);
 }

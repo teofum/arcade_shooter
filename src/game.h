@@ -81,6 +81,8 @@ void game_process_input(Game game);
 void game_update(Game game);
 void game_update_client(Game game);
 
+void game_remove_player(Game game, u32 idx);
+
 void game_draw(Game game);
 
 void game_end(Game game);
