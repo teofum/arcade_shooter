@@ -212,6 +212,21 @@ void ui_draw_main_menu(Game game) {
   ui_end_frame();
 }
 
+static void ui_draw_other_player_health(Game game) {
+  static char player_text[10] = {0};
+
+  f32 y = 0;
+  for (u32 i = 0; i < MAX_CLIENTS; i++) {
+    if (game->players[i] != NULL && i != game->client.local_player_idx) {
+      sprintf(player_text, "P%u", i + 1);
+      Player *pdata = &game->players[i]->player;
+      ui_draw_bar(0, y, 100, 10, (f32)pdata->health / pdata->max_health,
+                  player_text, DARKGRAY, RED, START, CENTER);
+      y += 15;
+    }
+  }
+}
+
 static void ui_draw_health_bar(Player *pdata) {
   static char health_text[10] = {0};
   sprintf(health_text, "%3d/%3d", pdata->health, pdata->max_health);
@@ -334,6 +349,7 @@ void ui_draw_game_ui(Game game) {
     ui_draw_powerup(pdata);
 
     ui_draw_progress(game);
+    ui_draw_other_player_health(game);
 
     ui_draw_player_crosshair(pdata);
   }
