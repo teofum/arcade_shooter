@@ -6,6 +6,7 @@
 #include "config.h"
 #include "game.h"
 #include "server.h"
+#include "ui.h"
 
 void init();
 void cleanup();
@@ -18,9 +19,13 @@ int main() {
     game_update(game);
     server_update(game);
 
-    if (game->state != GS_RUNNING) {
-      game_draw(game);
+    BeginDrawing();
+    ClearBackground((Color){0, 128, 128, 255});
+
+    if (game->state == GS_MAIN_MENU) {
+      ui_draw_main_menu(game);
     }
+    EndDrawing();
   }
   game_end(game);
 

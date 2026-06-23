@@ -213,7 +213,7 @@ void ui_draw_main_menu(Game game) {
 }
 
 static void ui_draw_health_bar(Player *pdata) {
-  static char health_text[10];
+  static char health_text[10] = {0};
   sprintf(health_text, "%3d/%3d", pdata->health, pdata->max_health);
 
   ui_draw_bar(0, 20, 200, 20, (f32)pdata->health / pdata->max_health,
@@ -221,7 +221,7 @@ static void ui_draw_health_bar(Player *pdata) {
 }
 
 static void ui_draw_xp_bar(Player *pdata) {
-  static char level_text[10];
+  static char level_text[10] = {0};
   sprintf(level_text, "Lv. %d", pdata->level);
 
   ui_draw_bar(0, 0, 200, 10, (f32)pdata->xp / pdata->to_next_level, level_text,
@@ -318,6 +318,7 @@ static void ui_draw_player_crosshair(Player *pdata) {
 }
 
 void ui_draw_game_ui(Game game) {
+  printf("ui player %d\n", game->client.local_player_idx);
   Player *pdata = &game->players[game->client.local_player_idx]->player;
 
   ui_begin_frame_ex(full_screen, BLANK, BLANK, (Vector2){20, 20});
