@@ -355,16 +355,16 @@ void ui_draw_game_over_screen(Game game) {
 
   ui_begin_frame(full_screen, overlay_bg);
   {
-    ui_text("You Died", 60, WHITE, (Vector2){0, -60}, CENTER, CENTER);
+    ui_text("Game Over", 60, WHITE, (Vector2){0, -60}, CENTER, CENTER);
     ui_text(score_str, 20, WHITE, (Vector2){0, -20}, CENTER, CENTER);
 
-    if (ui_button_ex("Main menu", 20, (Vector2){0, 20}, gp && m == 0,
+    if (ui_button_ex("Disconect", 20, (Vector2){0, 20}, gp && m == 0,
                      (Vector2){200, 0}, CENTER, CENTER)) {
-      game_set_state(game, GS_MAIN_MENU);
+      client_disconnect();
     }
     if (ui_button_ex("Quit", 20, (Vector2){0, 60}, gp && m == 1,
                      (Vector2){200, 0}, CENTER, CENTER)) {
-      game->state = GS_QUIT;
+      game_set_state(game, GS_QUIT);
     }
   }
   ui_end_frame();
@@ -383,13 +383,13 @@ void ui_draw_win_screen(Game game) {
     ui_text("Malware Vanquished", 20, WHITE, (Vector2){0, -15}, CENTER, CENTER);
     ui_text(score_str, 20, WHITE, (Vector2){0, 15}, CENTER, CENTER);
 
-    if (ui_button_ex("Main menu", 20, (Vector2){0, 45}, gp && m == 0,
+    if (ui_button_ex("Disconect", 20, (Vector2){0, 45}, gp && m == 0,
                      (Vector2){200, 0}, CENTER, CENTER)) {
-      game_set_state(game, GS_MAIN_MENU);
+      client_disconnect();
     }
     if (ui_button_ex("Quit", 20, (Vector2){0, 85}, gp && m == 1,
                      (Vector2){200, 0}, CENTER, CENTER)) {
-      game->state = GS_QUIT;
+      game_set_state(game, GS_QUIT);
     }
   }
   ui_end_frame();

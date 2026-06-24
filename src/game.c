@@ -378,6 +378,16 @@ void game_remove_player(Game game, u32 idx) {
   if (game->players_enabled[idx]) {
     game->players_enabled[idx] = false;
     if (game->players[idx] != NULL) {
+      // Destroy any bullets from this player
+      EntityListIterator it = el_iter(game->world);
+      Entity *e;
+      while ((e = eli_next(it))) {
+        if (e->type == ENT_BULLET && e->bullet.player == game->players[idx]) {
+          eli_destroy_current(it);
+        }
+      }
+
+      // Destroy player
       el_destroy(game->world, el_indexof(game->world, game->players[idx]));
       game->players[idx] = NULL;
     }

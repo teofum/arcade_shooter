@@ -201,7 +201,19 @@ void server_update(Game game) {
     server.last_heartbeat_sent = frame_time;
   }
 
-  // Game reset on entering main menu
+  // Return to menu when all players disconnect
+  if (game->state != GS_MAIN_MENU) {
+    bool players_connected = false;
+    for (u32 i = 0; i < MAX_CLIENTS && !players_connected; i++) {
+      players_connected |= game->players_enabled[i];
+    }
+
+    if (!players_connected) {
+      game_set_state(game, GS_MAIN_MENU);
+    }
+  }
+
+  // Game reset on game start
   if (game->state == GS_RUNNING) {
     if (!server.game_running) {
       Message reset = {

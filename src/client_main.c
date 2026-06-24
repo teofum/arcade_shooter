@@ -20,10 +20,12 @@ int main() {
 
   Game game = game_init();
   while (!WindowShouldClose() && game->state != GS_QUIT) {
-    while (!client_is_connected() && game->state != GS_QUIT) {
+    while (!client_is_connected() && !WindowShouldClose() &&
+           game->state != GS_QUIT) {
       ui_draw_main_menu(game);
     }
-    while (client_is_connected() && game->state != GS_QUIT) {
+    while (client_is_connected() && !WindowShouldClose() &&
+           game->state != GS_QUIT) {
       game_process_input(game);
 
       if (client_update(game) < 0)
