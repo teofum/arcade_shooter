@@ -45,7 +45,7 @@ add_executable(${PROJECT_NAME}
   src/laser.h src/laser.c
   src/physics.h src/physics.c
   src/game.h src/game.c
-  src/ui.h src/ui.c
+  src/ui.h src/ui.c src/ui_server.c
   src/utils.h src/utils.c
   src/assets.h src/assets.c
   src/server.h src/server.c
@@ -76,8 +76,8 @@ add_executable(${PROJECT_NAME}_client
   src/explosion.h src/explosion.c
   src/laser.h src/laser.c
   src/physics.h src/physics.c
-  src/game.h src/game.c
-  src/ui.h src/ui.c
+  src/game.h src/game.c src/game_draw.c
+  src/ui.h src/ui.c src/ui_client.c
   src/utils.h src/utils.c
   src/assets.h src/assets.c
   src/client.h src/client.c

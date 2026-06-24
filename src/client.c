@@ -44,6 +44,9 @@ i32 client_init() {
 
   client = (ClientState){
       .sock = sock,
+      .last_heartbeat_sent = 0,
+      .seq = 0,
+      .server = {0},
       .recvd_msg = {0},
   };
 
@@ -102,8 +105,10 @@ i32 client_connect(const char *address) {
           },
       .last_seen = now(),
       .queue = {0},
+      .last_seq_recvd = 0,
   };
   inet_pton(AF_INET, address, &client.server.addr.sin_addr);
+  client.seq = 0;
 
   printf("Connecting to server at %s...\n", address);
 
@@ -360,10 +365,16 @@ i32 client_update(Game game) {
 void client_disconnect() {
   Message goodbye = {.type = MSG_GOODBYE};
   send_message(&goodbye, false);
+
+  client.server.last_seen = 0;
 }
 
 void client_shutdown() {
-  client_disconnect();
+  if (client_is_connected()) {
+    client_disconnect();
+  }
 
   close(client.sock);
 }
+
+bool client_is_connected() { return client.server.last_seen != 0; }

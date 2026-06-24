@@ -19,13 +19,13 @@ int main() {
     game_update(game);
     server_update(game);
 
-    BeginDrawing();
-    ClearBackground((Color){0, 128, 128, 255});
-
     if (game->state == GS_MAIN_MENU) {
-      ui_draw_main_menu(game);
+      ui_draw_server_menu(game);
+    } else {
+      BeginDrawing();
+      ClearBackground((Color){0, 128, 128, 255});
+      EndDrawing();
     }
-    EndDrawing();
   }
   game_end(game);
 
@@ -38,7 +38,7 @@ void init() {
   InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "ArcadeShooter");
   SetTargetFPS(TARGET_FPS);
 
-  HideCursor();
+  // HideCursor();
   SetExitKey(0); // Stop "esc" key from immediately quitting the game
 
   InitAudioDevice();

@@ -20,4 +20,6 @@ void client_disconnect();
 
 void client_shutdown();
 
+bool client_is_connected();
+
 #endif

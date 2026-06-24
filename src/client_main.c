@@ -10,6 +10,7 @@
 #include "config.h"
 #include "game.h"
 #include "network_shared.h"
+#include "ui.h"
 
 void init();
 void cleanup();
@@ -18,14 +19,19 @@ int main() {
   init();
 
   Game game = game_init();
-  while (!WindowShouldClose()) {
-    game_process_input(game);
+  while (!WindowShouldClose() && game->state != GS_QUIT) {
+    while (!client_is_connected() && game->state != GS_QUIT) {
+      ui_draw_main_menu(game);
+    }
+    while (client_is_connected() && game->state != GS_QUIT) {
+      game_process_input(game);
 
-    if (client_update(game) < 0)
-      break;
+      if (client_update(game) < 0)
+        break;
 
-    game_update_client(game);
-    game_draw(game);
+      game_update_client(game);
+      game_draw(game);
+    }
   }
   game_end(game);
 
@@ -44,7 +50,6 @@ void init() {
   load_assets();
 
   client_init();
-  client_connect("127.0.0.1");
 }
 
 void cleanup() {
