@@ -395,6 +395,8 @@ void game_remove_player(Game game, u32 idx) {
 }
 
 void game_end(Game game) {
-  el_free(game->world);
+  if (game->world != NULL) {
+    el_free(game->world);
+  }
   free(game);
 }

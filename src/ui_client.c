@@ -54,8 +54,8 @@ void ui_draw_main_menu(Game game) {
 void ui_draw_lobby_screen(Game game) {
   ui_begin_frame(full_screen, BLACK);
   {
-    ui_text("Waiting for game to start", 30, WHITE, (Vector2){0, 0}, CENTER,
-            CENTER);
+    ui_text("Waiting for game to start", 30, WHITE, (Vector2){0, 100}, CENTER,
+            START);
   }
   ui_end_frame();
 }
