@@ -15,6 +15,13 @@
 #include "types.h"
 #include "utils.h"
 
+Color player_colors[MAX_CLIENTS] = {
+    RED,
+    BLUE,
+    GREEN,
+    ORANGE,
+};
+
 // Imaginary bottom wall to prevent player going OOB
 static Rectangle bottom_wall = {-FIELD_WIDTH / 2.0f, 100, FIELD_WIDTH, 100};
 

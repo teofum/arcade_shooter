@@ -9,6 +9,7 @@
 #include "config.h"
 #include "entity.h"
 #include "game.h"
+#include "player.h"
 #include "powerup.h"
 #include "types.h"
 #include "ui.h"
@@ -52,10 +53,39 @@ void ui_draw_main_menu(Game game) {
 }
 
 void ui_draw_lobby_screen(Game game) {
+  static char player_text[10];
   ui_begin_frame(full_screen, BLACK);
   {
-    ui_text("Waiting for game to start", 30, WHITE, (Vector2){0, 100}, CENTER,
+    ui_text("Waiting for game to start", 30, WHITE, (Vector2){0, 80}, CENTER,
             START);
+
+    for (u32 i = 0; i < MAX_CLIENTS; i++) {
+      bool connected = game->players_enabled[i];
+      Color color = connected ? GRAY : DARKGRAY;
+      Color border_color = connected ? player_colors[i] : GRAY;
+
+      ui_begin_frame_ex(ui_align(0, 130 + 80 * i, 500, 60, CENTER, START),
+                        color, border_color, (Vector2){20, 5});
+      {
+        if (connected) {
+          snprintf(player_text, 10, "Player %u", i);
+          ui_text(player_text, 30, player_colors[i], (Vector2){0, 0}, START,
+                  CENTER);
+          if (i == game->client.local_player_idx) {
+            ui_text("(You)", 20, WHITE, (Vector2){0, 0}, END, CENTER);
+          }
+        } else {
+          ui_text("No player connected", 20, GRAY, (Vector2){0, 0}, START,
+                  CENTER);
+        }
+      }
+      ui_end_frame();
+    }
+
+    if (ui_button_ex("Disconnect", 20, (Vector2){0, 500}, false,
+                     (Vector2){200, 0}, CENTER, START)) {
+      client_disconnect();
+    }
   }
   ui_end_frame();
 }

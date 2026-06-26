@@ -222,6 +222,9 @@ i32 client_update(Game game) {
           game->players_enabled[i] = false;
           game->players[i] = NULL;
         }
+        if (game->state == GS_MAIN_MENU) {
+          game->players_enabled[i] = client.recvd_msg.game.players_enabled[i];
+        }
       }
       break;
     case MSG_PLAYER_STATE:
