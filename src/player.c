@@ -30,8 +30,8 @@ static Player player_init_data() {
       .direction = (Vector2){0, 0},
       .crosshair = (Vector2){0, 0},
 
-      .health = 10,
-      .max_health = 10,
+      .health = 100,
+      .max_health = 100,
       .base_damage = 5,
       .move_speed = PLAYER_SPEED,
 

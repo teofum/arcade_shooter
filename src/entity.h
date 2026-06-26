@@ -19,6 +19,8 @@ typedef enum {
   ENT_ENEMY_BULLET,
 } EntityType;
 
+extern const char *entity_type_name[];
+
 typedef enum {
   BULLET_NONE = 0,
   BULLET_NORMAL = 0,

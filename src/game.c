@@ -377,7 +377,9 @@ void game_update_client(Game game) {
 void game_remove_player(Game game, u32 idx) {
   if (game->players_enabled[idx]) {
     game->players_enabled[idx] = false;
+    printf("destroying player %u\n", idx);
     if (game->players[idx] != NULL) {
+      printf("destroying player %u entity\n", idx);
       // Destroy any bullets from this player
       EntityListIterator it = el_iter(game->world);
       Entity *e;
@@ -388,7 +390,10 @@ void game_remove_player(Game game, u32 idx) {
       }
 
       // Destroy player
-      el_destroy(game->world, el_indexof(game->world, game->players[idx]));
+      u32 entity_idx = el_indexof(game->world, game->players[idx]);
+      printf("destroying entity %u (%s)\n", entity_idx,
+             entity_type_name[el_get(game->world, entity_idx)->type]);
+      el_destroy(game->world, entity_idx);
       game->players[idx] = NULL;
     }
   }

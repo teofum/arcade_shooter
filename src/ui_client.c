@@ -65,7 +65,8 @@ static void ui_draw_other_player_health(Game game) {
 
   f32 y = 0;
   for (u32 i = 0; i < MAX_CLIENTS; i++) {
-    if (game->players[i] != NULL && i != game->client.local_player_idx) {
+    if (game->players_enabled[i] && game->players[i] != NULL &&
+        i != game->client.local_player_idx) {
       sprintf(player_text, "P%u", i + 1);
       Player *pdata = &game->players[i]->player;
       ui_draw_bar(0, y, 100, 10, (f32)pdata->health / pdata->max_health,

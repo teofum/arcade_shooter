@@ -218,7 +218,9 @@ i32 client_update(Game game) {
       for (u32 i = 0; i < MAX_CLIENTS; i++) {
         if (game->players_enabled[i] &&
             !client.recvd_msg.game.players_enabled[i]) {
-          game_remove_player(game, i);
+          printf("player %u left\n", i);
+          game->players_enabled[i] = false;
+          game->players[i] = NULL;
         }
       }
       break;
@@ -310,7 +312,21 @@ i32 client_update(Game game) {
         if (ent->type == ENT_ENEMY) {
           ent->enemy = update.enemy;
         } else {
-          assert(false && "Received update for an entity that it not an enemy");
+          printf("Fatal: received update %u for an entity of type %s\n", i,
+                 entity_type_name[ent->type]);
+          printf("Entities:\n");
+          EntityListIterator it = el_iter(game->world);
+          Entity *e;
+          u32 j = 0;
+          while ((e = eli_next(it))) {
+            printf("  %u: %s\n", j++, entity_type_name[e->type]);
+          }
+          printf("Updates:\n");
+          for (u32 j = 0; j < client.recvd_msg.updates.count; j++) {
+            EntityUpdateData update = client.recvd_msg.updates.updates[j];
+            printf("  ent %u\n", update.idx);
+          }
+          assert(false);
         }
       }
       break;
@@ -322,11 +338,16 @@ i32 client_update(Game game) {
       break;
     case MSG_PLAYER_JOIN: {
       u32 idx = client.recvd_msg.player_change.player_idx;
+      printf("player %u joined\n", idx);
       if (idx != game->client.local_player_idx) {
         Entity *new_player = player_create();
         new_player->player.xp = game->players[0]->player.xp;
         game->players[idx] = el_add(game->world, new_player);
+        game->players_enabled[idx] = true;
       }
+      break;
+    }
+    case MSG_PLAYER_LEAVE: {
       break;
     }
     case MSG_END_GAME:

@@ -14,6 +14,19 @@
 #include "wall.h"
 #include "xp_gem.h"
 
+const char *entity_type_name[] = {
+    [ENT_PLAYER] = "player",
+    [ENT_BULLET] = "bullet",
+    [ENT_WALL] = "wall",
+    [ENT_ENEMY] = "enemy",
+    [ENT_DMG_NUMBER] = "dmg_number",
+    [ENT_XP_GEM] = "xp_gem",
+    [ENT_POWERUP] = "powerup",
+    [ENT_EXPLOSION] = "explosion",
+    [ENT_LASER] = "laser",
+    [ENT_ENEMY_BULLET] = "enemy_bullet",
+};
+
 static EntityUpdateFunction ent_update_dispatch[] = {
     [ENT_PLAYER] = player_update,
     [ENT_BULLET] = bullet_update,
