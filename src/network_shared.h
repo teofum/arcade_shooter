@@ -18,6 +18,7 @@
 
 #define ENABLE_PACKET_LOSS 0
 #define PACKET_LOSS_RATE 0.3
+#define CONNECTION_TIMEOUT 1000
 
 typedef enum {
   MSG_HELLO,

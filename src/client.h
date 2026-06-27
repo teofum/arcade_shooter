@@ -12,7 +12,7 @@
 
 i32 client_init();
 
-i32 client_connect(const char *address);
+i32 client_connect(const char *address, Game game);
 
 i32 client_update(Game game);
 

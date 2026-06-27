@@ -96,7 +96,7 @@ static bool recv_message() {
   return recvd_bytes > 0;
 }
 
-i32 client_connect(const char *address) {
+i32 client_connect(const char *address, Game game) {
   client.server = (Connection){
       .addr =
           (struct sockaddr_in){
@@ -115,9 +115,49 @@ i32 client_connect(const char *address) {
   Message greeting = {.type = MSG_HELLO};
   send_message(&greeting, false);
 
-  printf("Connected\n");
+  u64 connect_time = now();
+  bool connected = false;
+  while (now() - connect_time < CONNECTION_TIMEOUT && !connected) {
+    if (recv_message() && client.recvd_msg.type == MSG_HELLO) {
+      if (client.recvd_msg.priority) {
+        Message ack = {.type = MSG_ACK, .seq = client.recvd_msg.seq};
+        send_message_impl(&ack);
+      }
 
-  return 0;
+      client.server.last_seq_recvd = client.recvd_msg.seq;
+
+      game->client.local_player_idx = client.recvd_msg.hello.player_idx;
+      printf("i am player %u\n", game->client.local_player_idx);
+
+      // If we joined a game in progress
+      if (client.recvd_msg.hello.game_running) {
+        // Start game and temporarily set state to main menu until entities are
+        // synced
+        game_reset(game);
+        game->state = GS_MAIN_MENU;
+
+        // Sync player data
+        for (u32 i = 0; i < MAX_CLIENTS; i++) {
+          game->players_enabled[i] = client.recvd_msg.hello.players_enabled[i];
+          if (game->players_enabled[i]) {
+            game->players[i] =
+                el_get(game->world, client.recvd_msg.hello.player_indices[i]);
+          }
+        }
+      }
+
+      connected = true;
+    }
+  }
+
+  if (connected) {
+    printf("Connected\n");
+    return 0;
+  } else {
+    printf("Connection failed\n");
+    client.server = (Connection){0};
+    return -1;
+  }
 }
 
 i32 client_update(Game game) {
@@ -170,26 +210,7 @@ i32 client_update(Game game) {
 
     switch (client.recvd_msg.type) {
     case MSG_HELLO: {
-      game->client.local_player_idx = client.recvd_msg.hello.player_idx;
-      printf("i am player %u\n", game->client.local_player_idx);
-
-      // If we joined a game in progress
-      if (client.recvd_msg.hello.game_running) {
-        // Start game and temporarily set state to main menu until entities are
-        // synced
-        game_reset(game);
-        game->state = GS_MAIN_MENU;
-
-        // Sync player data
-        for (u32 i = 0; i < MAX_CLIENTS; i++) {
-          game->players_enabled[i] = client.recvd_msg.hello.players_enabled[i];
-          if (game->players_enabled[i]) {
-            game->players[i] =
-                el_get(game->world, client.recvd_msg.hello.player_indices[i]);
-          }
-        }
-      }
-
+      printf("redundant hello\n");
       break;
     }
     case MSG_INPUT:

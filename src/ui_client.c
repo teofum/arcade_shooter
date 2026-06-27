@@ -48,7 +48,7 @@ void ui_draw_main_menu(Game game) {
     if (ui_button_ex("Connect to server", 20,
                      (Vector2){WINDOW_WIDTH / 2.0f + 100, 50}, gp && m == 0,
                      (Vector2){200, 0}, START, CENTER)) {
-      client_connect(addr);
+      client_connect(addr, game);
     }
     if (ui_button_ex("Quit", 20, (Vector2){WINDOW_WIDTH / 2.0f + 100, 90},
                      gp && m == 1, (Vector2){200, 0}, START, CENTER)) {
