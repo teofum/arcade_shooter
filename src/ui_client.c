@@ -24,6 +24,9 @@ void ui_draw_main_menu(Game game) {
   BeginDrawing();
   ClearBackground((Color){0, 128, 128, 255});
 
+  static char addr[20];
+  static bool focused = false;
+
   ui_begin_frame(full_screen, WHITE);
   {
     DrawTexturePro(assets.title_bg, (Rectangle){0, 0, 2160, 1440}, full_screen,
@@ -40,14 +43,22 @@ void ui_draw_main_menu(Game game) {
     if (ui_button_ex("Connect to server", 20,
                      (Vector2){WINDOW_WIDTH / 2.0f + 100, 0}, gp && m == 0,
                      (Vector2){200, 0}, START, CENTER)) {
-      client_connect("127.0.0.1");
+      client_connect(addr);
     }
     if (ui_button_ex("Quit", 20, (Vector2){WINDOW_WIDTH / 2.0f + 100, 40},
                      gp && m == 1, (Vector2){200, 0}, START, CENTER)) {
       game_set_state(game, GS_QUIT);
     }
+
+    ui_text_input(addr, 20, 20, WINDOW_WIDTH / 2.0f + 100, 80, 200, &focused,
+                  START, CENTER);
   }
   ui_end_frame();
+
+  // TODO better mouse cursor
+  if (!IsGamepadAvailable(0)) {
+    DrawCircleV(GetMousePosition(), 3, GREEN);
+  }
 
   EndDrawing();
 }

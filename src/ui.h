@@ -49,6 +49,9 @@ void ui_draw_bar(f32 x, f32 y, f32 w, f32 h, f32 full, const char *text,
                  Color bg_color, Color bar_color, Alignment align_x,
                  Alignment align_y);
 
+void ui_text_input(char *text, u32 len, f32 size, f32 x, f32 y, f32 w,
+                   bool *focused, Alignment align_x, Alignment align_y);
+
 // Main menu
 void ui_draw_main_menu(Game game);
 void ui_draw_server_menu(Game game);

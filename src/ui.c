@@ -2,6 +2,7 @@
 #include <raylib.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "config.h"
 #include "types.h"
@@ -177,6 +178,44 @@ void ui_draw_bar(f32 x, f32 y, f32 w, f32 h, f32 full, const char *text,
       ui_text(text, h, WHITE, (Vector2){5, 0}, START, START);
     }
     ui_end_frame();
+  }
+  ui_end_frame();
+}
+
+void ui_text_input(char *text, u32 len, f32 size, f32 x, f32 y, f32 w,
+                   bool *focused, Alignment align_x, Alignment align_y) {
+  Rectangle rect = ui_align(x, y, w, size + 20, align_x, align_y);
+
+  bool hovered = CheckCollisionPointRec(GetMousePosition(), rect);
+  bool clicked = hovered && IsMouseButtonDown(MOUSE_BUTTON_LEFT);
+  bool clicked_outside = !hovered && IsMouseButtonDown(MOUSE_BUTTON_LEFT);
+
+  if (clicked && focused != NULL) {
+    *focused = true;
+  } else if (clicked_outside && focused != NULL) {
+    *focused = false;
+  }
+
+  if (*focused) {
+    char c = 0;
+    while ((c = GetCharPressed())) {
+      u32 i = strlen(text);
+      if (c == '\b' && i > 0) {
+        text[i - 1] = 0;
+      } else if (i < len - 1) {
+        text[i] = c;
+        text[i + 1] = 0;
+      }
+    }
+  }
+
+  ui_begin_frame_ex(rect, BLACK,
+                    *focused  ? RED
+                    : hovered ? GREEN
+                              : WHITE,
+                    (Vector2){10, 10});
+  {
+    ui_text(text, size, WHITE, (Vector2){0, 0}, START, CENTER);
   }
   ui_end_frame();
 }
