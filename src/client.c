@@ -117,6 +117,7 @@ i32 client_connect(const char *address, Game game) {
 
   u64 connect_time = now();
   bool connected = false;
+  game->client.conn_state = CS_CONNECTING;
   while (now() - connect_time < CONNECTION_TIMEOUT && !connected) {
     if (recv_message() && client.recvd_msg.type == MSG_HELLO) {
       if (client.recvd_msg.priority) {
@@ -152,9 +153,11 @@ i32 client_connect(const char *address, Game game) {
 
   if (connected) {
     printf("Connected\n");
+    game->client.conn_state = CS_READY;
     return 0;
   } else {
     printf("Connection failed\n");
+    game->client.conn_state = CS_FAILED;
     client.server = (Connection){0};
     return -1;
   }

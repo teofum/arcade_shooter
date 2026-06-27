@@ -17,6 +17,17 @@ typedef enum {
 } GameState;
 
 typedef enum {
+  MS_TITLE,
+  MS_CONNECT,
+} MenuState;
+
+typedef enum {
+  CS_READY,
+  CS_CONNECTING,
+  CS_FAILED,
+} ConnectionState;
+
+typedef enum {
   VERTICAL,
   HORIZONTAL,
 } Orientation;
@@ -40,6 +51,8 @@ typedef struct Game {
     struct {
       InputData input;
       u32 local_player_idx;
+      MenuState menu_state;
+      ConnectionState conn_state;
     } client;
   };
 

@@ -19,6 +19,7 @@ int main() {
   init();
 
   Game game = game_init();
+  game->client.menu_state = MS_TITLE;
   while (!WindowShouldClose() && game->state != GS_QUIT) {
     while (!client_is_connected() && !WindowShouldClose() &&
            game->state != GS_QUIT) {

@@ -29,37 +29,78 @@ void ui_draw_main_menu(Game game) {
 
   ui_begin_frame(full_screen, WHITE);
   {
-    DrawTexturePro(assets.title_bg, (Rectangle){0, 0, 2160, 1440}, full_screen,
-                   (Vector2){0, 0}, 0, WHITE);
-
-    ui_text("Desktop\nDefender", 60, BLACK,
-            (Vector2){WINDOW_WIDTH / 2.0f + 100, -148}, START, CENTER);
-    ui_text("Desktop\nDefender", 60, RED,
-            (Vector2){WINDOW_WIDTH / 2.0f + 100, -150}, START, CENTER);
-
     bool gp = IsGamepadAvailable(0);
     u32 m = game->menu_selected_option;
 
-    ui_text("Server Address", 10, BLACK,
-            (Vector2){WINDOW_WIDTH / 2.0f + 100, -20}, START, CENTER);
-    ui_text_input(addr, 20, 20, WINDOW_WIDTH / 2.0f + 100, 10, 200, &focused,
-                  START, CENTER);
+    DrawTexturePro(assets.title_bg, (Rectangle){0, 0, 2160, 1440}, full_screen,
+                   (Vector2){0, 0}, 0, WHITE);
 
-    if (ui_button_ex("Connect to server", 20,
-                     (Vector2){WINDOW_WIDTH / 2.0f + 100, 50}, gp && m == 0,
-                     (Vector2){200, 0}, START, CENTER)) {
-      client_connect(addr, game);
+    switch (game->client.menu_state) {
+    case MS_TITLE: {
+      ui_text("Desktop\nDefender", 60, BLACK,
+              (Vector2){WINDOW_WIDTH / 2.0f + 100, -148}, START, CENTER);
+      ui_text("Desktop\nDefender", 60, RED,
+              (Vector2){WINDOW_WIDTH / 2.0f + 100, -150}, START, CENTER);
+
+      if (ui_button_ex("Host Game", 20, (Vector2){WINDOW_WIDTH / 2.0f + 100, 0},
+                       gp && m == 0, (Vector2){200, 0}, START, CENTER)) {
+        client_connect(addr, game);
+      }
+      if (ui_button_ex("Join Game", 20,
+                       (Vector2){WINDOW_WIDTH / 2.0f + 100, 40}, gp && m == 0,
+                       (Vector2){200, 0}, START, CENTER)) {
+        game->client.menu_state = MS_CONNECT;
+      }
+      if (ui_button_ex("Quit", 20, (Vector2){WINDOW_WIDTH / 2.0f + 100, 80},
+                       gp && m == 1, (Vector2){200, 0}, START, CENTER)) {
+        game_set_state(game, GS_QUIT);
+      }
+      break;
     }
-    if (ui_button_ex("Quit", 20, (Vector2){WINDOW_WIDTH / 2.0f + 100, 90},
-                     gp && m == 1, (Vector2){200, 0}, START, CENTER)) {
-      game_set_state(game, GS_QUIT);
+    case MS_CONNECT: {
+      ui_begin_frame(full_screen, (Color){0, 0, 0, 128});
+
+      switch (game->client.conn_state) {
+      case CS_READY: {
+        ui_text("Server Address", 20, WHITE, (Vector2){0, -20}, CENTER, CENTER);
+        ui_text_input(addr, 20, 20, 0, 10, 300, &focused, CENTER, CENTER);
+
+        if (ui_button_ex("Back", 20, (Vector2){-110, 60}, gp && m == 0,
+                         (Vector2){200, 0}, CENTER, CENTER)) {
+          game->client.menu_state = MS_TITLE;
+          game->client.conn_state = CS_READY;
+        }
+        if (ui_button_ex("Connect", 20, (Vector2){110, 60}, gp && m == 0,
+                         (Vector2){200, 0}, CENTER, CENTER)) {
+          client_connect(addr, game);
+        }
+        break;
+      }
+      case CS_CONNECTING: {
+        ui_text("Connecting to server...", 20, WHITE, (Vector2){0, -20}, CENTER,
+                CENTER);
+        break;
+      }
+      case CS_FAILED: {
+        ui_text("Couldn't connect to server", 20, RED, (Vector2){0, -20},
+                CENTER, CENTER);
+        if (ui_button_ex("Back", 20, (Vector2){0, 40}, gp && m == 0,
+                         (Vector2){200, 0}, CENTER, CENTER)) {
+          game->client.conn_state = CS_READY;
+        }
+        break;
+      }
+      }
+      break;
+    }
     }
   }
   ui_end_frame();
 
   // TODO better mouse cursor
   if (!IsGamepadAvailable(0)) {
-    DrawCircleV(GetMousePosition(), 3, GREEN);
+    DrawCircleV(GetMousePosition(), 4, BLACK);
+    DrawCircleV(GetMousePosition(), 3, WHITE);
   }
 
   EndDrawing();
@@ -110,7 +151,7 @@ static void ui_draw_other_player_health(Game game) {
   for (u32 i = 0; i < MAX_CLIENTS; i++) {
     if (game->players_enabled[i] && game->players[i] != NULL &&
         i != game->client.local_player_idx) {
-      sprintf(player_text, "P%u", i + 1);
+      snprintf(player_text, 10, "P%u", i + 1);
       Player *pdata = &game->players[i]->player;
       ui_draw_bar(0, y, 100, 10, (f32)pdata->health / pdata->max_health,
                   player_text, DARKGRAY, RED, START, CENTER);
@@ -121,7 +162,7 @@ static void ui_draw_other_player_health(Game game) {
 
 static void ui_draw_health_bar(Player *pdata) {
   static char health_text[10] = {0};
-  sprintf(health_text, "%3d/%3d", pdata->health, pdata->max_health);
+  snprintf(health_text, 10, "%3d/%3d", pdata->health, pdata->max_health);
 
   ui_draw_bar(0, 20, 200, 20, (f32)pdata->health / pdata->max_health,
               health_text, DARKGRAY, RED, START, END);
@@ -129,7 +170,7 @@ static void ui_draw_health_bar(Player *pdata) {
 
 static void ui_draw_xp_bar(Player *pdata) {
   static char level_text[10] = {0};
-  sprintf(level_text, "Lv. %d", pdata->level);
+  snprintf(level_text, 10, "Lv. %d", pdata->level);
 
   ui_draw_bar(0, 0, 200, 10, (f32)pdata->xp / pdata->to_next_level, level_text,
               DARKGRAY, MAGENTA, START, END);
@@ -231,7 +272,7 @@ void ui_draw_game_ui(Game game) {
   ui_begin_frame_ex(full_screen, BLANK, BLANK, (Vector2){20, 20});
   {
     static char score_str[30];
-    sprintf(score_str, "Score: %6u", game->score);
+    snprintf(score_str, 30, "Score: %6u", game->score);
     ui_text(score_str, 20, WHITE, (Vector2){0, 0}, END, START);
 
     ui_draw_health_bar(pdata);
@@ -267,12 +308,12 @@ static void ui_draw_level_up_option(Game game, LevelUpOption *option, u32 i) {
     u32 level;
 
     if (option->type == LU_NEW) {
-      sprintf(text, "New");
+      snprintf(text, 30, "New");
       type = option->bullet_type;
       level = 1;
     } else {
       SpecialBulletSlot *bullet = &pdata->special_bullets[option->bullet_idx];
-      sprintf(text, "Lv. %d -> %d", bullet->level, bullet->level + 1);
+      snprintf(text, 30, "Lv. %d -> %d", bullet->level, bullet->level + 1);
       type = bullet->type;
       level = bullet->level + 1;
     }
@@ -303,7 +344,7 @@ void ui_draw_level_up_screen(Game game) {
   Player *pdata = &game->players[game->client.local_player_idx]->player;
 
   static char level_up_str[30];
-  sprintf(level_up_str, "Lv. %d -> %d", pdata->level - 1, pdata->level);
+  snprintf(level_up_str, 30, "Lv. %d -> %d", pdata->level - 1, pdata->level);
 
   ui_begin_frame(full_screen, overlay_bg);
   {
@@ -326,26 +367,26 @@ void ui_draw_level_up_screen(Game game) {
       {
         Vector2 cursor = {0, 0};
         if (pdata->leveled_up_stats[STAT_AMMO]) {
-          sprintf(level_up_str, "Ammo: %d -> %d", pdata->max_ammo - 1,
-                  pdata->max_ammo);
+          snprintf(level_up_str, 30, "Ammo: %d -> %d", pdata->max_ammo - 1,
+                   pdata->max_ammo);
           ui_text(level_up_str, 15, WHITE, cursor, START, START);
           cursor.y += 20;
         }
         if (pdata->leveled_up_stats[STAT_DAMAGE]) {
-          sprintf(level_up_str, "Damage: %d -> %d", pdata->base_damage - 1,
-                  pdata->base_damage);
+          snprintf(level_up_str, 30, "Damage: %d -> %d", pdata->base_damage - 1,
+                   pdata->base_damage);
           ui_text(level_up_str, 15, WHITE, cursor, START, START);
           cursor.y += 20;
         }
         if (pdata->leveled_up_stats[STAT_HEALTH]) {
-          sprintf(level_up_str, "Health: %d -> %d", pdata->max_health - 10,
-                  pdata->max_health);
+          snprintf(level_up_str, 30, "Health: %d -> %d", pdata->max_health - 10,
+                   pdata->max_health);
           ui_text(level_up_str, 15, WHITE, cursor, START, START);
           cursor.y += 20;
         }
         if (pdata->leveled_up_stats[STAT_MOVEMENT]) {
-          sprintf(level_up_str, "Move speed: %.0f -> %.0f",
-                  pdata->move_speed - 5, pdata->move_speed);
+          snprintf(level_up_str, 30, "Move speed: %.0f -> %.0f",
+                   pdata->move_speed - 5, pdata->move_speed);
           ui_text(level_up_str, 15, WHITE, cursor, START, START);
           cursor.y += 20;
         }
@@ -392,7 +433,7 @@ void ui_draw_pause_screen(Game game) {
 
 void ui_draw_game_over_screen(Game game) {
   static char score_str[30];
-  sprintf(score_str, "Score: %u", game->score);
+  snprintf(score_str, 30, "Score: %u", game->score);
 
   bool gp = IsGamepadAvailable(0);
   u32 m = game->menu_selected_option;
@@ -416,7 +457,7 @@ void ui_draw_game_over_screen(Game game) {
 
 void ui_draw_win_screen(Game game) {
   static char score_str[30];
-  sprintf(score_str, "Score: %u", game->score);
+  snprintf(score_str, 30, "Score: %u", game->score);
 
   bool gp = IsGamepadAvailable(0);
   u32 m = game->menu_selected_option;
