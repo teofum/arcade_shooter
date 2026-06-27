@@ -200,20 +200,20 @@ void ui_text_input(char *text, u32 len, f32 size, f32 x, f32 y, f32 w,
     char c = 0;
     while ((c = GetCharPressed())) {
       u32 i = strlen(text);
-      if (c == '\b' && i > 0) {
-        text[i - 1] = 0;
-      } else if (i < len - 1) {
+      if (i < len - 1) {
         text[i] = c;
         text[i + 1] = 0;
       }
     }
+    if (IsKeyPressed(KEY_BACKSPACE) || IsKeyPressedRepeat(KEY_BACKSPACE)) {
+      u32 i = strlen(text);
+      if (i > 0) {
+        text[i - 1] = 0;
+      }
+    }
   }
 
-  ui_begin_frame_ex(rect, BLACK,
-                    *focused  ? RED
-                    : hovered ? GREEN
-                              : WHITE,
-                    (Vector2){10, 10});
+  ui_begin_frame_ex(rect, BLACK, *focused ? RED : WHITE, (Vector2){10, 10});
   {
     ui_text(text, size, WHITE, (Vector2){0, 0}, START, CENTER);
   }

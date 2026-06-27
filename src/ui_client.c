@@ -40,18 +40,20 @@ void ui_draw_main_menu(Game game) {
     bool gp = IsGamepadAvailable(0);
     u32 m = game->menu_selected_option;
 
+    ui_text("Server Address", 10, BLACK,
+            (Vector2){WINDOW_WIDTH / 2.0f + 100, -20}, START, CENTER);
+    ui_text_input(addr, 20, 20, WINDOW_WIDTH / 2.0f + 100, 10, 200, &focused,
+                  START, CENTER);
+
     if (ui_button_ex("Connect to server", 20,
-                     (Vector2){WINDOW_WIDTH / 2.0f + 100, 0}, gp && m == 0,
+                     (Vector2){WINDOW_WIDTH / 2.0f + 100, 50}, gp && m == 0,
                      (Vector2){200, 0}, START, CENTER)) {
       client_connect(addr);
     }
-    if (ui_button_ex("Quit", 20, (Vector2){WINDOW_WIDTH / 2.0f + 100, 40},
+    if (ui_button_ex("Quit", 20, (Vector2){WINDOW_WIDTH / 2.0f + 100, 90},
                      gp && m == 1, (Vector2){200, 0}, START, CENTER)) {
       game_set_state(game, GS_QUIT);
     }
-
-    ui_text_input(addr, 20, 20, WINDOW_WIDTH / 2.0f + 100, 80, 200, &focused,
-                  START, CENTER);
   }
   ui_end_frame();
 
