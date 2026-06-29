@@ -22,4 +22,6 @@ void client_shutdown();
 
 bool client_is_connected();
 
+i32 client_host(Game game);
+
 #endif

@@ -4,6 +4,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "assets.h"
 #include "bullet.h"
 #include "client.h"
 #include "config.h"
@@ -426,3 +427,24 @@ void client_shutdown() {
 }
 
 bool client_is_connected() { return client.server.last_seen != 0; }
+
+i32 client_host(Game game) {
+  game->client.host = false;
+  i32 pid = fork();
+  if (pid == -1) {
+    return -1;
+  }
+
+  if (pid == 0) {
+    close(client.sock);
+
+    if (execl("./bin/arcade_shooter", "arcade_shooter", NULL) == -1) {
+      perror("execv failed: ");
+      assert(false);
+    }
+  } else {
+    usleep(1000000);
+    client_connect("127.0.0.1", game);
+  }
+  return 0;
+}
