@@ -44,7 +44,7 @@ void ui_draw_main_menu(Game game) {
 
       if (ui_button_ex("Host Game", 20, (Vector2){WINDOW_WIDTH / 2.0f + 100, 0},
                        gp && m == 0, (Vector2){200, 0}, START, CENTER)) {
-        game->client.host = true;
+        game->client.should_start_server = true;
       }
       if (ui_button_ex("Join Game", 20,
                        (Vector2){WINDOW_WIDTH / 2.0f + 100, 40}, gp && m == 0,

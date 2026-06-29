@@ -239,6 +239,7 @@ i32 client_update(Game game) {
       game->boss_timer = client.recvd_msg.game.boss_timer;
       game->boss_idx = client.recvd_msg.game.boss_idx;
       game->score = client.recvd_msg.game.score;
+      game->host_player_idx = client.recvd_msg.game.host_player_idx;
 
       for (u32 i = 0; i < MAX_CLIENTS; i++) {
         if (game->players_enabled[i] &&
@@ -429,7 +430,7 @@ void client_shutdown() {
 bool client_is_connected() { return client.server.last_seen != 0; }
 
 i32 client_host(Game game) {
-  game->client.host = false;
+  game->client.should_start_server = false;
   i32 pid = fork();
   if (pid == -1) {
     return -1;

@@ -43,6 +43,7 @@ typedef struct Game {
 
   bool players_enabled[MAX_CLIENTS];
   Entity *players[MAX_CLIENTS];
+  i32 host_player_idx;
 
   union {
     struct {
@@ -53,7 +54,7 @@ typedef struct Game {
       u32 local_player_idx;
       MenuState menu_state;
       ConnectionState conn_state;
-      bool host;
+      bool should_start_server;
     } client;
   };
 

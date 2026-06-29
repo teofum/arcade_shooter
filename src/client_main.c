@@ -24,7 +24,7 @@ int main() {
     while (!client_is_connected() && !WindowShouldClose() &&
            game->state != GS_QUIT) {
       ui_draw_main_menu(game);
-      if (game->client.host) {
+      if (game->client.should_start_server) {
         client_host(game);
       }
     }

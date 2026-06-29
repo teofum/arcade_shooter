@@ -15,6 +15,8 @@ int main() {
   init();
 
   Game game = game_init();
+  game->host_player_idx = -1;
+
   while (!WindowShouldClose() && game->state != GS_QUIT) {
     game_update(game);
     server_update(game);

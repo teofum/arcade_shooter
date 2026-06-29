@@ -202,7 +202,7 @@ void server_update(Game game) {
     server.last_heartbeat_sent = frame_time;
   }
 
-  // Return to menu when all players disconnect
+  // Shutdown server when all players disconnect
   if (game->state != GS_MAIN_MENU) {
     bool players_connected = false;
     for (u32 i = 0; i < MAX_CLIENTS && !players_connected; i++) {
@@ -210,7 +210,19 @@ void server_update(Game game) {
     }
 
     if (!players_connected) {
-      game_set_state(game, GS_MAIN_MENU);
+      game_set_state(game, GS_QUIT);
+    }
+  }
+
+  // If host disconnects, make the next player host
+  if (game->host_player_idx == -1 ||
+      !game->players_enabled[game->host_player_idx]) {
+    for (u32 i = 0; i < MAX_CLIENTS; i++) {
+      if (game->players_enabled[i]) {
+        game->host_player_idx = i;
+        printf("Player %u is now host\n", i);
+        break;
+      }
     }
   }
 
@@ -237,6 +249,7 @@ void server_update(Game game) {
           (GameStateData){
               .state = game->state,
               .players_enabled = {0},
+              .host_player_idx = game->host_player_idx,
               .total_time = game->total_time,
               .delta_time = game->delta_time,
               .boss_idx = game->boss_idx,
@@ -377,7 +390,18 @@ void server_update(Game game) {
     case MSG_HELLO: {
       printf("client\n");
       i32 idx = connect_client(&server.sender_addr);
+      if (idx == -1) {
+        printf("Connection rejected: too many players\n");
+        break;
+      }
+
       game->players_enabled[idx] = true;
+
+      // First player to connect becomes the host
+      if (game->host_player_idx == -1) {
+        game->host_player_idx = idx;
+        printf("Player %u is now host\n", idx);
+      }
 
       Message response = {
           .type = MSG_HELLO,

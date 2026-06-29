@@ -80,6 +80,7 @@ typedef struct GameStateData {
   GameState state;
 
   bool players_enabled[MAX_CLIENTS];
+  i32 host_player_idx;
 
   f32 total_time;
   f32 delta_time;
