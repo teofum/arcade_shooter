@@ -502,6 +502,9 @@ void server_update(Game game) {
       }
       break;
     }
+    case MSG_START_GAME:
+      game_reset(game);
+      break;
     default:
       printf("something else; ignored\n");
       break;

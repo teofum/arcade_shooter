@@ -137,7 +137,12 @@ void ui_draw_lobby_screen(Game game) {
       ui_end_frame();
     }
 
-    if (ui_button_ex("Disconnect", 20, (Vector2){0, 500}, false,
+    if (game->client.local_player_idx == game->host_player_idx &&
+        ui_button_ex("Start Game", 20, (Vector2){-110, 500}, false,
+                     (Vector2){200, 0}, CENTER, START)) {
+      game->client.should_start_game = true;
+    }
+    if (ui_button_ex("Disconnect", 20, (Vector2){110, 500}, false,
                      (Vector2){200, 0}, CENTER, START)) {
       client_disconnect();
     }

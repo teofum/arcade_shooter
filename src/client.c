@@ -4,7 +4,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "assets.h"
 #include "bullet.h"
 #include "client.h"
 #include "config.h"
@@ -172,6 +171,12 @@ i32 client_update(Game game) {
     Message heartbeat = {.type = MSG_HEARTBEAT};
     send_message(&heartbeat, false);
     client.last_heartbeat_sent = frame_time;
+  }
+
+  if (game->client.should_start_game) {
+    game->client.should_start_game = false;
+    Message start = {.type = MSG_START_GAME};
+    send_message(&start, true);
   }
 
   if (game->state == GS_RUNNING) {
@@ -381,6 +386,8 @@ i32 client_update(Game game) {
     }
     case MSG_END_GAME:
       game_end(game);
+      break;
+    case MSG_START_GAME:
       break;
     case MSG_RESET:
       memcpy(game->players_enabled, client.recvd_msg.reset.players_enabled,

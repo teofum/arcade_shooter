@@ -55,6 +55,7 @@ typedef struct Game {
       MenuState menu_state;
       ConnectionState conn_state;
       bool should_start_server;
+      bool should_start_game;
     } client;
   };
 
