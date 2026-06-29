@@ -107,7 +107,7 @@ void ui_draw_main_menu(Game game) {
 }
 
 void ui_draw_lobby_screen(Game game) {
-  static char player_text[10];
+  static char player_text[20];
   ui_begin_frame(full_screen, BLACK);
   {
     ui_text("Waiting for game to start", 30, WHITE, (Vector2){0, 80}, CENTER,
@@ -122,7 +122,8 @@ void ui_draw_lobby_screen(Game game) {
                         color, border_color, (Vector2){20, 5});
       {
         if (connected) {
-          snprintf(player_text, 10, "Player %u", i);
+          snprintf(player_text, 20, "Player %u%s", i,
+                   i == game->host_player_idx ? " [H]" : "");
           ui_text(player_text, 30, player_colors[i], (Vector2){0, 0}, START,
                   CENTER);
           if (i == game->client.local_player_idx) {

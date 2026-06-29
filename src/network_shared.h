@@ -38,6 +38,7 @@ typedef enum {
   MSG_INPUT,
   MSG_LEVEL_UP,
 
+  MSG_START_GAME,
   MSG_END_GAME,
   MSG_RESET,
 } MessageType;
