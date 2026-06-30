@@ -239,7 +239,7 @@ i32 client_update(Game game) {
       break;
     case MSG_GAME_STATE:
       printf("game state\n");
-      game->state = client.recvd_msg.game.state;
+      game_set_state(game, client.recvd_msg.game.state);
       game->total_time = client.recvd_msg.game.total_time;
       game->delta_time = client.recvd_msg.game.delta_time;
       game->boss_timer = client.recvd_msg.game.boss_timer;

@@ -84,6 +84,7 @@ add_executable(${PROJECT_NAME}_client
   src/network_shared.h src/network_shared.c
 )
 target_link_libraries(${PROJECT_NAME}_client raylib)
+target_compile_definitions(${PROJECT_NAME}_client PRIVATE ENABLE_BGM=true)
 
 if (APPLE)
   target_link_libraries(${PROJECT_NAME}_client "-framework IOKit")

@@ -39,21 +39,27 @@ static void game_setup_menu(Game game, u32 n_opts, Orientation orientation) {
 }
 
 void game_set_state(Game game, GameState state) {
+  printf("Set state\n");
+
   if (state == GS_MAIN_MENU || state == GS_GAME_OVER) {
     game_setup_menu(game, 2, VERTICAL);
   } else if (state == GS_RUNNING) {
     game_setup_menu(game, 3, VERTICAL);
   }
 
-  // if (ENABLE_BGM) {
-  //   if (state == GS_MAIN_MENU || state == GS_GAME_OVER) {
-  //     StopMusicStream(game->bgm);
-  //   } else if (state == GS_RUNNING) {
-  //     if (!IsMusicStreamPlaying(game->bgm)) {
-  //       PlayMusicStream(game->bgm);
-  //     }
-  //   }
-  // }
+#if ENABLE_BGM
+
+  printf("BGM enabled\n");
+  if (state == GS_MAIN_MENU || state == GS_GAME_OVER) {
+    StopMusicStream(game->bgm);
+  } else if (state == GS_RUNNING) {
+    printf("Play music\n");
+    if (!IsMusicStreamPlaying(game->bgm)) {
+      PlayMusicStream(game->bgm);
+    }
+  }
+
+#endif
 
   game->state = state;
 }
@@ -260,9 +266,9 @@ static void game_spawn_boss(Game game) {
     el_add(game->world, boss);
 
     // Boss music
-    StopMusicStream(game->bgm);
-    game->bgm = assets.bgm_boss;
-    PlayMusicStream(game->bgm);
+    // StopMusicStream(game->bgm);
+    // game->bgm = assets.bgm_boss;
+    // PlayMusicStream(game->bgm);
 
     break;
   }

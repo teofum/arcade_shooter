@@ -6,8 +6,6 @@
 
 #define SERVER_TICK_MS 10
 
-#define ENABLE_BGM true
-
 #define MAX_CLIENTS 4
 
 #define FIELD_HEIGHT 200
