@@ -33,7 +33,6 @@ typedef enum {
 } BulletType;
 
 typedef struct Bullet {
-  Vector2 velocity;
   f32 size;
 
   BulletType type;
@@ -54,8 +53,6 @@ typedef enum {
 
 typedef struct Powerup {
   PowerupType type;
-
-  Vector2 velocity;
 } Powerup;
 
 typedef struct SpecialBulletSlot {
@@ -88,8 +85,6 @@ typedef enum {
 
 typedef struct Player {
   f32 size;
-
-  Vector2 velocity;
   Vector2 crosshair;
 
   f32 move_speed;
@@ -182,8 +177,6 @@ typedef struct DmgNumber {
 
 typedef struct XpGem {
   u32 value;
-
-  Vector2 velocity;
 } XpGem;
 
 typedef struct Explosion {
@@ -200,11 +193,8 @@ typedef struct Laser {
 } Laser;
 
 typedef struct EnemyBullet {
-  Vector2 velocity;
   f32 size;
-
   i32 damage;
-
   bool deferred_destroy;
 } EnemyBullet;
 
@@ -219,6 +209,7 @@ typedef struct Entity {
 
   // Common fields
   Vector2 position;
+  Vector2 velocity;
 
   union {
     Player player;

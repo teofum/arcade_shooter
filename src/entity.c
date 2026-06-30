@@ -69,6 +69,8 @@ static EntityDrawFunction ent_draw_dispatch[] = {
 Entity *ent_create(EntityType type) {
   Entity *entity = calloc(1, sizeof(Entity));
   entity->type = type;
+  entity->position = (Vector2){0, 0};
+  entity->velocity = (Vector2){0, 0};
   return entity;
 }
 
@@ -103,7 +105,7 @@ EntityCreateData ent_get_create_data(Entity *entity) {
   case ENT_BULLET:
     cd.bullet = (BulletCreateData){
         .type = entity->bullet.type,
-        .target = Vector2Add(entity->position, entity->bullet.velocity),
+        .target = Vector2Add(entity->position, entity->velocity),
         .damage = entity->bullet.damage,
         .level = entity->bullet.level,
         .special_idx = entity->bullet.special_idx,
@@ -119,7 +121,7 @@ EntityCreateData ent_get_create_data(Entity *entity) {
     break;
   case ENT_ENEMY_BULLET:
     cd.bullet = (BulletCreateData){
-        .target = Vector2Add(entity->position, entity->enemy_bullet.velocity),
+        .target = Vector2Add(entity->position, entity->velocity),
         .damage = entity->enemy_bullet.damage,
     };
     break;

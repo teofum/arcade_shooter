@@ -33,11 +33,9 @@ static i32 get_bullet_damage(BulletType type, u32 level, i32 base_damage) {
 /*============================================================================*
  * Bullet initialization                                                      *
  *============================================================================*/
-static Bullet bullet_init_data(Vector2 initial_velocity, BulletType type,
-                               u32 level, i32 damage, u32 special_idx,
-                               Entity *player) {
+static Bullet bullet_init_data(BulletType type, u32 level, i32 damage,
+                               u32 special_idx, Entity *player) {
   return (Bullet){
-      .velocity = initial_velocity,
       .size = type > BULLET_NORMAL ? 2.0f : 1.0f,
 
       .type = type,
@@ -162,9 +160,6 @@ bool bullet_hit_enemy(Entity *self, Entity *enemy, Game game) {
   Bullet *data = &self->bullet;
   Enemy *edata = &enemy->enemy;
 
-  // Sound sfx = LoadSoundAlias(assets.sfx_hit);
-  // PlaySound(sfx);
-
   i32 damage = get_damage(data->damage);
   edata->health -= damage;
   edata->dmg_flash_timer = DMG_FLASH_TIME;
@@ -205,7 +200,7 @@ bool bullet_update(Entity *self, Game game) {
   Player *pdata = &data->player->player;
 
   // Predict next position
-  Vector2 delta_pos = Vector2Scale(data->velocity, game->delta_time);
+  Vector2 delta_pos = Vector2Scale(self->velocity, game->delta_time);
   Vector2 next_pos = Vector2Add(self->position, delta_pos);
 
   // Check collisions
@@ -225,7 +220,7 @@ bool bullet_update(Entity *self, Game game) {
 
   // If there was a collision change the trajectory
   if (collision.direction != COL_NONE) {
-    next_pos = apply_collision(self->position, delta_pos, &data->velocity, 1,
+    next_pos = apply_collision(self->position, delta_pos, &self->velocity, 1,
                                collision, game);
   }
 
@@ -275,12 +270,12 @@ Entity *bullet_create(Vector2 position, Vector2 target, BulletType type,
                       u32 level, i32 damage, u32 special_idx, Entity *player) {
   Entity *bullet = ent_create(ENT_BULLET);
 
-  bullet->position = position;
-
   Vector2 aim = Vector2Subtract(target, position);
   Vector2 velocity = Vector2Scale(Vector2Normalize(aim), BULLET_SPEED);
-  bullet->bullet =
-      bullet_init_data(velocity, type, level, damage, special_idx, player);
+
+  bullet->position = position;
+  bullet->velocity = velocity;
+  bullet->bullet = bullet_init_data(type, level, damage, special_idx, player);
 
   return bullet;
 }
@@ -301,24 +296,24 @@ const char *get_bullet_description(Entity *player, BulletType type, u32 level) {
     Range sec_damage_range = get_damage_range(damage);
     f32 spawn_p = 0.25f + 0.1f * level;
 
-    sprintf(text,
-            "Upon hitting an enemy, %.0f%% chance\n"
-            "of shooting an extra bullet in\n"
-            "a random direction that deals\n"
-            "%d-%d damage.",
-            spawn_p * 100, sec_damage_range.min, sec_damage_range.max);
+    snprintf(text, 200,
+             "Upon hitting an enemy, %.0f%% chance\n"
+             "of shooting an extra bullet in\n"
+             "a random direction that deals\n"
+             "%d-%d damage.",
+             spawn_p * 100, sec_damage_range.min, sec_damage_range.max);
     return text;
   }
   case BULLET_EXPLOSIVE: {
     f32 radius = 25 + level * 5;
     Range expl_damage_range = get_damage_range(damage * 2);
 
-    sprintf(text,
-            "Upon hitting an enemy, explodes\n"
-            "dealing %d-%d damage in a %.0f unit\n"
-            "radius. Has a 3 second cooldown\n"
-            "before it can be fired again.",
-            expl_damage_range.min, expl_damage_range.max, radius);
+    snprintf(text, 200,
+             "Upon hitting an enemy, explodes\n"
+             "dealing %d-%d damage in a %.0f unit\n"
+             "radius. Has a 3 second cooldown\n"
+             "before it can be fired again.",
+             expl_damage_range.min, expl_damage_range.max, radius);
     return text;
   }
   case BULLET_SHRAPNEL: {
@@ -326,34 +321,34 @@ const char *get_bullet_description(Entity *player, BulletType type, u32 level) {
     Range sec_damage_range = get_damage_range(damage);
     u32 n_spawned = level + 2;
 
-    sprintf(text,
-            "Upon hitting an enemy, explodes\n"
-            "into %u small bullets fired in random\n"
-            "directions that deal %d-%d damage.\n"
-            "Has a 3 second cooldown\n"
-            "before it can be fired again.",
-            n_spawned, sec_damage_range.min, sec_damage_range.max);
+    snprintf(text, 200,
+             "Upon hitting an enemy, explodes\n"
+             "into %u small bullets fired in random\n"
+             "directions that deal %d-%d damage.\n"
+             "Has a 3 second cooldown\n"
+             "before it can be fired again.",
+             n_spawned, sec_damage_range.min, sec_damage_range.max);
     return text;
   }
   case BULLET_LASER: {
     Range laser_damage_range = get_damage_range(damage / 2);
 
-    sprintf(text,
-            "Upon hitting an enemy, fires a\n"
-            "laser that deals %d-%d damage \n"
-            "to all enemies in the same row.",
-            laser_damage_range.min, laser_damage_range.max);
+    snprintf(text, 200,
+             "Upon hitting an enemy, fires a\n"
+             "laser that deals %d-%d damage \n"
+             "to all enemies in the same row.",
+             laser_damage_range.min, laser_damage_range.max);
     return text;
   }
   case BULLET_HEALING: {
     f32 heal_p = 0.04 + 0.02f * level;
     i32 heal_amount = 1 + level / 4;
 
-    sprintf(text,
-            "Upon hitting an enemy, %.0f%% chance\n"
-            "to heal the player for\n"
-            "%d hit points.",
-            heal_p * 100, heal_amount);
+    snprintf(text, 200,
+             "Upon hitting an enemy, %.0f%% chance\n"
+             "to heal the player for\n"
+             "%d hit points.",
+             heal_p * 100, heal_amount);
     return text;
   }
   default:

@@ -15,13 +15,8 @@ const char *powerup_descriptions[] = {"Double movement speed", "Double damage"};
 Color powerup_colors[] = {GREEN, ORANGE};
 
 static Powerup powerup_init_data(PowerupType type) {
-  f32 vx = frand() * 2.0f - 1.0f;
-  f32 vy = frand() * 2.0f - 1.0f;
-  f32 speed = frand() * 0.6f + 0.7f;
-
   return (Powerup){
       .type = type,
-      .velocity = Vector2Scale(Vector2Normalize((Vector2){vx, vy}), speed),
   };
 }
 
@@ -53,8 +48,8 @@ bool powerup_update(Entity *self, Game game) {
         Vector2Scale(target_velocity, XP_MAGNET_POWER / (distance * distance));
   }
 
-  data->velocity = Vector2Lerp(data->velocity, target_velocity, 0.1f);
-  self->position = Vector2Add(self->position, data->velocity);
+  self->velocity = Vector2Lerp(self->velocity, target_velocity, 0.1f);
+  self->position = Vector2Add(self->position, self->velocity);
 
   return false;
 }
@@ -77,7 +72,12 @@ void powerup_draw(Entity *self, Game game) {
 Entity *powerup_create(Vector2 position, PowerupType type) {
   Entity *powerup = ent_create(ENT_POWERUP);
 
+  f32 vx = frand() * 2.0f - 1.0f;
+  f32 vy = frand() * 2.0f - 1.0f;
+  f32 speed = frand() * 0.6f + 0.7f;
+
   powerup->position = position;
+  powerup->velocity = Vector2Scale(Vector2Normalize((Vector2){vx, vy}), speed);
   powerup->powerup = powerup_init_data(type);
 
   return powerup;

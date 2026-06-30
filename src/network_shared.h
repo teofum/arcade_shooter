@@ -16,7 +16,7 @@
 #define MESSAGE_BUF_SIZE 128
 #define advance(x) ((x) == MESSAGE_BUF_SIZE - 1 ? 0 : (x) + 1)
 
-#define ENABLE_PACKET_LOSS 0
+#define ENABLE_PACKET_LOSS 1
 #define PACKET_LOSS_RATE 0.3
 #define CONNECTION_TIMEOUT 1000
 

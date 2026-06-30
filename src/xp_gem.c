@@ -13,13 +13,8 @@
 u32 xp_gem_values[XP_GEM_TIERS] = {25, 5, 1};
 
 static XpGem xp_gem_init_data(u32 value) {
-  f32 vx = frand() * 2.0f - 1.0f;
-  f32 vy = frand() * 2.0f - 1.0f;
-  f32 speed = frand() * 0.6f + 0.7f;
-
   return (XpGem){
       .value = value,
-      .velocity = Vector2Scale(Vector2Normalize((Vector2){vx, vy}), speed),
   };
 }
 
@@ -54,8 +49,8 @@ bool xp_gem_update(Entity *self, Game game) {
         Vector2Scale(target_velocity, XP_MAGNET_POWER / (distance * distance));
   }
 
-  data->velocity = Vector2Lerp(data->velocity, target_velocity, 0.1f);
-  self->position = Vector2Add(self->position, data->velocity);
+  self->velocity = Vector2Lerp(self->velocity, target_velocity, 0.1f);
+  self->position = Vector2Add(self->position, self->velocity);
 
   return false;
 }
@@ -80,7 +75,12 @@ void xp_gem_draw(Entity *self, Game game) {
 Entity *xp_gem_create(Vector2 position, u32 value) {
   Entity *xp_gem = ent_create(ENT_XP_GEM);
 
+  f32 vx = frand() * 2.0f - 1.0f;
+  f32 vy = frand() * 2.0f - 1.0f;
+  f32 speed = frand() * 0.6f + 0.7f;
+
   xp_gem->position = position;
+  xp_gem->velocity = Vector2Scale(Vector2Normalize((Vector2){vx, vy}), speed),
   xp_gem->xp_gem = xp_gem_init_data(value);
 
   return xp_gem;

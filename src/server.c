@@ -208,6 +208,7 @@ void server_update(Game game) {
     players_connected |= game->players_enabled[i];
   }
   if (!players_connected && game->host_player_idx != -1) {
+    printf("All players disconnected; shutting down...");
     game_set_state(game, GS_QUIT);
   }
 
@@ -429,15 +430,12 @@ void server_update(Game game) {
         printf("sync %u entities\n", count);
         for (u32 i = 0; i < count; i += SYNC_ENT_COUNT) {
           u32 local_count = min(count - i, SYNC_ENT_COUNT);
-          Message sync = {
-              .type = MSG_ENTITY_SYNC,
-              .entity_sync =
-                  (EntitySyncData){
-                      .entities = {0},
-                      .first = i,
-                      .count = local_count,
-                  },
-          };
+          Message sync = {.type = MSG_ENTITY_SYNC,
+                          .entity_sync = (EntitySyncData){
+                              .entities = {0},
+                              .first = i,
+                              .count = local_count,
+                          }};
           for (u32 j = 0; j < local_count; j++) {
             printf("sync entity %u: %u\n", i + j,
                    el_get(game->world, i + j)->type);
@@ -536,8 +534,12 @@ void server_end_game(Game game) {
 }
 
 void server_shutdown() {
+  printf("Shutting down server...\n");
+
   Message goodbye = {.type = MSG_GOODBYE};
   broadcast_message(&goodbye, true, NULL);
 
   close(server.sock);
+
+  printf("Server shut down\n");
 }

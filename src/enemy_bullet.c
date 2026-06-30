@@ -12,10 +12,8 @@
 /*============================================================================*
  * Enemy bullet initialization                                                *
  *============================================================================*/
-static EnemyBullet enemy_bullet_init_data(Vector2 initial_velocity,
-                                          i32 damage) {
+static EnemyBullet enemy_bullet_init_data(i32 damage) {
   return (EnemyBullet){
-      .velocity = initial_velocity,
       .size = 2.0f,
       .damage = damage,
       .deferred_destroy = false,
@@ -33,7 +31,7 @@ bool enemy_bullet_update(Entity *self, Game game) {
   }
 
   // Update position
-  Vector2 delta_pos = Vector2Scale(data->velocity, game->delta_time);
+  Vector2 delta_pos = Vector2Scale(self->velocity, game->delta_time);
   self->position = Vector2Add(self->position, delta_pos);
 
   // Destroy the bullet when it goes out of bounds
@@ -70,11 +68,12 @@ void enemy_bullet_draw(Entity *self, Game game) {
 Entity *enemy_bullet_create(Vector2 position, Vector2 target, i32 damage) {
   Entity *bullet = ent_create(ENT_ENEMY_BULLET);
 
-  bullet->position = position;
-
   Vector2 aim = Vector2Subtract(target, position);
   Vector2 velocity = Vector2Scale(Vector2Normalize(aim), ENEMY_BULLET_SPEED);
-  bullet->enemy_bullet = enemy_bullet_init_data(velocity, damage);
+
+  bullet->position = position;
+  bullet->velocity = velocity;
+  bullet->enemy_bullet = enemy_bullet_init_data(damage);
 
   return bullet;
 }

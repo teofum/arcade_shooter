@@ -144,9 +144,9 @@ static void enemy_move(Entity *self, Game game, Vector2 direction) {
         if (!bdata->deferred_destroy) {
           push_entity(entity, bounds, bdata->size, direction);
           if (direction.y != 0)
-            bdata->velocity.y = fabsf(bdata->velocity.y) * direction.y;
+            entity->velocity.y = fabsf(entity->velocity.y) * direction.y;
           if (direction.x != 0)
-            bdata->velocity.x = fabsf(bdata->velocity.x) * direction.x;
+            entity->velocity.x = fabsf(entity->velocity.x) * direction.x;
         }
       }
     }
@@ -359,6 +359,7 @@ bool boss_update(Entity *self, Game game) {
   // Die
   if (data->health <= 0 && data->boss_state != BOSS_DEAD) {
     data->boss_state = BOSS_DEAD;
+    // Dead state reuses these for explosions
     data->fire_timer = data->fire_cooldown = 0.25;
     data->boss_bullet_counter = 15;
   }

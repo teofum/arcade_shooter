@@ -33,7 +33,6 @@ static Player player_init_data() {
   return (Player){
       .size = 5.0f,
 
-      .velocity = (Vector2){0, 0},
       .direction = (Vector2){0, 0},
       .crosshair = (Vector2){0, 0},
 
@@ -89,10 +88,10 @@ static void player_move(Entity *self, Game game) {
   // Update velocity
   f32 speed = data->move_speed * (data->active_powerup == POWER_FAST ? 2 : 1);
   Vector2 target_velocity = Vector2Scale(data->direction, speed);
-  data->velocity = Vector2Lerp(data->velocity, target_velocity, PLAYER_ACCEL);
+  self->velocity = Vector2Lerp(self->velocity, target_velocity, PLAYER_ACCEL);
 
   // Predict next position
-  Vector2 delta_pos = Vector2Scale(data->velocity, game->delta_time);
+  Vector2 delta_pos = Vector2Scale(self->velocity, game->delta_time);
   Vector2 next_pos = Vector2Add(self->position, delta_pos);
 
   // Check for collisions
@@ -107,16 +106,16 @@ static void player_move(Entity *self, Game game) {
 
   // If there was a collision, change the trajectory
   if (collision.direction != COL_NONE) {
-    next_pos = apply_collision(self->position, delta_pos, &data->velocity, 0,
+    next_pos = apply_collision(self->position, delta_pos, &self->velocity, 0,
                                collision, game);
   }
 
   // Update position
   self->position = next_pos;
 
-  if (data->velocity.x > 0) {
+  if (self->velocity.x > 0) {
     data->orientation = 1;
-  } else if (data->velocity.x < 0) {
+  } else if (self->velocity.x < 0) {
     data->orientation = -1;
   }
 }
@@ -316,7 +315,7 @@ void player_draw(Entity *self, Game game) {
   Vector2 origin = {size / 2, size / 2};
 
   // Draw player
-  DrawTexturePro(sprite->texture, source, dest, origin, data->velocity.x * 0.2f,
+  DrawTexturePro(sprite->texture, source, dest, origin, self->velocity.x * 0.2f,
                  WHITE);
 }
 
