@@ -364,6 +364,8 @@ void game_update_client(Game game) {
   EntityListIterator it = el_iter(game->world);
   Entity *e;
   while ((e = eli_next(it))) {
+    e->position =
+        Vector2Add(e->position, Vector2Scale(e->velocity, game->delta_time));
     ent_update_client(e, game);
   }
 

@@ -276,8 +276,10 @@ i32 client_update(Game game) {
     case MSG_MOVE:
       printf("move %u entities\n", client.recvd_msg.move.count);
       for (u32 i = 0; i < client.recvd_msg.move.count; i++) {
-        EntityMoveData ent = client.recvd_msg.move.entities[i];
-        el_get(game->world, ent.idx)->position = ent.position;
+        EntityMoveData data = client.recvd_msg.move.entities[i];
+        Entity *entity = el_get(game->world, data.idx);
+        entity->position = data.position;
+        entity->velocity = data.velocity;
       }
       break;
     case MSG_CHANGES:

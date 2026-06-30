@@ -208,7 +208,7 @@ void server_update(Game game) {
     players_connected |= game->players_enabled[i];
   }
   if (!players_connected && game->host_player_idx != -1) {
-    printf("All players disconnected; shutting down...");
+    printf("All players disconnected; shutting down...\n");
     game_set_state(game, GS_QUIT);
   }
 
@@ -309,9 +309,11 @@ void server_update(Game game) {
           .move = (MoveData){.entities = {0}, .count = local_count},
       };
       for (u32 j = 0; j < local_count; j++) {
+        Entity *entity = el_get(game->world, i + j);
         move.move.entities[j] = (EntityMoveData){
             .idx = i + j,
-            .position = el_get(game->world, i + j)->position,
+            .position = entity->position,
+            .velocity = entity->velocity,
         };
       }
       broadcast_message(&move, false, game);

@@ -32,10 +32,10 @@ int main() {
            game->state != GS_QUIT) {
       game_process_input(game);
 
+      game_update_client(game);
       if (client_update(game) < 0)
         break;
 
-      game_update_client(game);
       game_draw(game);
     }
   }

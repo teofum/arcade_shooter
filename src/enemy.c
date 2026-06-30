@@ -116,8 +116,9 @@ static void enemy_move(Entity *self, Game game, Vector2 direction) {
   Enemy *data = &self->enemy;
 
   // Move, pushing the player and bullets if it collides
-  Vector2 delta = Vector2Scale(direction, game->delta_time * ENEMY_SPEED);
-  self->position = Vector2Add(self->position, delta);
+  self->velocity = Vector2Scale(direction, ENEMY_SPEED);
+  self->position = Vector2Add(self->position,
+                              Vector2Scale(self->velocity, game->delta_time));
 
   Rectangle bounds = {self->position.x + EPS, self->position.y + EPS,
                       data->size.x - 2 * EPS, data->size.y - 2 * EPS};

@@ -8,7 +8,7 @@
 #include "types.h"
 
 #define SERVER_PORT 2112
-#define MOVE_ENT_COUNT 40
+#define MOVE_ENT_COUNT 20
 #define CHANGE_ENT_COUNT 12
 #define UPDATE_ENT_COUNT 8
 #define SYNC_ENT_COUNT 3
@@ -46,6 +46,7 @@ typedef enum {
 typedef struct EntityMoveData {
   u16 idx;
   Vector2 position;
+  Vector2 velocity;
 } EntityMoveData;
 
 typedef struct MoveData {
