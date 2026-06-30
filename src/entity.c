@@ -99,7 +99,10 @@ void ent_draw(Entity *entity, struct Game *game) {
 }
 
 EntityCreateData ent_get_create_data(Entity *entity) {
-  EntityCreateData cd = {.position = entity->position};
+  EntityCreateData cd = {
+      .position = entity->position,
+      .velocity = entity->velocity,
+  };
 
   switch (entity->type) {
   case ENT_BULLET:
@@ -117,6 +120,7 @@ EntityCreateData ent_get_create_data(Entity *entity) {
         .h = 1,
         .level = entity->enemy.level,
         .type = entity->enemy.type,
+        .sprite_type = entity->enemy.sprite_type,
     };
     break;
   case ENT_ENEMY_BULLET:

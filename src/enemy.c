@@ -41,7 +41,7 @@ static Vector2 right = {1, 0};
  *============================================================================*/
 
 static Enemy *enemy_init_data(Entity *self, u32 w, u32 h, EnemyType type,
-                              u32 level) {
+                              u32 level, i32 sprite_type) {
   Enemy *data = &self->enemy;
 
   Vector2 size = {w * GRID_SIZE, h * GRID_SIZE};
@@ -65,7 +65,11 @@ static Enemy *enemy_init_data(Entity *self, u32 w, u32 h, EnemyType type,
     data->stat_scaling *= 4; // 4x XP drop
   }
 
-  data->sprite_type = type == ENEMY_SHOOTER ? 3 : rand() % 3;
+  if (sprite_type == -1) {
+    data->sprite_type = type == ENEMY_SHOOTER ? 3 : rand() % 3;
+  } else {
+    data->sprite_type = sprite_type;
+  }
   data->dmg_flash_timer = 0.0f;
 
   return data;
@@ -322,14 +326,15 @@ void enemy_draw(Entity *self, Game game) {
  * Enemy constructor                                                          *
  *============================================================================*/
 
-Entity *enemy_create(u32 x, u32 y, u32 w, u32 h, EnemyType type, u32 level) {
+Entity *enemy_create(u32 x, u32 y, u32 w, u32 h, EnemyType type, u32 level,
+                     i32 sprite_type) {
   Entity *enemy = ent_create(ENT_ENEMY);
 
   enemy->position = (Vector2){
       -FIELD_WIDTH / 2.0f + x * GRID_SIZE,
       -FIELD_HEIGHT / 2.0f + y * GRID_SIZE,
   };
-  enemy_init_data(enemy, w, h, type, level);
+  enemy_init_data(enemy, w, h, type, level, sprite_type);
 
   return enemy;
 }

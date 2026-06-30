@@ -137,7 +137,8 @@ static void send_message_impl(Message *msg, Connection *cli) {
 
 #if ENABLE_PACKET_LOSS
 
-  if (frand() < PACKET_LOSS_RATE) {
+  // Don't lose hello messages, it's only annoying for testing
+  if (msg->type != MSG_HELLO && frand() < PACKET_LOSS_RATE) {
     return;
   }
 

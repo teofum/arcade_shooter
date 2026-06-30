@@ -220,7 +220,7 @@ static void game_spawn_wave(Game game) {
           j++;
         }
 
-        Entity *enemy = enemy_create(j, i, w, 1, type, level);
+        Entity *enemy = enemy_create(j, i, w, 1, type, level, -1);
         el_add(game->world, enemy);
       }
     }
@@ -232,24 +232,24 @@ static void game_spawn_boss(Game game) {
   case 0: {
     // Miniboss 1: Big Chungus
     Entity *enemy =
-        enemy_create(FIELD_COLS / 2 - 2, 0, 4, 4, ENEMY_MINIBOSS_1, 2);
+        enemy_create(FIELD_COLS / 2 - 2, 0, 4, 4, ENEMY_MINIBOSS_1, 2, -1);
     el_add(game->world, enemy);
     break;
   }
   case 1: {
     // Miniboss 2: Big Iron
     Entity *enemy =
-        enemy_create(FIELD_COLS / 2 - 1, 0, 2, 2, ENEMY_MINIBOSS_2, 5);
+        enemy_create(FIELD_COLS / 2 - 1, 0, 2, 2, ENEMY_MINIBOSS_2, 5, -1);
     el_add(game->world, enemy);
 
     for (u32 j = FIELD_COLS / 2 - 2; j <= FIELD_COLS / 2 + 1; j++) {
-      enemy = enemy_create(j, 2, 1, 1, ENEMY_NORMAL, 5);
+      enemy = enemy_create(j, 2, 1, 1, ENEMY_NORMAL, 5, -1);
       el_add(game->world, enemy);
     }
     for (u32 i = 0; i < 2; i++) {
-      enemy = enemy_create(FIELD_COLS / 2 - 2, i, 1, 1, ENEMY_NORMAL, 3);
+      enemy = enemy_create(FIELD_COLS / 2 - 2, i, 1, 1, ENEMY_NORMAL, 3, -1);
       el_add(game->world, enemy);
-      enemy = enemy_create(FIELD_COLS / 2 + 1, i, 1, 1, ENEMY_NORMAL, 3);
+      enemy = enemy_create(FIELD_COLS / 2 + 1, i, 1, 1, ENEMY_NORMAL, 3, -1);
       el_add(game->world, enemy);
     }
     break;

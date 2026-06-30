@@ -238,6 +238,7 @@ typedef struct EnemyCreateData {
   u32 w;
   u32 h;
   u32 level;
+  i32 sprite_type;
 } EnemyCreateData;
 
 typedef struct ExplosionCreateData {
@@ -252,6 +253,7 @@ typedef struct DmgNumberCreateData {
 
 typedef struct EntityCreateData {
   Vector2 position;
+  Vector2 velocity;
 
   union {
     BulletCreateData bullet;

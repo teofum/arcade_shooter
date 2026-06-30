@@ -57,7 +57,8 @@ void send_message_impl(Message *msg) {
 
 #if ENABLE_PACKET_LOSS
 
-  if (frand() < PACKET_LOSS_RATE) {
+  // Don't lose hello messages, it's only annoying for testing
+  if (msg->type != MSG_HELLO && frand() < PACKET_LOSS_RATE) {
     return;
   }
 
@@ -295,7 +296,7 @@ i32 client_update(Game game) {
             break;
           case ENT_BULLET:
             e = bullet_create(
-                game->players[0]->position, c.create_data.bullet.target,
+                c.create_data.position, c.create_data.bullet.target,
                 c.create_data.bullet.type, c.create_data.bullet.damage,
                 c.create_data.bullet.level, c.create_data.bullet.special_idx,
                 game->players[0]);
@@ -305,7 +306,8 @@ i32 client_update(Game game) {
           case ENT_ENEMY:
             e = enemy_create(0, 0, c.create_data.enemy.w, c.create_data.enemy.h,
                              c.create_data.enemy.type,
-                             c.create_data.enemy.level);
+                             c.create_data.enemy.level,
+                             c.create_data.enemy.sprite_type);
             break;
           case ENT_DMG_NUMBER:
             e = dmg_number_create(c.create_data.position,
@@ -334,6 +336,9 @@ i32 client_update(Game game) {
                                     c.create_data.bullet.damage);
             break;
           }
+
+          e->position = c.create_data.position;
+          e->velocity = c.create_data.velocity;
 
           el_add(game->world, e);
         }
