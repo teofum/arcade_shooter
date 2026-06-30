@@ -44,6 +44,16 @@ bool enemy_bullet_update(Entity *self, Game game) {
   return false;
 }
 
+bool enemy_bullet_update_client(Entity *self, Game game) {
+  EnemyBullet *data = &self->enemy_bullet;
+
+  // Update position
+  Vector2 delta_pos = Vector2Scale(self->velocity, game->delta_time);
+  self->position = Vector2Add(self->position, delta_pos);
+
+  return false;
+}
+
 /*============================================================================*
  * Enemy bullet draw function                                                 *
  *============================================================================*/

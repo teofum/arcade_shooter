@@ -50,7 +50,7 @@ static EntityUpdateFunction ent_client_update_dispatch[] = {
     [ENT_POWERUP] = NULL,
     [ENT_EXPLOSION] = explosion_update_client,
     [ENT_LASER] = laser_update_client,
-    [ENT_ENEMY_BULLET] = NULL,
+    [ENT_ENEMY_BULLET] = enemy_bullet_update_client,
 };
 
 static EntityDrawFunction ent_draw_dispatch[] = {

@@ -9,6 +9,7 @@
 
 Entity *enemy_bullet_create(Vector2 position, Vector2 target, i32 damage);
 bool enemy_bullet_update(Entity *self, Game game);
+bool enemy_bullet_update_client(Entity *self, Game game);
 void enemy_bullet_draw(Entity *self, Game game);
 
 #endif
