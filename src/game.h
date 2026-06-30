@@ -62,6 +62,7 @@ typedef struct Game {
   Camera2D camera;
   f32 camera_shake;
 
+  u64 start_time;
   f32 total_time;
   f32 delta_time;
 

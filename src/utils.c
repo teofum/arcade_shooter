@@ -23,6 +23,12 @@ u64 now() {
   return timeval_to_ms(&tv);
 }
 
+f32 seconds_since(u64 start) {
+  static struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return (now() - start) / 1000.0f;
+}
+
 /*
  * RNG
  */

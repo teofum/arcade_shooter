@@ -22,6 +22,7 @@ typedef struct PlayerPosition {
 // Time
 u64 timeval_to_ms(struct timeval *tv);
 u64 now();
+f32 seconds_since(u64 start);
 
 // RNG
 f32 frand();

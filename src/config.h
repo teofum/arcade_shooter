@@ -4,6 +4,8 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
+#define SERVER_TICK_MS 10
+
 #define ENABLE_BGM true
 
 #define MAX_CLIENTS 4

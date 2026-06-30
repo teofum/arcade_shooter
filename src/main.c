@@ -1,12 +1,9 @@
-#include <raylib.h>
-#include <raymath.h>
-#include <stdio.h>
+#include <unistd.h>
 
-#include "assets.h"
 #include "config.h"
 #include "game.h"
 #include "server.h"
-#include "ui.h"
+#include "utils.h"
 
 void init();
 void cleanup();
@@ -17,16 +14,15 @@ int main() {
   Game game = game_init();
   game->host_player_idx = -1;
 
-  while (!WindowShouldClose() && game->state != GS_QUIT) {
+  while (game->state != GS_QUIT) {
+    u64 frame_start = now();
+
     game_update(game);
     server_update(game);
 
-    if (game->state == GS_MAIN_MENU) {
-      ui_draw_server_menu(game);
-    } else {
-      BeginDrawing();
-      ClearBackground((Color){0, 128, 128, 255});
-      EndDrawing();
+    u64 frame_time = now() - frame_start;
+    if (frame_time < SERVER_TICK_MS) {
+      usleep(1000 * (SERVER_TICK_MS - frame_time));
     }
   }
   game_end(game);
@@ -36,24 +32,6 @@ int main() {
   return 0;
 }
 
-void init() {
-  InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "ArcadeShooter");
-  SetTargetFPS(TARGET_FPS);
+void init() { server_init(); }
 
-  // HideCursor();
-  SetExitKey(0); // Stop "esc" key from immediately quitting the game
-
-  InitAudioDevice();
-
-  load_assets();
-
-  server_init();
-}
-
-void cleanup() {
-  server_shutdown();
-  unload_assets();
-
-  CloseAudioDevice();
-  CloseWindow();
-}
+void cleanup() { server_shutdown(); }

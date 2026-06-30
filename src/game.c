@@ -26,6 +26,7 @@ Game game_init() {
               .zoom = (f32)WINDOW_HEIGHT / FIELD_HEIGHT,
           },
       .players_enabled = {0},
+      .start_time = now(),
   };
 
   return game;
@@ -44,15 +45,15 @@ void game_set_state(Game game, GameState state) {
     game_setup_menu(game, 3, VERTICAL);
   }
 
-  if (ENABLE_BGM) {
-    if (state == GS_MAIN_MENU || state == GS_GAME_OVER) {
-      StopMusicStream(game->bgm);
-    } else if (state == GS_RUNNING) {
-      if (!IsMusicStreamPlaying(game->bgm)) {
-        PlayMusicStream(game->bgm);
-      }
-    }
-  }
+  // if (ENABLE_BGM) {
+  //   if (state == GS_MAIN_MENU || state == GS_GAME_OVER) {
+  //     StopMusicStream(game->bgm);
+  //   } else if (state == GS_RUNNING) {
+  //     if (!IsMusicStreamPlaying(game->bgm)) {
+  //       PlayMusicStream(game->bgm);
+  //     }
+  //   }
+  // }
 
   game->state = state;
 }
@@ -88,7 +89,7 @@ void game_reset(Game game) {
   el_flush_changes(game->world);
 
   // Init timers
-  game->total_time = GetTime();
+  game->total_time = seconds_since(game->start_time);
   game->delta_time = 0.0f;
 
   game->enemy_spawn_timer = 0.0f;
@@ -322,13 +323,14 @@ void game_update_camera(Game game) {
 }
 
 void game_update(Game game) {
-  // Update BGM stream
-  UpdateMusicStream(game->bgm);
-
   // Update timers
-  f32 now = GetTime();
-  game->delta_time = now - game->total_time;
-  game->total_time = now;
+  f32 current_time = seconds_since(game->start_time);
+  game->delta_time = current_time - game->total_time;
+  game->total_time = current_time;
+  printf("update %f (delta %f)\n", game->total_time, game->delta_time);
+  printf("%f\n", current_time);
+  printf("%llu\n", game->start_time);
+  printf("%llu\n", now());
 
   if (game->state == GS_MAIN_MENU)
     return;

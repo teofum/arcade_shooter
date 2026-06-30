@@ -324,10 +324,8 @@ void server_update(Game game) {
         .updates = (UpdateData){.updates = {0}, .count = 0},
     };
     count = 0;
-    printf("Update:\n");
     for (u32 i = 0; i < el_size(game->world); i++) {
       Entity *ent = el_get(game->world, i);
-      printf("  %u: %s\n", i, entity_type_name[ent->type]);
       if (ent->type == ENT_ENEMY) {
         update.updates.updates[count++] = (EntityUpdateData){
             .idx = i,
