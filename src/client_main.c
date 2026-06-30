@@ -52,6 +52,7 @@ void init() {
 
   HideCursor();
   SetExitKey(0); // Stop "esc" key from immediately quitting the game
+  InitAudioDevice();
 
   load_assets();
 
@@ -62,5 +63,6 @@ void cleanup() {
   client_shutdown();
   unload_assets();
 
+  CloseAudioDevice();
   CloseWindow();
 }

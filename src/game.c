@@ -351,8 +351,6 @@ void game_update(Game game) {
 
   if (game->boss_idx < N_BOSSES)
     game_spawn_enemies(game);
-
-  game_update_camera(game);
 }
 
 void game_update_client(Game game) {

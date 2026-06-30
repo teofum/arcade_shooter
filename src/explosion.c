@@ -23,14 +23,6 @@ bool explosion_update(Entity *self, Game game) {
   Explosion *data = &self->explosion;
 
   if (data->ttl == EXPLOSION_TTL) {
-    // Play explosion sound
-    // Sound sfx = LoadSoundAlias(assets.sfx_explosion);
-    // SetSoundPitch(sfx, 45.0f / data->radius);
-    // PlaySound(sfx);
-
-    // Shake camera
-    game->camera_shake = data->radius * EXPLOSION_CAMERA_SHAKE;
-
     // Damage enemies
     if (data->damage > 0) {
       EntityListIterator it = el_iter(game->world);
@@ -64,6 +56,17 @@ bool explosion_update(Entity *self, Game game) {
 
 bool explosion_update_client(Entity *self, Game game) {
   Explosion *data = &self->explosion;
+
+  if (data->ttl == EXPLOSION_TTL) {
+    // Play explosion sound
+    Sound sfx = LoadSoundAlias(assets.sfx_explosion);
+    SetSoundPitch(sfx, 45.0f / data->radius);
+    PlaySound(sfx);
+
+    // Shake camera
+    game->camera_shake = data->radius * EXPLOSION_CAMERA_SHAKE;
+  }
+
   data->ttl -= game->delta_time;
 
   return false;
@@ -71,6 +74,9 @@ bool explosion_update_client(Entity *self, Game game) {
 
 void explosion_draw(Entity *self, Game game) {
   Explosion *data = &self->explosion;
+  if (data->ttl < 0.0f) {
+    return; // Don't draw if expired, prevents double-animation if there's lag
+  }
 
   Sprite *sprite = &assets.explosion;
   u32 frame = sprite->frames * (1 - data->ttl / EXPLOSION_TTL);
