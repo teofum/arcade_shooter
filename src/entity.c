@@ -42,9 +42,9 @@ static EntityUpdateFunction ent_update_dispatch[] = {
 
 static EntityUpdateFunction ent_client_update_dispatch[] = {
     [ENT_PLAYER] = NULL,
-    [ENT_BULLET] = NULL,
+    [ENT_BULLET] = bullet_update_client,
     [ENT_WALL] = NULL,
-    [ENT_ENEMY] = NULL,
+    [ENT_ENEMY] = enemy_update_client,
     [ENT_DMG_NUMBER] = NULL,
     [ENT_XP_GEM] = NULL,
     [ENT_POWERUP] = NULL,

@@ -241,6 +241,30 @@ bool bullet_update(Entity *self, Game game) {
   return false;
 }
 
+bool bullet_update_client(Entity *self, Game game) {
+  Bullet *data = &self->bullet;
+  Player *pdata = &data->player->player;
+
+  // Predict next position
+  Vector2 delta_pos = Vector2Scale(self->velocity, game->delta_time);
+  Vector2 next_pos = Vector2Add(self->position, delta_pos);
+
+  // Check collisions
+  Collision collision =
+      check_collisions(self, game, next_pos, data->size, NULL, NULL);
+
+  // If there was a collision change the trajectory
+  if (collision.direction != COL_NONE) {
+    next_pos = apply_collision(self->position, delta_pos, &self->velocity, 1,
+                               collision, game);
+  }
+
+  // Update position
+  self->position = next_pos;
+
+  return false;
+}
+
 /*============================================================================*
  * Bullet draw function                                                       *
  *============================================================================*/

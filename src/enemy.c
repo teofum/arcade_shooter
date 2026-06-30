@@ -112,7 +112,8 @@ static void push_entity(Entity *entity, Rectangle bounds, f32 size,
   }
 }
 
-static void enemy_move(Entity *self, Game game, Vector2 direction) {
+static void enemy_move(Entity *self, Game game, Vector2 direction,
+                       bool server) {
   Enemy *data = &self->enemy;
 
   // Move, pushing the player and bullets if it collides
@@ -140,7 +141,8 @@ static void enemy_move(Entity *self, Game game, Vector2 direction) {
       Bullet *bdata = &entity->bullet;
 
       if (CheckCollisionCircleRec(entity->position, bdata->size, bounds)) {
-        bullet_hit_enemy(entity, self, game);
+        if (server)
+          bullet_hit_enemy(entity, self, game);
 
         if (!bdata->deferred_destroy) {
           push_entity(entity, bounds, bdata->size, direction);
@@ -182,7 +184,6 @@ bool enemy_update(Entity *self, Game game) {
   if (data->type == ENEMY_BOSS)
     return boss_update(self, game);
 
-  // Player *pdata = &game->player->player;
   Vector2 center = Vector2Add(self->position, Vector2Scale(data->size, 0.5f));
 
   // Die
@@ -204,7 +205,7 @@ bool enemy_update(Entity *self, Game game) {
     return true;
   }
 
-  enemy_move(self, game, down);
+  enemy_move(self, game, down, true);
 
   if (data->type == ENEMY_SHOOTER || data->type == ENEMY_MINIBOSS_2) {
     PlayerPosition closest = get_closest_player(game, self->position);
@@ -221,6 +222,38 @@ bool enemy_update(Entity *self, Game game) {
     }
     return true;
   }
+
+  if (data->dmg_flash_timer > 0.0f) {
+    data->dmg_flash_timer =
+        fmaxf(data->dmg_flash_timer - game->delta_time, 0.0f);
+  }
+
+  return false;
+}
+
+bool enemy_update_client(Entity *self, Game game) {
+  Enemy *data = &self->enemy;
+  if (data->type == ENEMY_BOSS) {
+    switch (data->boss_state) {
+    case BOSS_ENTER:
+      enemy_move(self, game, down, false);
+      break;
+    case BOSS_MOVE_LEFT_1:
+    case BOSS_MOVE_LEFT_2:
+      enemy_move(self, game, left, false);
+      break;
+    case BOSS_MOVE_RIGHT_1:
+    case BOSS_MOVE_RIGHT_2:
+      enemy_move(self, game, right, false);
+      break;
+    default:
+      break;
+    }
+  }
+
+  Vector2 center = Vector2Add(self->position, Vector2Scale(data->size, 0.5f));
+
+  enemy_move(self, game, down, false);
 
   if (data->dmg_flash_timer > 0.0f) {
     data->dmg_flash_timer =
@@ -367,7 +400,7 @@ bool boss_update(Entity *self, Game game) {
 
   switch (data->boss_state) {
   case BOSS_ENTER: {
-    enemy_move(self, game, down);
+    enemy_move(self, game, down, true);
 
     if (self->position.y >= -FIELD_HEIGHT / 2.0f + GRID_SIZE)
       boss_next_state(data);
@@ -390,7 +423,7 @@ bool boss_update(Entity *self, Game game) {
     break;
   }
   case BOSS_MOVE_LEFT_1: {
-    enemy_move(self, game, left);
+    enemy_move(self, game, left, true);
 
     if (self->position.x <= -FIELD_WIDTH / 2.0f)
       boss_next_state(data);
@@ -407,7 +440,7 @@ bool boss_update(Entity *self, Game game) {
     break;
   }
   case BOSS_MOVE_RIGHT_1: {
-    enemy_move(self, game, right);
+    enemy_move(self, game, right, true);
 
     if (self->position.x >= -1.5f * GRID_SIZE)
       boss_next_state(data);
@@ -427,7 +460,7 @@ bool boss_update(Entity *self, Game game) {
     break;
   }
   case BOSS_MOVE_RIGHT_2: {
-    enemy_move(self, game, right);
+    enemy_move(self, game, right, true);
 
     if (self->position.x >= FIELD_WIDTH / 2.0f - 3 * GRID_SIZE)
       boss_next_state(data);
@@ -435,7 +468,7 @@ bool boss_update(Entity *self, Game game) {
     break;
   }
   case BOSS_MOVE_LEFT_2: {
-    enemy_move(self, game, left);
+    enemy_move(self, game, left, true);
 
     if (self->position.x <= -1.5f * GRID_SIZE)
       boss_next_state(data);
