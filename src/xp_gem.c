@@ -55,6 +55,28 @@ bool xp_gem_update(Entity *self, Game game) {
   return false;
 }
 
+bool xp_gem_update_client(Entity *self, Game game) {
+  f32 delta_y = game->delta_time * ENEMY_SPEED;
+  self->position.y += delta_y;
+
+  // Accelerate towards player and move
+  Vector2 target_velocity = {0, 0};
+  PlayerPosition closest = get_closest_player(game, self->position);
+  Vector2 player_pos = closest.position;
+  f32 distance = Vector2Distance(player_pos, self->position);
+
+  if (distance < XP_MAGNET_RANGE) {
+    target_velocity = Vector2Subtract(player_pos, self->position);
+    target_velocity =
+        Vector2Scale(target_velocity, XP_MAGNET_POWER / (distance * distance));
+  }
+
+  self->velocity = Vector2Lerp(self->velocity, target_velocity, 0.1f);
+  self->position = Vector2Add(self->position, self->velocity);
+
+  return false;
+}
+
 void xp_gem_draw(Entity *self, Game game) {
   XpGem *data = &self->xp_gem;
 
