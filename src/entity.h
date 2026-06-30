@@ -227,18 +227,18 @@ typedef struct Entity {
 
 typedef struct BulletCreateData {
   Vector2 target;
-  BulletType type;
-  u32 level;
-  i32 damage;
-  u32 special_idx;
+  i8 type;
+  u8 level;
+  u8 special_idx;
+  i8 damage;
 } BulletCreateData;
 
 typedef struct EnemyCreateData {
   EnemyType type;
-  u32 w;
-  u32 h;
-  u32 level;
-  i32 sprite_type;
+  u8 w;
+  u8 h;
+  u8 level;
+  i8 sprite_type;
 } EnemyCreateData;
 
 typedef struct ExplosionCreateData {
