@@ -320,30 +320,6 @@ void server_update(Game game) {
       broadcast_message(&move, false, game);
     }
 
-    Message update = {
-        .type = MSG_UPDATE,
-        .updates = (UpdateData){.updates = {0}, .count = 0},
-    };
-    count = 0;
-    for (u32 i = 0; i < el_size(game->world); i++) {
-      Entity *ent = el_get(game->world, i);
-      if (ent->type == ENT_ENEMY) {
-        update.updates.updates[count++] = (EntityUpdateData){
-            .idx = i,
-            .enemy = ent->enemy,
-        };
-        if (count == UPDATE_ENT_COUNT) {
-          update.updates.count = count;
-          broadcast_message(&update, false, game);
-          count = 0;
-        }
-      }
-    }
-    if (count > 0) {
-      update.updates.count = count;
-      broadcast_message(&update, false, game);
-    }
-
     for (u32 i = 0; i < MAX_CLIENTS; i++) {
       if (game->players_enabled[i] && game->players[i]->player.leveled_up) {
         game->players[i]->player.leveled_up = false;
