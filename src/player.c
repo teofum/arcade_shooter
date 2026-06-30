@@ -279,7 +279,6 @@ bool player_update(Entity *self, Game game) {
 
   // Die
   if (data->health <= 0) {
-    PlaySound(assets.sfx_oof);
     game_set_state(game, GS_GAME_OVER);
     return false;
   }
@@ -292,6 +291,23 @@ bool player_update(Entity *self, Game game) {
   }
 
   player_update_timers(self, game);
+
+  return false;
+}
+
+bool player_update_client(Entity *self, Game game) {
+  Player *data = &self->player;
+
+  // Death sound
+  if (data->health <= 0) {
+    PlaySound(assets.sfx_oof);
+    return false;
+  }
+
+  // Optimistically apply inputs
+  self->player.direction = game->client.input.direction;
+  self->player.crosshair = game->client.input.crosshair;
+  player_move(self, game);
 
   return false;
 }
