@@ -82,7 +82,7 @@ static bool player_hit_bullet(Entity *self, Entity *enemy_bullet, Game game) {
   return false;
 }
 
-static void player_move(Entity *self, Game game) {
+static void player_move(Entity *self, Game game, bool server) {
   Player *data = &self->player;
 
   // Update velocity
@@ -97,7 +97,7 @@ static void player_move(Entity *self, Game game) {
   // Check for collisions
   // Also collide with a "fake" wall at the bottom so player can't go OOB
   Collision collision = check_collisions(self, game, next_pos, data->size, NULL,
-                                         player_hit_bullet);
+                                         server ? player_hit_bullet : NULL);
 
   Collision c =
       collide_particle_rect(self->position, next_pos, data->size, bottom_wall);
@@ -283,7 +283,7 @@ bool player_update(Entity *self, Game game) {
     return false;
   }
 
-  player_move(self, game);
+  player_move(self, game, true);
   player_fire(self, game);
 
   if (data->xp >= data->to_next_level) {
@@ -307,7 +307,7 @@ bool player_update_client(Entity *self, Game game) {
   // Optimistically apply inputs
   self->player.direction = game->client.input.direction;
   self->player.crosshair = game->client.input.crosshair;
-  player_move(self, game);
+  player_move(self, game, false);
 
   return false;
 }

@@ -15,7 +15,7 @@ static DmgNumber dmg_number_init_data(i32 damage, f32 size) {
       .timer = DMG_NUMBER_TTL,
       .speed = DMG_NUMBER_SPEED,
   };
-  sprintf(data.string, damage < 0 ? "+%d" : "%d", abs(damage));
+  snprintf(data.string, 10, damage < 0 ? "+%d" : "%d", abs(damage));
 
   return data;
 }
@@ -27,6 +27,17 @@ bool dmg_number_update(Entity *self, Game game) {
     return true;
   } else {
     data->timer -= game->delta_time;
+    self->position.y -= data->speed * game->delta_time;
+    data->speed += DMG_NUMBER_ACCEL * game->delta_time;
+  }
+
+  return false;
+}
+
+bool dmg_number_update_client(Entity *self, Game game) {
+  DmgNumber *data = &self->dmg_number;
+
+  if (data->timer > 0.0f) {
     self->position.y -= data->speed * game->delta_time;
     data->speed += DMG_NUMBER_ACCEL * game->delta_time;
   }
