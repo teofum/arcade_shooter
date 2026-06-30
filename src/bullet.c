@@ -241,6 +241,18 @@ bool bullet_update(Entity *self, Game game) {
   return false;
 }
 
+bool bullet_hit_enemy_client(Entity *self, Entity *enemy, Game game) {
+  Bullet *data = &self->bullet;
+  Enemy *edata = &enemy->enemy;
+
+  edata->dmg_flash_timer = DMG_FLASH_TIME;
+
+  Sound sfx = LoadSoundAlias(assets.sfx_hit);
+  PlaySound(sfx);
+
+  return false;
+}
+
 bool bullet_update_client(Entity *self, Game game) {
   Bullet *data = &self->bullet;
   Player *pdata = &data->player->player;
@@ -250,8 +262,8 @@ bool bullet_update_client(Entity *self, Game game) {
   Vector2 next_pos = Vector2Add(self->position, delta_pos);
 
   // Check collisions
-  Collision collision =
-      check_collisions(self, game, next_pos, data->size, NULL, NULL);
+  Collision collision = check_collisions(self, game, next_pos, data->size,
+                                         bullet_hit_enemy_client, NULL);
 
   // If there was a collision change the trajectory
   if (collision.direction != COL_NONE) {
