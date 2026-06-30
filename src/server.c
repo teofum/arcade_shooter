@@ -203,15 +203,12 @@ void server_update(Game game) {
   }
 
   // Shutdown server when all players disconnect
-  if (game->state != GS_MAIN_MENU) {
-    bool players_connected = false;
-    for (u32 i = 0; i < MAX_CLIENTS && !players_connected; i++) {
-      players_connected |= game->players_enabled[i];
-    }
-
-    if (!players_connected) {
-      game_set_state(game, GS_QUIT);
-    }
+  bool players_connected = false;
+  for (u32 i = 0; i < MAX_CLIENTS && !players_connected; i++) {
+    players_connected |= game->players_enabled[i];
+  }
+  if (!players_connected && game->host_player_idx != -1) {
+    game_set_state(game, GS_QUIT);
   }
 
   // If host disconnects, make the next player host

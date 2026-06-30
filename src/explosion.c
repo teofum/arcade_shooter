@@ -24,9 +24,9 @@ bool explosion_update(Entity *self, Game game) {
 
   if (data->ttl == EXPLOSION_TTL) {
     // Play explosion sound
-    Sound sfx = LoadSoundAlias(assets.sfx_explosion);
-    SetSoundPitch(sfx, 45.0f / data->radius);
-    PlaySound(sfx);
+    // Sound sfx = LoadSoundAlias(assets.sfx_explosion);
+    // SetSoundPitch(sfx, 45.0f / data->radius);
+    // PlaySound(sfx);
 
     // Shake camera
     game->camera_shake = data->radius * EXPLOSION_CAMERA_SHAKE;

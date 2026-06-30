@@ -327,10 +327,6 @@ void game_update(Game game) {
   f32 current_time = seconds_since(game->start_time);
   game->delta_time = current_time - game->total_time;
   game->total_time = current_time;
-  printf("update %f (delta %f)\n", game->total_time, game->delta_time);
-  printf("%f\n", current_time);
-  printf("%llu\n", game->start_time);
-  printf("%llu\n", now());
 
   if (game->state == GS_MAIN_MENU)
     return;

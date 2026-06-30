@@ -162,8 +162,8 @@ bool bullet_hit_enemy(Entity *self, Entity *enemy, Game game) {
   Bullet *data = &self->bullet;
   Enemy *edata = &enemy->enemy;
 
-  Sound sfx = LoadSoundAlias(assets.sfx_hit);
-  PlaySound(sfx);
+  // Sound sfx = LoadSoundAlias(assets.sfx_hit);
+  // PlaySound(sfx);
 
   i32 damage = get_damage(data->damage);
   edata->health -= damage;
