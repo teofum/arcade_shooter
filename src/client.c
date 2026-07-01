@@ -345,6 +345,32 @@ i32 client_update(Game game) {
       }
       el_flush_changes(game->world);
       break;
+    case MSG_UPDATE:
+      printf("update %u entities\n", client.recvd_msg.updates.count);
+      for (u32 i = 0; i < client.recvd_msg.updates.count; i++) {
+        EntityUpdateData update = client.recvd_msg.updates.updates[i];
+        Entity *ent = el_get(game->world, update.idx);
+        if (ent->type == ENT_ENEMY) {
+          ent->enemy = update.enemy;
+        } else {
+          printf("Fatal: received update %u for an entity of type %s\n", i,
+                 entity_type_name[ent->type]);
+          printf("Entities:\n");
+          EntityListIterator it = el_iter(game->world);
+          Entity *e;
+          u32 j = 0;
+          while ((e = eli_next(it))) {
+            printf("  %u: %s\n", j++, entity_type_name[e->type]);
+          }
+          printf("Updates:\n");
+          for (u32 j = 0; j < client.recvd_msg.updates.count; j++) {
+            EntityUpdateData update = client.recvd_msg.updates.updates[j];
+            printf("  ent %u\n", update.idx);
+          }
+          assert(false);
+        }
+      }
+      break;
     case MSG_LEVEL_UP:
       game->players[game->client.local_player_idx]->player =
           client.recvd_msg.level_up.player_state;

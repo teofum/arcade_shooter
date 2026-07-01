@@ -29,6 +29,7 @@ typedef enum {
   MSG_PLAYER_STATE,
   MSG_MOVE,
   MSG_CHANGES,
+  MSG_UPDATE,
   MSG_PLAYER_JOIN,
   MSG_PLAYER_LEAVE,
   MSG_ENTITY_SYNC,
@@ -56,6 +57,19 @@ typedef struct ChangeData {
   EntityListChange changes[CHANGE_ENT_COUNT];
   u8 count;
 } ChangeData;
+
+typedef struct EntityUpdateData {
+  u16 idx;
+
+  union {
+    Enemy enemy;
+  };
+} EntityUpdateData;
+
+typedef struct UpdateData {
+  EntityUpdateData updates[UPDATE_ENT_COUNT];
+  u8 count;
+} UpdateData;
 
 typedef struct EntitySyncData {
   Entity entities[SYNC_ENT_COUNT];
@@ -118,6 +132,7 @@ typedef struct Message {
   union {
     MoveData move;
     ChangeData changes;
+    UpdateData updates;
     GameStateData game;
     PlayerStateData player;
     InputData input;
