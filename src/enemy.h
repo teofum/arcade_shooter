@@ -14,4 +14,6 @@ bool enemy_update(Entity *self, Game game);
 bool enemy_update_client(Entity *self, Game game);
 void enemy_draw(Entity *self, Game game);
 
+bool enemy_is_boss(Entity *self);
+
 #endif

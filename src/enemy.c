@@ -543,3 +543,8 @@ Entity *boss_create() {
 
   return boss;
 }
+
+bool enemy_is_boss(Entity *self) {
+  EnemyType t = self->enemy.type;
+  return t == ENEMY_BOSS || t == ENEMY_MINIBOSS_1 || t == ENEMY_MINIBOSS_2;
+}

@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #include "config.h"
+#include "enemy.h"
 #include "entity.h"
 #include "entity_list.h"
 #include "game.h"
@@ -327,7 +328,7 @@ void server_update(Game game) {
     count = 0;
     for (u32 i = 0; i < el_size(game->world); i++) {
       Entity *ent = el_get(game->world, i);
-      if (ent->type == ENT_ENEMY) {
+      if (ent->type == ENT_ENEMY && enemy_is_boss(ent)) {
         update.updates.updates[count++] = (EntityUpdateData){
             .idx = i,
             .enemy = ent->enemy,

@@ -39,8 +39,6 @@ static void game_setup_menu(Game game, u32 n_opts, Orientation orientation) {
 }
 
 void game_set_state(Game game, GameState state) {
-  printf("Set state\n");
-
   if (state == GS_MAIN_MENU || state == GS_GAME_OVER) {
     game_setup_menu(game, 2, VERTICAL);
   } else if (state == GS_RUNNING) {
@@ -49,11 +47,9 @@ void game_set_state(Game game, GameState state) {
 
 #if ENABLE_BGM
 
-  printf("BGM enabled\n");
   if (state == GS_MAIN_MENU || state == GS_GAME_OVER) {
     StopMusicStream(game->bgm);
   } else if (state == GS_RUNNING) {
-    printf("Play music\n");
     if (!IsMusicStreamPlaying(game->bgm)) {
       PlayMusicStream(game->bgm);
     }
