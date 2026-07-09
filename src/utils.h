@@ -34,4 +34,8 @@ Range get_damage_range(i32 base_damage);
 // Player finding
 PlayerPosition get_closest_player(Game game, Vector2 pos);
 
+// Graphics
+void draw_text_ingame(char *text, f32 size, Vector2 position, Color color,
+                      Game game);
+
 #endif

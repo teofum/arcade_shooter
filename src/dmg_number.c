@@ -7,6 +7,7 @@
 #include "dmg_number.h"
 #include "entity.h"
 #include "game.h"
+#include "utils.h"
 
 static DmgNumber dmg_number_init_data(i32 damage, f32 size) {
   DmgNumber data = {
@@ -49,19 +50,8 @@ void dmg_number_draw(Entity *self, Game game) {
   DmgNumber *data = &self->dmg_number;
 
   // Draw number
-  // Temporarily disable the camera and manually scale the text coords,
-  // because drawing text with the camera causes odd behavior
-  EndMode2D();
-  {
-    f32 w = MeasureText(data->string, data->size);
-    f32 h = data->size;
-    Matrix m = GetCameraMatrix2D(game->camera);
-    Vector2 pos = Vector2Transform(self->position, m);
-
-    DrawText(data->string, pos.x - w / 2, pos.y - h / 2, h,
-             data->damage > 0 ? RED : GREEN);
-  }
-  BeginMode2D(game->camera);
+  Color color = data->damage > 0 ? RED : GREEN;
+  draw_text_ingame(data->string, data->size, self->position, color, game);
 }
 
 Entity *dmg_number_create(Vector2 position, i32 dmg, f32 size) {

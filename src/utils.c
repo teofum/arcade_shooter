@@ -67,3 +67,26 @@ PlayerPosition get_closest_player(Game game, Vector2 pos) {
 
   return closest;
 }
+
+void draw_text_ingame(char *text, f32 size, Vector2 position, Color color,
+                      Game game) {
+  // Temporarily disable the camera and manually scale the text coords,
+  // because drawing text with the camera causes odd behavior
+  EndMode2D();
+  {
+    f32 w = MeasureText(text, size);
+    f32 h = size;
+    Matrix m = GetCameraMatrix2D(game->camera);
+    Vector2 pos = Vector2Transform(position, m);
+
+    // Outline
+    DrawText(text, pos.x - w / 2 - 1, pos.y - h / 2 - 1, h, BLACK);
+    DrawText(text, pos.x - w / 2 - 1, pos.y - h / 2 + 1, h, BLACK);
+    DrawText(text, pos.x - w / 2 + 1, pos.y - h / 2 - 1, h, BLACK);
+    DrawText(text, pos.x - w / 2 + 1, pos.y - h / 2 + 1, h, BLACK);
+
+    // Text
+    DrawText(text, pos.x - w / 2, pos.y - h / 2, h, color);
+  }
+  BeginMode2D(game->camera);
+}

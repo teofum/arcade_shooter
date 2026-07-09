@@ -1,6 +1,7 @@
 #include <math.h>
 #include <raylib.h>
 #include <raymath.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "assets.h"
@@ -318,7 +319,6 @@ bool player_update_client(Entity *self, Game game) {
 
 void player_draw(Entity *self, Game game) {
   Player *data = &self->player;
-
   Sprite *sprite = &assets.player;
 
   Rectangle source = get_frame_rect(sprite, 0);
@@ -333,6 +333,20 @@ void player_draw(Entity *self, Game game) {
   // Draw player
   DrawTexturePro(sprite->texture, source, dest, origin, self->velocity.x * 0.2f,
                  WHITE);
+
+  // Check which player this is
+  i32 player_idx = -1;
+  for (u32 i = 0; player_idx == -1 && i < MAX_CLIENTS; i++) {
+    if (self == game->players[i])
+      player_idx = i;
+  }
+
+  static char player_str[10];
+  if (player_idx != -1 && player_idx != game->client.local_player_idx) {
+    snprintf(player_str, 10, "P%d", player_idx + 1);
+    p = Vector2Add(p, (Vector2){0, size * 0.75f});
+    draw_text_ingame(player_str, 10, p, player_colors[player_idx], game);
+  }
 }
 
 /*============================================================================*
