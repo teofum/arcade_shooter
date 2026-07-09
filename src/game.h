@@ -38,10 +38,16 @@ typedef struct InputData {
   bool firing;
 } InputData;
 
+typedef enum {
+  PLAYER_NONE,
+  PLAYER_CLIENT,
+  PLAYER_AI,
+} PlayerType;
+
 typedef struct Game {
   EntityList world;
 
-  bool players_enabled[MAX_CLIENTS];
+  PlayerType player_type[MAX_CLIENTS];
   Entity *players[MAX_CLIENTS];
   i32 host_player_idx;
 

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "config.h"
+#include "game.h"
 #include "raylib.h"
 #include "raymath.h"
 #include "utils.h"
@@ -54,7 +55,7 @@ PlayerPosition get_closest_player(Game game, Vector2 pos) {
   f32 closest_d = INFINITY;
 
   for (u32 i = 0; i < MAX_CLIENTS; i++) {
-    if (game->players_enabled[i]) {
+    if (game->player_type[i] != PLAYER_NONE) {
       Vector2 player_pos = game->players[i]->position;
       f32 d = Vector2DistanceSqr(pos, player_pos);
       if (d < closest_d) {

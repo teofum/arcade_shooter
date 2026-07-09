@@ -207,7 +207,7 @@ void server_update(Game game) {
   // Shutdown server when all players disconnect
   bool players_connected = false;
   for (u32 i = 0; i < MAX_CLIENTS && !players_connected; i++) {
-    players_connected |= game->players_enabled[i];
+    players_connected |= (game->player_type[i] == PLAYER_CLIENT);
   }
   if (!players_connected && game->host_player_idx != -1) {
     printf("All players disconnected; shutting down...\n");
@@ -216,9 +216,9 @@ void server_update(Game game) {
 
   // If host disconnects, make the next player host
   if (game->host_player_idx == -1 ||
-      !game->players_enabled[game->host_player_idx]) {
+      game->player_type[game->host_player_idx] == PLAYER_NONE) {
     for (u32 i = 0; i < MAX_CLIENTS; i++) {
-      if (game->players_enabled[i]) {
+      if (game->player_type[i] == PLAYER_CLIENT) {
         game->host_player_idx = i;
         printf("Player %u is now host\n", i);
         break;
@@ -231,10 +231,10 @@ void server_update(Game game) {
     if (!server.game_running) {
       Message reset = {
           .type = MSG_RESET,
-          .reset = (ResetData){.players_enabled = {0}},
+          .reset = (ResetData){.player_type = {0}},
       };
-      memcpy(reset.reset.players_enabled, game->players_enabled,
-             MAX_CLIENTS * sizeof(bool));
+      memcpy(reset.reset.player_type, game->player_type,
+             MAX_CLIENTS * sizeof(PlayerType));
       broadcast_message(&reset, true, game);
     }
     server.game_running = true;
@@ -248,7 +248,7 @@ void server_update(Game game) {
       .game =
           (GameStateData){
               .state = game->state,
-              .players_enabled = {0},
+              .player_type = {0},
               .host_player_idx = game->host_player_idx,
               .total_time = game->total_time,
               .delta_time = game->delta_time,
@@ -260,13 +260,13 @@ void server_update(Game game) {
               .menu_selected_option = game->menu_selected_option,
           },
   };
-  memcpy(game_state.game.players_enabled, game->players_enabled,
-         MAX_CLIENTS * sizeof(bool));
+  memcpy(game_state.game.player_type, game->player_type,
+         MAX_CLIENTS * sizeof(PlayerType));
   broadcast_message(&game_state, false, game);
 
   if (game->state == GS_RUNNING) {
     for (u32 i = 0; i < MAX_CLIENTS; i++) {
-      if (game->players_enabled[i]) {
+      if (game->player_type[i] != PLAYER_NONE) {
         Message player_state = {
             .type = MSG_PLAYER_STATE,
             .player =
@@ -284,7 +284,7 @@ void server_update(Game game) {
         };
         broadcast_message(&player_leave, true, game);
       }
-      server.last_players_enabled[i] = game->players_enabled[i];
+      server.last_players_enabled[i] = game->player_type[i];
     }
 
     u32 change_count;
@@ -346,7 +346,8 @@ void server_update(Game game) {
     }
 
     for (u32 i = 0; i < MAX_CLIENTS; i++) {
-      if (game->players_enabled[i] && game->players[i]->player.leveled_up) {
+      if (game->player_type[i] != PLAYER_NONE &&
+          game->players[i]->player.leveled_up) {
         game->players[i]->player.leveled_up = false;
 
         Message level_up = {
@@ -395,7 +396,7 @@ void server_update(Game game) {
         break;
       }
 
-      game->players_enabled[idx] = true;
+      game->player_type[idx] = PLAYER_CLIENT;
 
       // First player to connect becomes the host
       if (game->host_player_idx == -1) {
@@ -416,11 +417,14 @@ void server_update(Game game) {
         Entity *new_player = player_create();
         new_player->player.xp = game->players[0]->player.xp;
         game->players[idx] = el_add(game->world, new_player);
+
+        // Flush changes so the new player creation is not sent
+        // We create new players manually on the client for timing reasons
         el_flush_changes(game->world);
 
         for (u32 i = 0; i < MAX_CLIENTS; i++) {
-          response.hello.players_enabled[i] = game->players_enabled[i];
-          if (game->players_enabled[i]) {
+          response.hello.player_type[i] = game->player_type[i];
+          if (game->player_type[i] != PLAYER_NONE) {
             response.hello.player_indices[i] =
                 el_indexof(game->world, game->players[i]);
           }

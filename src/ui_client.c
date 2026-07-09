@@ -114,7 +114,8 @@ void ui_draw_lobby_screen(Game game) {
             START);
 
     for (u32 i = 0; i < MAX_CLIENTS; i++) {
-      bool connected = game->players_enabled[i];
+      bool connected = game->player_type[i] != PLAYER_NONE;
+      bool bot = game->player_type[i] == PLAYER_AI;
       Color color = connected ? GRAY : DARKGRAY;
       Color border_color = connected ? player_colors[i] : GRAY;
 
@@ -123,7 +124,9 @@ void ui_draw_lobby_screen(Game game) {
       {
         if (connected) {
           snprintf(player_text, 20, "Player %u%s", i,
-                   i == game->host_player_idx ? " [H]" : "");
+                   i == game->host_player_idx ? " [H]"
+                   : bot                      ? " [BOT]"
+                                              : "");
           ui_text(player_text, 30, player_colors[i], (Vector2){0, 0}, START,
                   CENTER);
           if (i == game->client.local_player_idx) {
@@ -155,9 +158,10 @@ static void ui_draw_other_player_health(Game game) {
 
   f32 y = 0;
   for (u32 i = 0; i < MAX_CLIENTS; i++) {
-    if (game->players_enabled[i] && game->players[i] != NULL &&
+    if (game->player_type[i] != PLAYER_NONE && game->players[i] != NULL &&
         i != game->client.local_player_idx) {
-      snprintf(player_text, 10, "P%u", i + 1);
+      snprintf(player_text, 10, "P%u%s", i + 1,
+               game->player_type[i] == PLAYER_AI ? " (BOT)" : "");
       Player *pdata = &game->players[i]->player;
       ui_draw_bar(0, y, 100, 10, (f32)pdata->health / pdata->max_health,
                   player_text, DARKGRAY, RED, START, CENTER);

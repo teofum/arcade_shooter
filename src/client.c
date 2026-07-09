@@ -140,8 +140,8 @@ i32 client_connect(const char *address, Game game) {
 
         // Sync player data
         for (u32 i = 0; i < MAX_CLIENTS; i++) {
-          game->players_enabled[i] = client.recvd_msg.hello.players_enabled[i];
-          if (game->players_enabled[i]) {
+          game->player_type[i] = client.recvd_msg.hello.player_type[i];
+          if (game->player_type[i] != PLAYER_NONE) {
             game->players[i] =
                 el_get(game->world, client.recvd_msg.hello.player_indices[i]);
           }
@@ -248,14 +248,14 @@ i32 client_update(Game game) {
       game->host_player_idx = client.recvd_msg.game.host_player_idx;
 
       for (u32 i = 0; i < MAX_CLIENTS; i++) {
-        if (game->players_enabled[i] &&
-            !client.recvd_msg.game.players_enabled[i]) {
+        if (game->player_type[i] == PLAYER_CLIENT &&
+            client.recvd_msg.game.player_type[i] == PLAYER_NONE) {
           printf("player %u left\n", i);
-          game->players_enabled[i] = false;
+          game->player_type[i] = PLAYER_NONE;
           game->players[i] = NULL;
         }
         if (game->state == GS_MAIN_MENU) {
-          game->players_enabled[i] = client.recvd_msg.game.players_enabled[i];
+          game->player_type[i] = client.recvd_msg.game.player_type[i];
         }
       }
       break;
@@ -381,10 +381,14 @@ i32 client_update(Game game) {
       u32 idx = client.recvd_msg.player_change.player_idx;
       printf("player %u joined\n", idx);
       if (idx != game->client.local_player_idx) {
-        Entity *new_player = player_create();
-        new_player->player.xp = game->players[0]->player.xp;
-        game->players[idx] = el_add(game->world, new_player);
-        game->players_enabled[idx] = true;
+        // If there is no player in this slot create it, otherwise, take over
+        // the AI player
+        if (game->player_type[idx] == PLAYER_NONE) {
+          Entity *new_player = player_create();
+          new_player->player.xp = game->players[0]->player.xp;
+          game->players[idx] = el_add(game->world, new_player);
+        }
+        game->player_type[idx] = PLAYER_CLIENT;
       }
       break;
     }
@@ -397,8 +401,8 @@ i32 client_update(Game game) {
     case MSG_START_GAME:
       break;
     case MSG_RESET:
-      memcpy(game->players_enabled, client.recvd_msg.reset.players_enabled,
-             MAX_CLIENTS * sizeof(bool));
+      memcpy(game->player_type, client.recvd_msg.reset.player_type,
+             MAX_CLIENTS * sizeof(PlayerType));
       game_reset(game);
       break;
     case MSG_GOODBYE:

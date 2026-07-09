@@ -129,7 +129,7 @@ static void enemy_move(Entity *self, Game game, Vector2 direction,
                       data->size.x - 2 * EPS, data->size.y - 2 * EPS};
 
   for (u32 i = 0; i < MAX_CLIENTS; i++) {
-    if (game->players_enabled[i]) {
+    if (game->player_type[i] != PLAYER_NONE) {
       Player *pdata = &game->players[i]->player;
       if (CheckCollisionCircleRec(game->players[i]->position, pdata->size,
                                   bounds)) {
@@ -220,7 +220,7 @@ bool enemy_update(Entity *self, Game game) {
   if (self->position.y >
       FIELD_HEIGHT / 2.0f - data->size.y - ((f32)FIELD_WIDTH / FIELD_COLS)) {
     for (u32 i = 0; i < MAX_CLIENTS; i++) {
-      if (game->players_enabled[i]) {
+      if (game->player_type[i] != PLAYER_NONE) {
         game->players[i]->player.health -= data->damage;
       }
     }

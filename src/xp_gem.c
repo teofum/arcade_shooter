@@ -36,7 +36,7 @@ bool xp_gem_update(Entity *self, Game game) {
 
   if (distance < XP_PICKUP_RANGE) {
     for (u32 i = 0; i < MAX_CLIENTS; i++) {
-      if (game->players_enabled[i]) {
+      if (game->player_type[i] != PLAYER_NONE) {
         Player *pdata = &game->players[i]->player;
         pdata->xp += data->value;
       }

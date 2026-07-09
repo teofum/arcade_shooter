@@ -16,7 +16,7 @@
 #define MESSAGE_BUF_SIZE 128
 #define advance(x) ((x) == MESSAGE_BUF_SIZE - 1 ? 0 : (x) + 1)
 
-#define ENABLE_PACKET_LOSS 1
+#define ENABLE_PACKET_LOSS 0
 #define PACKET_LOSS_RATE 0.3
 #define CONNECTION_TIMEOUT 1000
 
@@ -81,7 +81,7 @@ typedef struct EntitySyncData {
 typedef struct GameStateData {
   GameState state;
 
-  bool players_enabled[MAX_CLIENTS];
+  PlayerType player_type[MAX_CLIENTS];
   i32 host_player_idx;
 
   f32 total_time;
@@ -110,14 +110,14 @@ typedef struct LevelUpData {
 } LevelUpData;
 
 typedef struct ResetData {
-  bool players_enabled[MAX_CLIENTS];
+  PlayerType player_type[MAX_CLIENTS];
 } ResetData;
 
 typedef struct HelloData {
   u32 player_idx;
 
   bool game_running;
-  bool players_enabled[MAX_CLIENTS];
+  PlayerType player_type[MAX_CLIENTS];
   u32 player_indices[MAX_CLIENTS];
 } HelloData;
 

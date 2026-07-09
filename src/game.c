@@ -25,7 +25,7 @@ Game game_init() {
               .offset = BASE_OFFSET,
               .zoom = (f32)WINDOW_HEIGHT / FIELD_HEIGHT,
           },
-      .players_enabled = {0},
+      .player_type = {0},
       .start_time = now(),
   };
 
@@ -70,7 +70,7 @@ void game_reset(Game game) {
   game->world = el_create();
 
   for (u32 i = 0; i < MAX_CLIENTS; i++) {
-    if (game->players_enabled[i]) {
+    if (game->player_type[i] != PLAYER_NONE) {
       Entity *player = player_create();
       game->players[i] = el_add(game->world, player);
     }
@@ -335,7 +335,7 @@ void game_update(Game game) {
 
   // Update input
   for (u32 i = 0; i < MAX_CLIENTS; i++) {
-    if (game->players_enabled[i]) {
+    if (game->player_type[i] == PLAYER_CLIENT) {
       game->players[i]->player.direction = game->server.input[i].direction;
       game->players[i]->player.crosshair = game->server.input[i].crosshair;
       game->players[i]->player.firing = game->server.input[i].firing;
@@ -373,8 +373,8 @@ void game_update_client(Game game) {
 }
 
 void game_remove_player(Game game, u32 idx) {
-  if (game->players_enabled[idx]) {
-    game->players_enabled[idx] = false;
+  if (game->player_type[idx] != PLAYER_NONE) {
+    game->player_type[idx] = PLAYER_NONE;
     printf("destroying player %u\n", idx);
     if (game->players[idx] != NULL) {
       printf("destroying player %u entity\n", idx);
