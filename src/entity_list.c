@@ -37,8 +37,8 @@ EntityList el_create() {
 }
 
 static void el_resize(EntityList el) {
-  el->size *= 2;
-  Entity *new_list = realloc(el->entities, el->size);
+  el->capacity *= 2;
+  Entity *new_list = realloc(el->entities, el->capacity);
   el->entities = new_list;
 }
 
@@ -57,6 +57,7 @@ Entity *el_add(EntityList el, Entity *entity) {
       .create_data = ent_get_create_data(entity),
   };
 
+  free(entity);
   return &el->entities[el->size++];
 }
 

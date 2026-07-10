@@ -413,14 +413,18 @@ void server_update(Game game) {
               },
       };
       if (game->state == GS_RUNNING) {
-        // Create a new player and give them the same XP as player 1
-        Entity *new_player = player_create();
-        new_player->player.xp = game->players[0]->player.xp;
-        game->players[idx] = el_add(game->world, new_player);
+        // If there is no player in this slot create it, otherwise, take over
+        // the AI player
+        if (game->player_type[idx] == PLAYER_NONE) {
+          // Create a new player and give them the same XP as player 1
+          Entity *new_player = player_create();
+          new_player->player.xp = game->players[0]->player.xp;
+          game->players[idx] = el_add(game->world, new_player);
 
-        // Flush changes so the new player creation is not sent
-        // We create new players manually on the client for timing reasons
-        el_flush_changes(game->world);
+          // Flush changes so the new player creation is not sent
+          // We create new players manually on the client for timing reasons
+          el_flush_changes(game->world);
+        }
 
         for (u32 i = 0; i < MAX_CLIENTS; i++) {
           response.hello.player_type[i] = game->player_type[i];

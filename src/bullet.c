@@ -255,7 +255,6 @@ bool bullet_hit_enemy_client(Entity *self, Entity *enemy, Game game) {
 
 bool bullet_update_client(Entity *self, Game game) {
   Bullet *data = &self->bullet;
-  Player *pdata = &data->player->player;
 
   // Predict next position
   Vector2 delta_pos = Vector2Scale(self->velocity, game->delta_time);

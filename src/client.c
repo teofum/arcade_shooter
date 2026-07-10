@@ -299,7 +299,7 @@ i32 client_update(Game game) {
                 c.create_data.position, c.create_data.bullet.target,
                 c.create_data.bullet.type, c.create_data.bullet.damage,
                 c.create_data.bullet.level, c.create_data.bullet.special_idx,
-                game->players[0]);
+                NULL);
             break;
           case ENT_WALL:
             break;
