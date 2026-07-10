@@ -11,8 +11,6 @@ typedef struct EntityListChange {
 
 typedef struct EntityList *EntityList;
 
-typedef struct EntityListIterator *EntityListIterator;
-
 EntityList el_create();
 
 Entity *el_add(EntityList el, Entity *entity);
@@ -30,12 +28,6 @@ u32 el_size(EntityList el);
 void el_flush_changes(EntityList el);
 
 EntityListChange *el_get_changes(EntityList el, u32 *size);
-
-EntityListIterator el_iter(EntityList el);
-
-Entity *eli_next(EntityListIterator eli);
-
-void eli_destroy_current(EntityListIterator eli);
 
 void el_free(EntityList el);
 

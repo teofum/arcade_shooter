@@ -25,13 +25,13 @@ bool explosion_update(Entity *self, Game game) {
   if (data->ttl == EXPLOSION_TTL) {
     // Damage enemies
     if (data->damage > 0) {
-      EntityListIterator it = el_iter(game->world);
-      Entity *entity;
-      while ((entity = eli_next(it))) {
-        if (entity->type == ENT_ENEMY) {
-          Enemy *edata = &entity->enemy;
-          Rectangle bounds = {entity->position.x, entity->position.y,
-                              edata->size.x, edata->size.y};
+      for (u32 i = 0, j = 0; i < el_size(game->world); i++) {
+        Entity *e = el_get(game->world, i);
+
+        if (e->type == ENT_ENEMY) {
+          Enemy *edata = &e->enemy;
+          Rectangle bounds = {e->position.x, e->position.y, edata->size.x,
+                              edata->size.y};
 
           if (CheckCollisionCircleRec(self->position, data->radius, bounds)) {
             i32 damage = get_damage(data->damage);
@@ -39,7 +39,7 @@ bool explosion_update(Entity *self, Game game) {
             edata->dmg_flash_timer = DMG_FLASH_TIME;
 
             Vector2 enemy_center =
-                Vector2Add(entity->position, Vector2Scale(edata->size, 0.5f));
+                Vector2Add(e->position, Vector2Scale(edata->size, 0.5f));
             Entity *dmg_number =
                 dmg_number_create(enemy_center, damage, DMG_NUMBER_SIZE);
             el_add(game->world, dmg_number);

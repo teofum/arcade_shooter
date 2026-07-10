@@ -138,22 +138,22 @@ static void enemy_move(Entity *self, Game game, Vector2 direction,
     }
   }
 
-  EntityListIterator it = el_iter(game->world);
-  Entity *entity;
-  while ((entity = eli_next(it))) {
-    if (entity->type == ENT_BULLET) {
-      Bullet *bdata = &entity->bullet;
+  for (u32 i = 0, j = 0; i < el_size(game->world); i++) {
+    Entity *e = el_get(game->world, i);
 
-      if (CheckCollisionCircleRec(entity->position, bdata->size, bounds)) {
+    if (e->type == ENT_BULLET) {
+      Bullet *bdata = &e->bullet;
+
+      if (CheckCollisionCircleRec(e->position, bdata->size, bounds)) {
         if (server)
-          bullet_hit_enemy(entity, self, game);
+          bullet_hit_enemy(e, self, game);
 
         if (!bdata->deferred_destroy) {
-          push_entity(entity, bounds, bdata->size, direction);
+          push_entity(e, bounds, bdata->size, direction);
           if (direction.y != 0)
-            entity->velocity.y = fabsf(entity->velocity.y) * direction.y;
+            e->velocity.y = fabsf(e->velocity.y) * direction.y;
           if (direction.x != 0)
-            entity->velocity.x = fabsf(entity->velocity.x) * direction.x;
+            e->velocity.x = fabsf(e->velocity.x) * direction.x;
         }
       }
     }

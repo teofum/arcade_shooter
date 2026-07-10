@@ -96,27 +96,27 @@ Collision check_collisions(Entity *self, Game game, Vector2 next_pos, f32 size,
       .direction = COL_NONE,
       .t = INFINITY,
   };
-  EntityListIterator it = el_iter(game->world);
-  Entity *entity;
-  while ((entity = eli_next(it))) {
-    if (entity->type == ENT_WALL || entity->type == ENT_ENEMY) {
-      Rectangle rect = get_collision_bounds(entity);
+  for (u32 i = 0, j = 0; i < el_size(game->world); i++) {
+    Entity *e = el_get(game->world, i);
+
+    if (e->type == ENT_WALL || e->type == ENT_ENEMY) {
+      Rectangle rect = get_collision_bounds(e);
 
       Collision c = collide_particle_rect(self->position, next_pos, size, rect);
       collision.direction |= c.direction;
       collision.t = fminf(collision.t, c.t);
 
-      if (c.direction != COL_NONE && entity->type == ENT_ENEMY &&
+      if (c.direction != COL_NONE && e->type == ENT_ENEMY &&
           on_enemy_hit != NULL) {
-        if (on_enemy_hit(self, entity, game))
+        if (on_enemy_hit(self, e, game))
           break;
       }
-    } else if (entity->type == ENT_ENEMY_BULLET) {
-      EnemyBullet *bdata = &entity->enemy_bullet;
-      bool collides = CheckCollisionCircles(self->position, size,
-                                            entity->position, bdata->size);
+    } else if (e->type == ENT_ENEMY_BULLET) {
+      EnemyBullet *bdata = &e->enemy_bullet;
+      bool collides =
+          CheckCollisionCircles(self->position, size, e->position, bdata->size);
       if (collides && on_enemy_bullet_hit != NULL) {
-        if (on_enemy_bullet_hit(self, entity, game))
+        if (on_enemy_bullet_hit(self, e, game))
           break;
       }
     }

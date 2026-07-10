@@ -343,11 +343,10 @@ void game_update(Game game) {
   }
 
   // Update entities
-  EntityListIterator it = el_iter(game->world);
-  Entity *e;
-  while ((e = eli_next(it))) {
+  for (u32 i = 0, j = 0; i < el_size(game->world); i++) {
+    Entity *e = el_get(game->world, i);
     if (ent_update(e, game)) {
-      eli_destroy_current(it);
+      el_destroy(game->world, i--);
     }
   }
 
@@ -363,9 +362,8 @@ void game_update_client(Game game) {
     return;
 
   // Update entities
-  EntityListIterator it = el_iter(game->world);
-  Entity *e;
-  while ((e = eli_next(it))) {
+  for (u32 i = 0, j = 0; i < el_size(game->world); i++) {
+    Entity *e = el_get(game->world, i);
     ent_update_client(e, game);
   }
 
@@ -379,11 +377,10 @@ void game_remove_player(Game game, u32 idx) {
     if (game->players[idx] != NULL) {
       printf("destroying player %u entity\n", idx);
       // Destroy any bullets from this player
-      EntityListIterator it = el_iter(game->world);
-      Entity *e;
-      while ((e = eli_next(it))) {
+      for (u32 i = 0, j = 0; i < el_size(game->world); i++) {
+        Entity *e = el_get(game->world, i);
         if (e->type == ENT_BULLET && e->bullet.player == game->players[idx]) {
-          eli_destroy_current(it);
+          el_destroy(game->world, i--);
         }
       }
 

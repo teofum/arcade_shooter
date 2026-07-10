@@ -356,10 +356,8 @@ i32 client_update(Game game) {
           printf("Fatal: received update %u for an entity of type %s\n", i,
                  entity_type_name[ent->type]);
           printf("Entities:\n");
-          EntityListIterator it = el_iter(game->world);
-          Entity *e;
-          u32 j = 0;
-          while ((e = eli_next(it))) {
+          for (u32 i = 0, j = 0; i < el_size(game->world); i++) {
+            Entity *e = el_get(game->world, i);
             printf("  %u: %s\n", j++, entity_type_name[e->type]);
           }
           printf("Updates:\n");

@@ -17,9 +17,8 @@ void game_draw(Game game) {
   } else {
     BeginMode2D(game->camera);
     {
-      EntityListIterator it = el_iter(game->world);
-      Entity *e;
-      while ((e = eli_next(it))) {
+      for (u32 i = 0, j = 0; i < el_size(game->world); i++) {
+        Entity *e = el_get(game->world, i);
         ent_draw(e, game);
       }
     }

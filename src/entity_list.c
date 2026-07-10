@@ -19,11 +19,6 @@ struct EntityList {
   u32 changes_size;
 };
 
-struct EntityListIterator {
-  EntityList list;
-  u32 i;
-};
-
 EntityList el_create() {
   EntityList el = malloc(sizeof(struct EntityList));
   *el = (struct EntityList){
@@ -90,40 +85,4 @@ EntityListChange *el_get_changes(EntityList el, u32 *size) {
   return el->changes;
 }
 
-EntityListIterator el_iter(EntityList el) {
-  EntityListIterator eli = malloc(sizeof(struct EntityListIterator));
-  *eli = (struct EntityListIterator){
-      .list = el,
-      .i = 0,
-  };
-
-  return eli;
-}
-
-Entity *eli_next(EntityListIterator eli) {
-  Entity *entity = NULL;
-
-  if (eli->i < eli->list->size) {
-    entity = &eli->list->entities[eli->i++];
-  }
-
-  return entity;
-}
-
-void eli_destroy_current(EntityListIterator eli) {
-  EntityList el = eli->list;
-  el->entities[--eli->i] = el->entities[--el->size];
-
-  if (el->changes_size == CHANGES_CAPACITY) {
-    assert(false && "too many entities created/destroyed in one frame");
-  }
-  el->changes[el->changes_size++] = (EntityListChange){
-      .idx = eli->i,
-      .type = -1,
-  };
-}
-
-void el_free(EntityList el) {
-  free(el->entities);
-  free(el);
-}
+void el_free(EntityList el) { free(el); }
