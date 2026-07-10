@@ -510,6 +510,22 @@ void server_update(Game game) {
     case MSG_START_GAME:
       game_reset(game);
       break;
+    case MSG_ADD_AI: {
+      i32 free_slot = -1;
+      for (u32 i = 0; free_slot == -1 && i < MAX_CLIENTS; i++) {
+        if (game->player_type[i] == PLAYER_NONE)
+          free_slot = i;
+      }
+
+      if (free_slot != -1) {
+        printf("add bot in slot %d\n", free_slot);
+        game->player_type[free_slot] = PLAYER_AI;
+      } else {
+        printf("add bot: too many players\n");
+      }
+
+      break;
+    }
     default:
       printf("something else; ignored\n");
       break;

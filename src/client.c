@@ -180,6 +180,12 @@ i32 client_update(Game game) {
     send_message(&start, true);
   }
 
+  if (game->client.should_add_ai) {
+    game->client.should_add_ai = false;
+    Message add_ai = {.type = MSG_ADD_AI};
+    send_message(&add_ai, true);
+  }
+
   if (game->state == GS_RUNNING) {
     // Send input
     Message input = {.type = MSG_INPUT, .input = game->client.input};

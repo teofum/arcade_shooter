@@ -123,7 +123,7 @@ void ui_draw_lobby_screen(Game game) {
                         color, border_color, (Vector2){20, 5});
       {
         if (connected) {
-          snprintf(player_text, 20, "Player %u%s", i,
+          snprintf(player_text, 20, "Player %u%s", i + 1,
                    i == game->host_player_idx ? " [H]"
                    : bot                      ? " [BOT]"
                                               : "");
@@ -140,12 +140,23 @@ void ui_draw_lobby_screen(Game game) {
       ui_end_frame();
     }
 
-    if (game->client.local_player_idx == game->host_player_idx &&
-        ui_button_ex("Start Game", 20, (Vector2){-110, 500}, false,
-                     (Vector2){200, 0}, CENTER, START)) {
-      game->client.should_start_game = true;
+    if (game->client.local_player_idx == game->host_player_idx) {
+      if (ui_button_ex("Start Game", 20, (Vector2){0, 500}, false,
+                       (Vector2){200, 0}, CENTER, START)) {
+        game->client.should_start_game = true;
+      }
+      i32 free_slot = -1;
+      for (u32 i = 0; free_slot == -1 && i < MAX_CLIENTS; i++) {
+        if (game->player_type[i] == PLAYER_NONE)
+          free_slot = i;
+      }
+      if (free_slot != -1 &&
+          ui_button_ex("Add Bot", 20, (Vector2){220, 500}, false,
+                       (Vector2){200, 0}, CENTER, START)) {
+        game->client.should_add_ai = true;
+      }
     }
-    if (ui_button_ex("Disconnect", 20, (Vector2){110, 500}, false,
+    if (ui_button_ex("Disconnect", 20, (Vector2){-220, 500}, false,
                      (Vector2){200, 0}, CENTER, START)) {
       client_disconnect();
     }

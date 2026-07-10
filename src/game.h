@@ -62,6 +62,7 @@ typedef struct Game {
       ConnectionState conn_state;
       bool should_start_server;
       bool should_start_game;
+      bool should_add_ai;
     } client;
   };
 
