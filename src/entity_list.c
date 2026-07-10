@@ -1,18 +1,19 @@
 #include <assert.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "entity.h"
 #include "entity_list.h"
 
-#define INITIAL_CAPACITY 1024
+#define ENTITY_CAPACITY 1024
 #define CHANGES_CAPACITY 128
 
 struct EntityList {
   u32 size;
   u32 capacity;
 
-  Entity *entities;
+  Entity entities[ENTITY_CAPACITY];
 
   EntityListChange changes[CHANGES_CAPACITY];
   u32 changes_size;
@@ -27,8 +28,8 @@ EntityList el_create() {
   EntityList el = malloc(sizeof(struct EntityList));
   *el = (struct EntityList){
       .size = 0,
-      .capacity = INITIAL_CAPACITY,
-      .entities = malloc(sizeof(Entity) * INITIAL_CAPACITY),
+      .capacity = ENTITY_CAPACITY,
+      .entities = {0},
       .changes = {0},
       .changes_size = 0,
   };
@@ -36,20 +37,16 @@ EntityList el_create() {
   return el;
 }
 
-static void el_resize(EntityList el) {
-  el->capacity *= 2;
-  Entity *new_list = realloc(el->entities, el->capacity);
-  el->entities = new_list;
-}
-
 Entity *el_add(EntityList el, Entity *entity) {
   if (el->size == el->capacity) {
-    el_resize(el);
+    printf("Fatal: maximum entity capacity exceeded\n");
+    assert(false);
   }
 
   el->entities[el->size] = *entity;
   if (el->changes_size == CHANGES_CAPACITY) {
-    assert(false && "too many entities created/destroyed in one frame");
+    printf("Fatal: too many entities created/destroyed in one frame\n");
+    assert(false);
   }
   el->changes[el->changes_size++] = (EntityListChange){
       .idx = el->size,
@@ -75,7 +72,8 @@ void el_set(EntityList el, u32 idx, Entity *entity) {
 void el_destroy(EntityList el, u32 idx) {
   el->entities[idx] = el->entities[--el->size];
   if (el->changes_size == CHANGES_CAPACITY) {
-    assert(false && "too many entities created/destroyed in one frame");
+    printf("Fatal: too many entities created/destroyed in one frame\n");
+    assert(false);
   }
   el->changes[el->changes_size++] = (EntityListChange){
       .idx = idx,
