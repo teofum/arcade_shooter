@@ -8,6 +8,9 @@
 #define AI_TARGET_Y_D (FIELD_WIDTH / 2.0f)
 #define AI_MOVE_STOP_D 10.0f
 #define AI_MOVE_START_D 30.0f
+#define AI_DEFENDING_START_Y (FIELD_HEIGHT / 8.0f)
+#define AI_DEFENDING_STOP_Y 0.0f
+#define AI_DEFENDING_TARGET_Y (FIELD_HEIGHT / 8.0f * 3)
 
 typedef enum {
   AI_IDLE,

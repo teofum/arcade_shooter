@@ -90,10 +90,9 @@ void ai_update(Game game, u32 player_idx) {
   AiPlayer *ai = &game->ai_players[player_idx];
   InputData *input = &game->server.input[player_idx];
 
+  Entity *lowest_enemy = get_lowest_enemy(game);
   switch (ai->state) {
   case AI_IDLE: {
-    Entity *lowest_enemy = get_lowest_enemy(game);
-
     if (lowest_enemy != NULL) {
       ai_change_state(ai, AI_MOVING);
     }
@@ -101,10 +100,10 @@ void ai_update(Game game, u32 player_idx) {
     break;
   }
   case AI_MOVING: {
-    Entity *lowest_enemy = get_lowest_enemy(game);
-
     if (lowest_enemy == NULL) {
       ai_change_state(ai, AI_IDLE);
+    } else if (lowest_enemy->position.y > FIELD_HEIGHT / 4.0f) {
+      ai_change_state(ai, AI_DEFENDING);
     } else {
       f32 target_y = lowest_enemy->position.y + AI_TARGET_Y_D;
       f32 target_x = get_target_x_pos(game, player_idx);
@@ -123,10 +122,10 @@ void ai_update(Game game, u32 player_idx) {
     break;
   }
   case AI_SHOOTING: {
-    Entity *lowest_enemy = get_lowest_enemy(game);
-
     if (lowest_enemy == NULL) {
       ai_change_state(ai, AI_IDLE);
+    } else if (lowest_enemy->position.y > AI_DEFENDING_START_Y) {
+      ai_change_state(ai, AI_DEFENDING);
     } else {
       f32 target_y = lowest_enemy->position.y + AI_TARGET_Y_D;
       f32 target_x = get_target_x_pos(game, player_idx);
@@ -147,8 +146,28 @@ void ai_update(Game game, u32 player_idx) {
     break;
   }
   case AI_DEFENDING: {
-    // TODO
-    ai_change_state(ai, AI_MOVING);
+    if (lowest_enemy == NULL) {
+      ai_change_state(ai, AI_IDLE);
+    } else if (lowest_enemy->position.y <= AI_DEFENDING_STOP_Y) {
+      ai_change_state(ai, AI_MOVING);
+    } else {
+      f32 target_y = AI_DEFENDING_TARGET_Y;
+      f32 target_x = lowest_enemy->position.x + lowest_enemy->enemy.size.x / 2;
+      ai->target_pos = (Vector2){target_x, target_y};
+
+      Vector2 direction = Vector2Subtract(ai->target_pos, self->position);
+      input->direction = Vector2Normalize(direction);
+
+      ai->crosshair = Vector2Add(lowest_enemy->position,
+                                 Vector2Scale(lowest_enemy->enemy.size, 0.5f));
+
+      f32 min_fire_x = lowest_enemy->position.x;
+      f32 max_fire_x = min_fire_x + lowest_enemy->enemy.size.x;
+
+      ai->firing =
+          self->position.x >= min_fire_x && self->position.x <= max_fire_x;
+    }
+
     break;
   }
   }

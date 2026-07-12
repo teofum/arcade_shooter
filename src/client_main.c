@@ -9,7 +9,6 @@
 #include "client.h"
 #include "config.h"
 #include "game.h"
-#include "network_shared.h"
 #include "ui.h"
 
 void init();
@@ -34,7 +33,7 @@ int main() {
 
       game_update_client(game);
       if (client_update(game) < 0)
-        break;
+        game->state = GS_QUIT;
 
       game_draw(game);
     }
