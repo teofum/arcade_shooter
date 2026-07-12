@@ -347,7 +347,7 @@ void server_update(Game game) {
     }
 
     for (u32 i = 0; i < MAX_CLIENTS; i++) {
-      if (game->player_type[i] != PLAYER_NONE &&
+      if (game->player_type[i] == PLAYER_CLIENT &&
           game->players[i]->player.leveled_up) {
         game->players[i]->player.leveled_up = false;
 
@@ -490,22 +490,7 @@ void server_update(Game game) {
     case MSG_LEVEL_UP: {
       printf("level up\n");
       Player *p = &game->players[sender_idx]->player;
-      LevelUpOption *option =
-          &p->level_up_options[server.recvd_msg.level_up.chosen_option];
-
-      if (option->type == LU_NEW) {
-        SpecialBulletSlot *bullet =
-            &p->special_bullets[p->special_bullet_count];
-
-        bullet->fired = false;
-        bullet->level = 1;
-        bullet->type = option->bullet_type;
-        p->special_bullet_count++;
-      } else {
-        SpecialBulletSlot *bullet = &p->special_bullets[option->bullet_idx];
-
-        bullet->level++;
-      }
+      player_level_up(p, server.recvd_msg.level_up.chosen_option);
       break;
     }
     case MSG_START_GAME:

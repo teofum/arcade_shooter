@@ -3,12 +3,14 @@
 #include <math.h>
 #include <raylib.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "ai.h"
 #include "config.h"
 #include "entity.h"
 #include "entity_list.h"
 #include "game.h"
+#include "player.h"
 #include "raymath.h"
 
 const char *ai_state_name[4] = {
@@ -89,6 +91,12 @@ void ai_update(Game game, u32 player_idx) {
   Entity *self = game->players[player_idx];
   AiPlayer *ai = &game->ai_players[player_idx];
   InputData *input = &game->server.input[player_idx];
+
+  if (self->player.leveled_up) {
+    printf("AI %u leveled up (lv %u)\n", player_idx + 1, self->player.level);
+    player_level_up(&self->player, rand() % LEVEL_UP_OPTIONS);
+    self->player.leveled_up = false;
+  }
 
   Entity *lowest_enemy = get_lowest_enemy(game);
   switch (ai->state) {

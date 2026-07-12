@@ -190,7 +190,7 @@ static void player_update_timers(Entity *self, Game game) {
   }
 }
 
-static void player_level_up(Entity *self, Game game) {
+static void player_prepare_level_up(Entity *self, Game game) {
   Player *data = &self->player;
 
   // Level up
@@ -289,7 +289,7 @@ bool player_update(Entity *self, Game game) {
   player_fire(self, game);
 
   if (data->xp >= data->to_next_level) {
-    player_level_up(self, game);
+    player_prepare_level_up(self, game);
   }
 
   player_update_timers(self, game);
@@ -362,4 +362,22 @@ Entity *player_create() {
   player->player = player_init_data();
 
   return player;
+}
+
+void player_level_up(Player *player, u32 option_idx) {
+  LevelUpOption *option = &player->level_up_options[option_idx];
+
+  if (option->type == LU_NEW) {
+    SpecialBulletSlot *bullet =
+        &player->special_bullets[player->special_bullet_count];
+
+    bullet->fired = false;
+    bullet->level = 1;
+    bullet->type = option->bullet_type;
+    player->special_bullet_count++;
+  } else {
+    SpecialBulletSlot *bullet = &player->special_bullets[option->bullet_idx];
+
+    bullet->level++;
+  }
 }

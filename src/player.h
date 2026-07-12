@@ -12,4 +12,6 @@ bool player_update(Entity *self, Game game);
 bool player_update_client(Entity *self, Game game);
 void player_draw(Entity *self, Game game);
 
+void player_level_up(Player *player, u32 option_idx);
+
 #endif
