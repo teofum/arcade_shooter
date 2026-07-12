@@ -5,6 +5,10 @@
 
 #include "types.h"
 
+#define AI_TARGET_Y_D (FIELD_WIDTH / 2.0f)
+#define AI_MOVE_STOP_D 10.0f
+#define AI_MOVE_START_D 30.0f
+
 typedef enum {
   AI_IDLE,
   AI_MOVING,

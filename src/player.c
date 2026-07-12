@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "ai.h"
 #include "assets.h"
 #include "bullet.h"
 #include "config.h"
@@ -340,12 +341,32 @@ void player_draw(Entity *self, Game game) {
     if (self == game->players[i])
       player_idx = i;
   }
+  Color color = player_colors[player_idx];
 
   static char player_str[10];
   if (player_idx != -1 && player_idx != game->client.local_player_idx) {
     snprintf(player_str, 10, "P%d", player_idx + 1);
     p = Vector2Add(p, (Vector2){0, size * 0.75f});
-    draw_text_ingame(player_str, 10, p, player_colors[player_idx], game);
+    draw_text_ingame(player_str, 10, p, color, game);
+  }
+
+  // Draw AI debug
+  if (game->player_type[player_idx] == PLAYER_AI &&
+      game->client.show_ai_debug_ui) {
+    AiPlayer *ai = &game->ai_players[player_idx];
+    Color color_t = color;
+    color_t.a = 50;
+    p = self->position;
+
+    // Current position
+    DrawCircle(p.x, p.y, 1, color);
+
+    // Target position and radii
+    DrawCircle(ai->target_pos.x, ai->target_pos.y, AI_MOVE_START_D, color_t);
+    DrawCircleLines(ai->target_pos.x, ai->target_pos.y, AI_MOVE_START_D, color);
+    DrawCircle(ai->target_pos.x, ai->target_pos.y, AI_MOVE_STOP_D, color_t);
+    DrawCircleLines(ai->target_pos.x, ai->target_pos.y, AI_MOVE_STOP_D, color);
+    DrawCircle(ai->target_pos.x, ai->target_pos.y, 1, color);
   }
 }
 

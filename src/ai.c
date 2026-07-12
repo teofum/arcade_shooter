@@ -1,17 +1,15 @@
 #include <assert.h>
 #include <float.h>
+#include <math.h>
 #include <raylib.h>
 #include <stdio.h>
 
 #include "ai.h"
+#include "config.h"
 #include "entity.h"
 #include "entity_list.h"
 #include "game.h"
 #include "raymath.h"
-
-#define TARGET_Y_DISTANCE (FIELD_WIDTH / 2.0f)
-#define MOVE_STOP_DISTANCE 10.0f
-#define MOVE_START_DISTANCE 30.0f
 
 const char *ai_state_name[4] = {
     [AI_IDLE] = "Idle",
@@ -27,7 +25,27 @@ static void ai_change_state(AiPlayer *ai, AiPlayerState state) {
 }
 
 static f32 get_target_x_pos(Game game, u32 player_idx) {
-  return 0.0f; // TODO
+  // Crappy solution to maximization problem
+  f32 best_x = 0.0f;
+  f32 max_min_dist = 0.0f;
+  f32 w = FIELD_WIDTH / 2.0f;
+
+  for (f32 x = -w; x <= w; x += w / 32.0f) {
+    f32 min_dist = fminf(fabsf(-w - x), fabsf(w - x));
+    for (u32 i = 0; i < MAX_CLIENTS; i++) {
+      if (i != player_idx && game->players[i] != NULL) {
+        f32 player_x = game->players[i]->position.x;
+        min_dist = fminf(min_dist, fabsf(x - player_x));
+      }
+    }
+
+    if (min_dist > max_min_dist) {
+      max_min_dist = min_dist;
+      best_x = x;
+    }
+  }
+
+  return best_x;
 }
 
 static Entity *get_lowest_enemy(Game game) {
@@ -87,12 +105,12 @@ void ai_update(Game game, u32 player_idx) {
     if (lowest_enemy == NULL) {
       ai_change_state(ai, AI_IDLE);
     } else {
-      f32 target_y = lowest_enemy->position.y + TARGET_Y_DISTANCE;
+      f32 target_y = lowest_enemy->position.y + AI_TARGET_Y_D;
       f32 target_x = get_target_x_pos(game, player_idx);
       ai->target_pos = (Vector2){target_x, target_y};
 
       f32 d = Vector2Distance(self->position, ai->target_pos);
-      if (d < MOVE_STOP_DISTANCE) {
+      if (d < AI_MOVE_STOP_D) {
         ai_change_state(ai, AI_SHOOTING);
       } else {
         Vector2 direction = Vector2Subtract(ai->target_pos, self->position);
@@ -109,12 +127,12 @@ void ai_update(Game game, u32 player_idx) {
     if (lowest_enemy == NULL) {
       ai_change_state(ai, AI_IDLE);
     } else {
-      f32 target_y = lowest_enemy->position.y + TARGET_Y_DISTANCE;
+      f32 target_y = lowest_enemy->position.y + AI_TARGET_Y_D;
       f32 target_x = get_target_x_pos(game, player_idx);
       ai->target_pos = (Vector2){target_x, target_y};
 
       f32 d = Vector2Distance(self->position, ai->target_pos);
-      if (d > MOVE_START_DISTANCE) {
+      if (d > AI_MOVE_START_D) {
         ai_change_state(ai, AI_MOVING);
       } else {
         input->direction = (Vector2){0, 0};
