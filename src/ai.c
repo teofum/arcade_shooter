@@ -105,7 +105,8 @@ void ai_update(Game game, u32 player_idx) {
     } else if (lowest_enemy->position.y > FIELD_HEIGHT / 4.0f) {
       ai_change_state(ai, AI_DEFENDING);
     } else {
-      f32 target_y = lowest_enemy->position.y + AI_TARGET_Y_D;
+      f32 target_y =
+          lowest_enemy->position.y + lowest_enemy->enemy.size.y + AI_TARGET_Y_D;
       f32 target_x = get_target_x_pos(game, player_idx);
       ai->target_pos = (Vector2){target_x, target_y};
 
@@ -127,7 +128,8 @@ void ai_update(Game game, u32 player_idx) {
     } else if (lowest_enemy->position.y > AI_DEFENDING_START_Y) {
       ai_change_state(ai, AI_DEFENDING);
     } else {
-      f32 target_y = lowest_enemy->position.y + AI_TARGET_Y_D;
+      f32 target_y =
+          lowest_enemy->position.y + lowest_enemy->enemy.size.y + AI_TARGET_Y_D;
       f32 target_x = get_target_x_pos(game, player_idx);
       ai->target_pos = (Vector2){target_x, target_y};
 
