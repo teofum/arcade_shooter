@@ -103,6 +103,9 @@ void ai_update(Game game, u32 player_idx) {
   case AI_IDLE: {
     if (lowest_enemy != NULL) {
       ai_change_state(ai, AI_MOVING);
+    } else {
+      ai->firing = false;
+      input->direction = (Vector2){0, 0};
     }
 
     break;
