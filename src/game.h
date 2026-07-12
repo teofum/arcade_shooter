@@ -65,6 +65,7 @@ typedef struct Game {
       bool should_start_server;
       bool should_start_game;
       bool should_add_ai;
+      bool show_ai_debug_ui;
     } client;
   };
 

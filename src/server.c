@@ -272,6 +272,7 @@ void server_update(Game game) {
             .player =
                 (PlayerStateData){
                     .player_data = game->players[i]->player,
+                    .ai_data = game->ai_players[i],
                     .player_idx = i,
                 },
         };

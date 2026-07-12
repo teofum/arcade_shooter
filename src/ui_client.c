@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "ai.h"
 #include "assets.h"
 #include "bullet.h"
 #include "client.h"
@@ -292,9 +293,9 @@ void ui_draw_game_ui(Game game) {
 
   ui_begin_frame_ex(full_screen, BLANK, BLANK, (Vector2){20, 20});
   {
-    static char score_str[30];
-    snprintf(score_str, 30, "Score: %6u", game->score);
-    ui_text(score_str, 20, WHITE, (Vector2){0, 0}, END, START);
+    static char buffer[30];
+    snprintf(buffer, 30, "Score: %6u", game->score);
+    ui_text(buffer, 20, WHITE, (Vector2){0, 0}, END, START);
 
     ui_draw_health_bar(pdata);
     ui_draw_xp_bar(pdata);
@@ -306,6 +307,24 @@ void ui_draw_game_ui(Game game) {
     ui_draw_other_player_health(game);
 
     ui_draw_player_crosshair(pdata);
+
+    if (ui_button(game->client.show_ai_debug_ui ? "Hide AI state"
+                                                : "Show AI state",
+                  20, (Vector2){0, 0}, false)) {
+      game->client.show_ai_debug_ui = !game->client.show_ai_debug_ui;
+    }
+
+    if (game->client.show_ai_debug_ui) {
+      f32 y = 0;
+      for (u32 i = 0; i < MAX_CLIENTS; i++) {
+        if (game->player_type[i] == PLAYER_AI) {
+          snprintf(buffer, 30, "Bot P%u: %s", i + 1,
+                   ai_state_name[game->ai_players[i].state]);
+          ui_text(buffer, 20, WHITE, (Vector2){0, y}, CENTER, START);
+          y += 20;
+        }
+      }
+    }
   }
   ui_end_frame();
 }

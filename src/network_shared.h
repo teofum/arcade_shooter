@@ -4,6 +4,7 @@
 #include <arpa/inet.h>
 #include <raylib.h>
 
+#include "ai.h"
 #include "config.h"
 #include "entity.h"
 #include "entity_list.h"
@@ -103,6 +104,7 @@ typedef struct GameStateData {
 
 typedef struct PlayerStateData {
   Player player_data;
+  AiPlayer ai_data;
   u32 player_idx;
 } PlayerStateData;
 

@@ -269,6 +269,8 @@ i32 client_update(Game game) {
       printf("player %u state\n", client.recvd_msg.player.player_idx);
       game->players[client.recvd_msg.player.player_idx]->player =
           client.recvd_msg.player.player_data;
+      game->ai_players[client.recvd_msg.player.player_idx] =
+          client.recvd_msg.player.ai_data;
       break;
     case MSG_ENTITY_SYNC: {
       EntitySyncData *sync = &client.recvd_msg.entity_sync;
@@ -402,8 +404,6 @@ i32 client_update(Game game) {
     case MSG_END_GAME:
       game_end(game);
       break;
-    case MSG_START_GAME:
-      break;
     case MSG_RESET:
       memcpy(game->player_type, client.recvd_msg.reset.player_type,
              MAX_CLIENTS * sizeof(PlayerType));
@@ -412,6 +412,10 @@ i32 client_update(Game game) {
     case MSG_GOODBYE:
       printf("Disconnected from server: goodbye!\n");
       return -1;
+    case MSG_START_GAME:
+    case MSG_ADD_AI:
+      printf("invalid message type; ignored\n");
+      break;
     }
   }
 
