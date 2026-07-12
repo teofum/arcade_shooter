@@ -3,6 +3,7 @@
 
 #include <raylib.h>
 
+#include "ai.h"
 #include "config.h"
 #include "entity.h"
 #include "entity_list.h"
@@ -50,6 +51,7 @@ typedef struct Game {
   PlayerType player_type[MAX_CLIENTS];
   Entity *players[MAX_CLIENTS];
   i32 host_player_idx;
+  AiPlayer ai_players[MAX_CLIENTS];
 
   union {
     struct {

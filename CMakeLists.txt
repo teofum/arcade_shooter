@@ -49,6 +49,7 @@ add_executable(${PROJECT_NAME}
   src/assets.h src/assets.c
   src/server.h src/server.c
   src/network_shared.h src/network_shared.c
+  src/ai.h src/ai.c
 )
 target_link_libraries(${PROJECT_NAME} raylib)
 
@@ -75,12 +76,13 @@ add_executable(${PROJECT_NAME}_client
   src/explosion.h src/explosion.c
   src/laser.h src/laser.c
   src/physics.h src/physics.c
-  src/game.h src/game.c src/game_draw.c
+  src/game.h src/game.c src/game_client.c
   src/ui.h src/ui.c src/ui_client.c
   src/utils.h src/utils.c
   src/assets.h src/assets.c
   src/client.h src/client.c
   src/network_shared.h src/network_shared.c
+  src/ai.h src/ai.c
 )
 target_link_libraries(${PROJECT_NAME}_client raylib)
 target_compile_definitions(${PROJECT_NAME}_client PRIVATE ENABLE_BGM=true)

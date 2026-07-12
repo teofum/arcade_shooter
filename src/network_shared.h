@@ -1,3 +1,6 @@
+#ifndef NETWORK_SHARED_H
+#define NETWORK_SHARED_H
+
 #include <arpa/inet.h>
 #include <raylib.h>
 
@@ -168,3 +171,5 @@ bool enqueue_msg(MessageQueue *q, Message *msg);
 i32 ack_msg(MessageQueue *q, u32 seq);
 
 bool is_connected(Connection *c);
+
+#endif

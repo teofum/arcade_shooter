@@ -74,6 +74,8 @@ void game_reset(Game game) {
       Entity *player = player_create();
       game->players[i] = el_add(game->world, player);
     }
+
+    ai_init(&game->ai_players[i]);
   }
 
   Entity *left_wall =
@@ -333,9 +335,13 @@ void game_update(Game game) {
   if (game->state == GS_MAIN_MENU)
     return;
 
-  // Update input
+  // Update player input and AI players
   for (u32 i = 0; i < MAX_CLIENTS; i++) {
-    if (game->player_type[i] == PLAYER_CLIENT) {
+    if (game->player_type[i] == PLAYER_AI) {
+      ai_update(game, i);
+    }
+
+    if (game->player_type[i] != PLAYER_NONE) {
       game->players[i]->player.direction = game->server.input[i].direction;
       game->players[i]->player.crosshair = game->server.input[i].crosshair;
       game->players[i]->player.firing = game->server.input[i].firing;
