@@ -72,6 +72,8 @@ void game_reset(Game game) {
   for (u32 i = 0; i < MAX_CLIENTS; i++) {
     if (game->player_type[i] != PLAYER_NONE) {
       Entity *player = player_create();
+      player->position.x =
+          i * FIELD_WIDTH / (MAX_CLIENTS * 1.5f) - FIELD_WIDTH / 2.0f;
       game->players[i] = el_add(game->world, player);
     }
 

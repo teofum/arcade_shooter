@@ -35,7 +35,8 @@ static f32 get_target_x_pos(Game game, u32 player_idx) {
     for (u32 i = 0; i < MAX_CLIENTS; i++) {
       if (i != player_idx && game->players[i] != NULL) {
         f32 player_x = game->players[i]->position.x;
-        min_dist = fminf(min_dist, fabsf(x - player_x));
+        f32 dist = fabsf(x - player_x);
+        min_dist = fminf(min_dist, dist);
       }
     }
 
@@ -136,7 +137,9 @@ void ai_update(Game game, u32 player_idx) {
         ai_change_state(ai, AI_MOVING);
       } else {
         input->direction = (Vector2){0, 0};
-        ai->crosshair = get_closest_enemy(game, self->position)->position;
+        Entity *closest = get_closest_enemy(game, self->position);
+        ai->crosshair = Vector2Add(closest->position,
+                                   Vector2Scale(closest->enemy.size, 0.5f));
         ai->firing = true;
       }
     }
